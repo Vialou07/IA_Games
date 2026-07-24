@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pokéquiz</title>
+<title>Quiz Mystère</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -11,387 +11,393 @@
   body{--accent:#F2B705;--accent-dark:#A87E04;}
   .btn.primary{color:#231A00;}
   .clue-box{background:var(--panel);border:1px solid var(--gold);max-width:420px;width:100%;margin:8px auto;
-    padding:18px 16px;text-align:center;font-size:1.02rem;line-height:1.55;
+    padding:16px 14px;text-align:center;font-size:1rem;line-height:1.55;
     clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
-  .clue-num{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
-  .pts-left{font-family:'Cinzel',serif;color:var(--gold);font-size:.85rem;margin:4px 0 10px;}
-  .answer-row{display:flex;gap:8px;max-width:360px;margin:6px auto;width:100%;}
+  .clue-tag{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+  .pts-left{font-family:'Cinzel',serif;color:var(--gold);font-size:.85rem;margin:4px 0 8px;}
+  .answer-row{display:flex;gap:8px;max-width:360px;margin:8px auto;width:100%;}
   .answer-row input{flex:1;margin:0;max-width:none;}
   .answer-row .btn{padding:12px 16px;}
 </style>
 </head>
 <body>
-<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Pokéquiz</h1><div class="rune"></div></div>
-<div class="wrap">
-
-  <div class="screen active center" id="s-home">
-    <div class="eyebrow">2 joueurs ou plus</div>
-    <h2 class="big">Le Pokémon mystère</h2>
-    <p class="sub">Cinq indices, du plus vague au plus précis. Trouve le Pokémon le plus tôt possible : indice 1 = 5 points… indice 5 = 1 point. Une mauvaise réponse te bloque jusqu'à l'indice suivant !</p>
-    <div class="btn-col">
-      <button class="btn primary" id="b-create">Créer une partie (multi-téléphones)</button>
-      <button class="btn" id="b-join">Rejoindre avec un code</button>
-      <button class="btn ghost" id="b-solo">Jouer sur 1 seul téléphone</button>
-    </div>
-  </div>
-
-  <div class="screen center" id="s-name">
-    <div class="eyebrow" id="name-eyebrow"></div>
-    <h2 class="big">Comment tu t'appelles ?</h2>
-    <input class="field" id="name-input" maxlength="14" placeholder="Prénom">
-    <input class="field code" id="name-code" maxlength="4" autocapitalize="characters" placeholder="XXXX" style="display:none;">
-    <div class="status warn" id="name-err" style="display:none;"></div>
-    <div class="btn-row">
-      <button class="btn ghost" id="b-name-back">Retour</button>
-      <button class="btn primary" id="b-name-go" disabled>Continuer</button>
-    </div>
-  </div>
-
-  <div class="screen center" id="s-lobby">
-    <div class="eyebrow">Salon</div>
-    <div class="code-box" id="lobby-code">····</div>
-    <p class="sub" style="margin-bottom:8px;">Chacun ouvre le même lien → Pokéquiz → « Rejoindre » avec ce code.</p>
-    <div class="list" id="lobby-list"></div>
-    <div class="status" id="lobby-status"></div>
-    <div class="btn-row"><button class="btn primary" id="b-launch" style="display:none;" disabled>Lancer une manche</button></div>
-  </div>
-
-  <div class="screen center" id="s-round">
-    <div class="clue-num" id="clue-num"></div>
-    <div class="pts-left" id="pts-left"></div>
-    <div id="clues"></div>
-    <div class="answer-row" id="answer-row">
-      <input class="field" id="answer-input" maxlength="20" placeholder="Ta réponse…" autocomplete="off">
-      <button class="btn primary" id="b-answer">GO</button>
-    </div>
-    <div class="status" id="round-status"></div>
-    <div class="feed" id="round-feed"></div>
-    <div class="btn-row" id="host-controls" style="display:none;">
-      <button class="btn ghost" id="b-nextclue">Indice suivant</button>
-      <button class="btn danger" id="b-revealend">Révéler la réponse</button>
-    </div>
-  </div>
-
-  <div class="screen center" id="s-result">
-    <div class="eyebrow" id="res-eyebrow"></div>
-    <h2 class="big" id="res-title"></h2>
-    <p class="sub" id="res-sub"></p>
-    <div class="scores" id="res-scores"></div>
-    <div class="btn-row">
-      <button class="btn primary" id="b-next" style="display:none;">Nouvelle manche</button>
-      <a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Menu des jeux</a>
-    </div>
-    <div class="status" id="res-wait"></div>
-  </div>
-
-  <!-- solo : ajout des joueurs -->
-  <div class="screen center" id="s-solo-setup">
-    <div class="eyebrow">1 téléphone — écran partagé</div>
-    <h2 class="big">Qui joue ?</h2>
-    <p class="sub" style="margin-bottom:8px;">Les indices s'affichent pour tout le monde, chacun répond à voix haute. Quand quelqu'un trouve, touche son prénom.</p>
-    <input class="field" id="solo-name" maxlength="14" placeholder="Prénom">
-    <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="b-solo-add">Ajouter</button></div>
-    <div class="list" id="solo-list"></div>
-    <div class="btn-row"><button class="btn primary" id="b-solo-start" disabled>Lancer une manche</button></div>
-  </div>
-
-  <div class="screen center" id="s-solo-round">
-    <div class="clue-num" id="solo-clue-num"></div>
-    <div class="pts-left" id="solo-pts"></div>
-    <div id="solo-clues"></div>
-    <p class="sub" style="font-size:.8rem;margin:8px auto 4px;">Quelqu'un a trouvé ? Touche son prénom :</p>
-    <div class="list" id="solo-found"></div>
-    <div class="btn-row">
-      <button class="btn ghost" id="b-solo-nextclue">Indice suivant</button>
-      <button class="btn danger" id="b-solo-reveal">Personne — révéler</button>
-    </div>
-  </div>
-
-</div>
-<footer class="note">Quiz maison — non affilié à The Pokémon Company.</footer>
+<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Quiz Mystère</h1><div class="rune"></div></div>
+<div class="wrap" id="wrap"></div>
+<footer class="note">Quiz maison — non affilié aux licences citées.</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script src="net.js"></script>
+<script src="themes.js"></script>
 <script>
 (function(){
   const GAME = "pkz";
-  const DEX = [
-    { name:"Ronflex", clues:["Type Normal.","Il est énorme et très lourd.","Il passe sa vie à manger et dormir.","Il bloque la route dans les jeux, il faut une flûte pour le réveiller.","Le gros dormeur bleu-vert au ventre crème."]},
-    { name:"Ectoplasma", clues:["Il est violet.","Type Spectre et Poison.","Il adore faire des farces effrayantes dans l'ombre.","C'est l'évolution finale de Fantominus.","Le fantôme au sourire immense et aux yeux rouges."]},
-    { name:"Pikachu", clues:["Type Électrik.","Il vit en groupe dans les forêts.","Ses joues stockent de l'électricité.","C'est le compagnon de Sacha dans le dessin animé.","La souris jaune, mascotte de la licence."]},
-    { name:"Dracaufeu", clues:["Il peut voler.","Type Feu.","La flamme de sa queue reflète sa vitalité.","C'est l'évolution finale d'un starter de Kanto.","Le dragon orange, starter feu de la première génération."]},
-    { name:"Magicarpe", clues:["Type Eau.","Il est réputé complètement inutile.","Il ne sait quasiment que faire Trempette.","Il évolue en un dragon marin redoutable.","Le poisson rouge et or qui saute partout."]},
-    { name:"Léviator", clues:["Il est immense.","Type Eau et Vol.","Il est connu pour sa rage destructrice.","Il évolue d'un Pokémon considéré comme le plus faible.","Le serpent de mer bleu issu de Magicarpe."]},
-    { name:"Évoli", clues:["Type Normal.","Son code génétique est instable.","Il peut évoluer de nombreuses façons différentes.","Ses évolutions incluent Aquali, Voltali et Pyroli.","Le petit renard marron aux multiples évolutions."]},
-    { name:"Mewtwo", clues:["Type Psy.","Il a été créé par des scientifiques.","C'est un clone surpuissant d'un Pokémon mythique.","On l'affronte dans une grotte après la Ligue.","Le clone légendaire de Mew."]},
-    { name:"Miaouss", clues:["Type Normal.","Il adore les objets brillants.","Une pièce dorée orne son front.","Dans le dessin animé, il parle et accompagne la Team Rocket.","Le chat beige de la Team Rocket."]},
-    { name:"Psykokwak", clues:["Type Eau.","Il a constamment mal à la tête.","Ses migraines libèrent des pouvoirs psychiques.","Dans le dessin animé, il sort sans arrêt de la Pokéball d'Ondine.","Le canard jaune qui se tient la tête."]},
-    { name:"Onix", clues:["Il vit sous terre.","Type Roche et Sol.","Son corps est une chaîne de rochers gigantesque.","C'est le Pokémon emblématique de Pierre.","Le serpent de pierre géant."]},
-    { name:"Rondoudou", clues:["Il est rose.","Type Normal et Fée.","Sa voix endort quiconque l'écoute.","Il se venge en dessinant sur le visage des endormis.","La boule rose qui chante avec son micro-feutre."]},
-    { name:"Tortank", clues:["Type Eau.","Il est massif et protégé par une carapace.","Deux canons à eau sortent de sa carapace.","C'est l'évolution finale d'un starter de Kanto.","La grosse tortue à canons, évolution de Carapuce."]},
-    { name:"Lokhlass", clues:["Type Eau et Glace.","Il est d'une grande douceur.","Il transporte les gens sur son dos à travers les mers.","On l'utilise souvent comme Surf-taxi.","Le plésiosaure bleu à carapace grise."]},
-    { name:"Metamorph", clues:["Type Normal.","Il est rose et informe.","Il peut se transformer en n'importe quoi.","Il est très recherché pour la reproduction.","La flaque rose qui copie tous les Pokémon."]},
-    { name:"Noctali", clues:["Il sort la nuit.","Type Ténèbres.","Ses anneaux brillent dans l'obscurité.","C'est une évolution nocturne d'Évoli.","Le félin noir aux anneaux jaunes."]},
-    { name:"Ho-Oh", clues:["C'est un Pokémon légendaire.","Type Feu et Vol.","Ses plumes arc-en-ciel portent bonheur.","Il trône au sommet de la Tour Cendrée de Johto.","Le phénix multicolore, mascotte de Pokémon Or."]},
-    { name:"Togepi", clues:["Type Fée.","C'est un bébé Pokémon.","Il est encore dans sa coquille.","Ondine s'en occupe dans le dessin animé.","Le petit œuf à pointes qui agite ses bras."]},
-  ];
+  const BANK = THEMES.quiz, META = THEMES.meta;
+  const wrap = document.getElementById("wrap");
   const $ = id => document.getElementById(id);
-  const PTS = i => 5 - i; // indice 0 → 5 pts … indice 4 → 1 pt
+  const PTS = i => 5 - i;
+  function screen(html){ wrap.innerHTML = `<div class="screen active">${html}</div>`; window.scrollTo(0,0); }
+  function stepper(n,total){ return `<div class="step-label">Étape ${n} sur ${total}</div>
+    <div class="stepper">${Array.from({length:total},(_,i)=>`<div class="dot${i<n?" on":""}"></div>`).join("")}</div>`; }
 
-  let players = [], usedIdx = new Set(), myName = "", joinMode = false, started = false;
-  let round = null; // hôte : {entry, clueIdx, locked:Set, solvedBy}
+  let players = [], myName = "", theme = null, started = false;
+  let round = null, used = {}, iAmLocked = false, roomCode = "";
 
-  function pickEntry(){
-    if (usedIdx.size >= DEX.length) usedIdx.clear();
-    let i;
-    do { i = Math.floor(Math.random()*DEX.length); } while (usedIdx.has(i));
-    usedIdx.add(i);
-    return DEX[i];
+  function pickEntry(th){
+    used[th] = used[th] || new Set();
+    const avail = BANK[th].map((_,i)=>i).filter(i=>!used[th].has(i));
+    if (!avail.length){ used[th].clear(); return pickEntry(th); }
+    const i = avail[Math.floor(Math.random()*avail.length)];
+    used[th].add(i);
+    return BANK[th][i];
+  }
+  function isRight(guess, entry){
+    if (UI.fuzzyMatch(guess, entry.name)) return true;
+    return (entry.alt || []).some(a => UI.fuzzyMatch(guess, a));
   }
   function uniqueName(n){
-    let base = n.trim() || "Joueur", name = base, i = 2;
-    while (players.some(p=>p.name===name)) name = base + " " + (i++);
+    let base=(n||"Joueur").trim(), name=base, i=2;
+    while (players.some(p=>p.name===name)) name = base+" "+(i++);
     return name;
   }
-  function scoresHtml(list){
-    return list.slice().sort((a,b)=>b.score-a.score)
-      .map((p,i)=>`<div class="row${i===0&&p.score>0?" top":""}"><span>${UI.esc(p.name)}</span><span class="pts">${p.score} pt${p.score>1?"s":""}</span></div>`).join("");
+  const scoresHtml = list => list.slice().sort((a,b)=>b.score-a.score)
+    .map((p,i)=>`<div class="row${i===0&&p.score>0?" top":""}"><span>${UI.esc(p.name)}</span><span class="pts">${p.score} pt${p.score>1?"s":""}</span></div>`).join("");
+
+  /* ═══ ÉCRANS GUIDÉS ═══ */
+  function sHome(){
+    players=[]; started=false; round=null; Net.destroy();
+    screen(`<div class="center">
+      <div class="eyebrow">2 joueurs ou plus</div>
+      <h2 class="big">Le personnage mystère</h2>
+      <p class="sub">5 indices, du plus vague au plus précis. Trouve tôt = gros points (5 ➜ 1). Une mauvaise réponse te bloque jusqu'à l'indice suivant.</p>
+      ${stepper(1,4)}
+      <p class="sub" style="margin-bottom:10px;"><b>Vous jouez comment ?</b></p>
+      <div class="choice-col">
+        <button class="choice accent" id="c-net"><div class="c-title">📱📱 Chacun son téléphone</div><div class="c-sub">Chacun tape sa réponse en secret sur son écran.</div></button>
+        <button class="choice" id="c-solo"><div class="c-title">📱 Tous sur ce téléphone</div><div class="c-sub">Écran partagé : on répond à voix haute, un arbitre note qui trouve.</div></button>
+      </div></div>`);
+    $("c-net").onclick = sNetChoice;
+    $("c-solo").onclick = sSoloPlayers;
   }
 
-  // ══ HÔTE ══
+  function sNetChoice(){
+    screen(`<div class="center">${stepper(2,4)}
+      <p class="sub" style="margin-bottom:10px;"><b>Un seul joueur crée la partie, les autres la rejoignent.</b></p>
+      <div class="choice-col">
+        <button class="choice accent" id="c-create"><div class="c-title">➕ Créer la partie</div><div class="c-sub">Tu seras l'hôte : tu obtiens un code à donner aux autres.</div></button>
+        <button class="choice" id="c-join"><div class="c-title">🔑 Rejoindre</div><div class="c-sub">On t'a donné un code ? C'est ici.</div></button>
+      </div>
+      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="c-back">Retour</button></div></div>`);
+    $("c-create").onclick = () => sName(false);
+    $("c-join").onclick = () => sName(true);
+    $("c-back").onclick = sHome;
+  }
+
+  function sName(joining){
+    screen(`<div class="center">${stepper(3,4)}
+      <div class="eyebrow">${joining ? "Rejoindre" : "Créer la partie"}</div>
+      <h2 class="big">Ton prénom ?</h2>
+      <input class="field" id="f-name" maxlength="14" placeholder="Prénom">
+      ${joining ? `<p class="sub" style="margin:4px 0 2px;">…et le code donné par l'hôte :</p>
+      <input class="field code" id="f-code" maxlength="4" autocapitalize="characters" placeholder="XXXX">` : ""}
+      <div class="btn-row">
+        <button class="btn ghost" id="f-back">Retour</button>
+        <button class="btn primary" id="f-go" disabled>${joining ? "Rejoindre" : "Créer"}</button>
+      </div></div>`);
+    const check = () => {
+      const okN = $("f-name").value.trim().length >= 2;
+      const okC = !joining || ($("f-code") && $("f-code").value.length === 4);
+      $("f-go").disabled = !(okN && okC);
+    };
+    $("f-name").addEventListener("input", check);
+    if (joining) $("f-code").addEventListener("input", e => {
+      e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4); check();
+    });
+    $("f-back").onclick = sNetChoice;
+    $("f-go").onclick = () => {
+      myName = $("f-name").value.trim();
+      $("f-go").disabled = true;
+      joining ? doJoin($("f-code").value) : doCreate();
+    };
+  }
+
+  function doCreate(){
+    Net.create(GAME, {
+      onOpen: code => { roomCode = code; players = [{ id:"H", name: myName, score: 0 }]; sLobby(); },
+      onData: (id, d) => {
+        if (d && d.t === "hello"){
+          players.push({ id, name: uniqueName(d.name), score: 0 });
+          syncLobby();
+          if (started && round && !round.solved)
+            Net.sendTo(id, { t:"clue", theme, idx: round.clueIdx, clues: round.entry.clues.slice(0, round.clueIdx+1) });
+        }
+        else if (d && d.t === "answer"){
+          const p = players.find(x=>x.id===id);
+          if (p) hostAnswer(id, p.name, d.text);
+        }
+      },
+      onLeave: id => {
+        const p = players.find(x=>x.id===id);
+        players = players.filter(x=>x.id!==id);
+        if (p) UI.banner(`${p.name} s'est déconnecté.`, true);
+        syncLobby();
+      },
+      onError: () => UI.banner("Erreur de connexion. Recharge la page.", true, 6000),
+    });
+  }
+  function sLobby(){
+    screen(`<div class="center">${stepper(4,4)}
+      <div class="eyebrow">Salon ouvert</div>
+      <h2 class="big">Fais rejoindre les autres</h2>
+      <div class="code-box">${roomCode}</div>
+      <p class="sub">Chacun : même lien → Quiz Mystère → <b>Chacun son téléphone</b> → <b>Rejoindre</b> → prénom + ce code.</p>
+      <div class="list" id="l-list"></div>
+      <div class="status" id="l-status"></div>
+      <div class="btn-row"><button class="btn primary" id="l-launch" disabled>Choisir le thème ➜</button></div></div>`);
+    $("l-launch").onclick = sThemeHost;
+    syncLobby();
+  }
   function syncLobby(){
-    const list = players.map(p=>({id:p.id,name:p.name,score:p.score}));
-    Net.broadcast({ t:"lobby", players:list });
-    renderLobby(list);
+    Net.broadcast({ t:"lobby", players: players.map(p=>({name:p.name,score:p.score})) });
+    const l=$("l-list"); if(!l) return;
+    l.innerHTML = players.map(p=>`<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span><span class="tag">${p.id==="H"?"hôte":"✓"}</span></div>`).join("");
+    const st=$("l-status"), b=$("l-launch");
+    if (st) st.textContent = players.length < 2 ? `${players.length}/2 joueurs minimum` : `${players.length} joueurs — prêt !`;
+    if (b) b.disabled = players.length < 2;
   }
-  function renderLobby(list){
-    $("lobby-list").innerHTML = list.map(p=>
-      `<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span><span class="tag">${p.id==="H"?"hôte":p.score+" pts"}</span></div>`).join("");
-    if (Net.isHost()){
-      $("b-launch").style.display = "";
-      $("b-launch").disabled = list.length < 2;
-      $("lobby-status").textContent = list.length < 2 ? `${list.length}/2 joueurs minimum` : "Prêt !";
-    } else $("lobby-status").textContent = "En attente que l'hôte lance…";
+  function doJoin(code){
+    Net.join(GAME, code, {
+      onOpen: () => {
+        Net.send({ t:"hello", name: myName });
+        screen(`<div class="center">${stepper(4,4)}
+          <div class="eyebrow">Connecté !</div><h2 class="big">Bien reçu, ${UI.esc(myName)}</h2>
+          <div class="list" id="l-list"></div>
+          <p class="sub">En attente que l'hôte lance la manche…</p></div>`);
+      },
+      onData: guestData,
+      onLeave: () => UI.banner("L'hôte s'est déconnecté — partie terminée.", true, 7000),
+      onError: () => {
+        screen(`<div class="center"><div class="eyebrow">Oups</div>
+          <h2 class="big">Connexion impossible</h2>
+          <p class="sub">Vérifie le code, et que l'hôte est bien sur l'écran de son salon.</p>
+          <div class="btn-row"><button class="btn primary" id="e-retry">Réessayer</button></div></div>`);
+        $("e-retry").onclick = sNetChoice;
+      },
+    });
   }
-  function hostLaunch(){
-    round = { entry: pickEntry(), clueIdx: 0, locked: new Set(), solved: false };
-    broadcastClue();
+  function guestData(_, d){
+    if (!d || !d.t) return;
+    if (d.t === "lobby"){
+      const l=$("l-list");
+      if (l) l.innerHTML = d.players.map(p=>`<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span><span class="tag">${p.score} pts</span></div>`).join("");
+    }
+    if (d.t === "clue"){ started = true; theme = d.theme; sClue(d, false); }
+    if (d.t === "wrong" && d.name !== myName) feedWrong(d);
+    if (d.t === "youlocked"){
+      iAmLocked = true;
+      const inp=$("a-input"), b=$("a-go"), st=$("r-status");
+      if (inp) inp.disabled = true;
+      if (b) b.disabled = true;
+      if (st){ st.textContent = "❌ Raté ! Bloqué jusqu'à l'indice suivant."; st.className = "status warn"; }
+    }
+    if (d.t === "solved"){ players = d.scores.map(p=>({...p})); sRoundEnd(d, false); }
   }
-  function broadcastClue(){
-    const payload = { t:"clue", idx: round.clueIdx, clues: round.entry.clues.slice(0, round.clueIdx+1) };
+
+  function sThemeHost(){
+    screen(`<div class="center">
+      <div class="eyebrow">Thème</div><h2 class="big">Choisis le thème de la manche</h2>
+      <p class="sub">Tu pourras en changer entre les manches.</p>
+      <div class="theme-grid">${Object.keys(META).map(k =>
+        `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}</div>
+      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="t-back">Retour au salon</button></div></div>`);
+    document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => { theme = b.dataset.th; started = true; hostRound(); });
+    $("t-back").onclick = sLobby;
+  }
+
+  /* ═══ MANCHE (hôte) ═══ */
+  function hostRound(){
+    round = { entry: pickEntry(theme), clueIdx: 0, locked: new Set(), solved: false };
+    pushClue();
+  }
+  function pushClue(){
+    const payload = { t:"clue", theme, idx: round.clueIdx, clues: round.entry.clues.slice(0, round.clueIdx+1) };
     Net.broadcast(payload);
-    showClue(payload);
+    sClue(payload, true);
   }
   function hostAnswer(pid, pname, text){
     if (!round || round.solved) return;
-    if (round.locked.has(pid)) { replyTo(pid, { t:"locked" }); return; }
-    if (UI.fuzzyMatch(text, round.entry.name)) {
+    if (round.locked.has(pid)) return;
+    if (isRight(text, round.entry)){
       round.solved = true;
       const pts = PTS(round.clueIdx);
       const p = players.find(x=>x.id===pid);
       if (p) p.score += pts;
-      const payload = { t:"solved", name: pname, answer: round.entry.name, pts,
-        scores: players.map(x=>({id:x.id,name:x.name,score:x.score})) };
-      Net.broadcast(payload); showRoundEnd(payload);
+      const payload = { t:"solved", winner: pname, answer: round.entry.name, pts,
+        scores: players.map(x=>({name:x.name,score:x.score})) };
+      Net.broadcast(payload);
+      sRoundEnd(payload, true);
     } else {
       round.locked.add(pid);
       const evt = { t:"wrong", name: pname, guess: text };
-      Net.broadcast(evt); feedWrong(evt);
-      replyTo(pid, { t:"youlocked" });
+      Net.broadcast(evt);
+      if (pid === "H"){
+        iAmLocked = true;
+        feedWrong(evt);
+        const inp=$("a-input"), b=$("a-go"), st=$("r-status");
+        if (inp) inp.disabled = true;
+        if (b) b.disabled = true;
+        if (st){ st.textContent = "❌ Raté ! Bloqué jusqu'à l'indice suivant."; st.className = "status warn"; }
+      } else { Net.sendTo(pid, { t:"youlocked" }); feedWrong(evt); }
     }
   }
-  function replyTo(pid, obj){ pid === "H" ? handleSelf(obj) : Net.sendTo(pid, obj); }
-  function handleSelf(d){ guestData("H", d); }
-  function hostNextClue(){
+  function hostNext(){
     if (!round || round.solved) return;
-    if (round.clueIdx >= 4) { hostReveal(); return; }
+    if (round.clueIdx >= 4){ hostReveal(); return; }
     round.clueIdx++;
     round.locked.clear();
-    broadcastClue();
+    pushClue();
   }
   function hostReveal(){
     round.solved = true;
-    const payload = { t:"solved", name:null, answer: round.entry.name, pts:0,
-      scores: players.map(x=>({id:x.id,name:x.name,score:x.score})) };
-    Net.broadcast(payload); showRoundEnd(payload);
+    const payload = { t:"solved", winner: null, answer: round.entry.name, pts: 0,
+      scores: players.map(x=>({name:x.name,score:x.score})) };
+    Net.broadcast(payload);
+    sRoundEnd(payload, true);
   }
 
-  // ══ AFFICHAGE COMMUN ══
-  let iAmLocked = false;
-  function showClue(d){
+  /* ═══ AFFICHAGE MANCHE ═══ */
+  function sClue(d, isHost){
     iAmLocked = false;
-    $("clue-num").textContent = `Indice ${d.idx+1} / 5`;
-    $("pts-left").textContent = `${PTS(d.idx)} point${PTS(d.idx)>1?"s":""} à gagner`;
-    $("clues").innerHTML = d.clues.map((c,i)=>`<div class="clue-box"><div class="clue-num">Indice ${i+1}</div>${UI.esc(c)}</div>`).join("");
-    $("answer-input").value = ""; $("answer-input").disabled = false; $("b-answer").disabled = false;
-    $("round-status").textContent = ""; $("round-status").className = "status";
-    if (d.idx === 0) $("round-feed").innerHTML = "";
-    $("host-controls").style.display = Net.isHost() ? "" : "none";
-    UI.show("s-round");
+    screen(`<div class="center" style="justify-content:flex-start;">
+      <div class="eyebrow">Thème : ${META[d.theme].label} · Indice ${d.idx+1}/5</div>
+      <div class="pts-left">🏆 ${PTS(d.idx)} point${PTS(d.idx)>1?"s":""} à gagner</div>
+      <div style="width:100%;">${d.clues.map((c,i)=>`<div class="clue-box"><div class="clue-tag">Indice ${i+1}</div>${UI.esc(c)}</div>`).join("")}</div>
+      <div class="answer-row">
+        <input class="field" id="a-input" maxlength="24" placeholder="Ta réponse…" autocomplete="off">
+        <button class="btn primary" id="a-go">GO</button>
+      </div>
+      <div class="status" id="r-status">Tape ta réponse — les fautes d'orthographe sont tolérées.</div>
+      <div class="feed" id="r-feed"></div>
+      ${isHost ? `<div class="btn-row" style="margin-top:10px;">
+        <button class="btn ghost" id="h-next">${d.idx>=4 ? "Dernier indice passé ➜ révéler" : "Personne ne trouve ➜ indice suivant"}</button>
+      </div>` : ""}
+    </div>`);
+    const submit = () => {
+      const t = $("a-input").value.trim();
+      if (!t || iAmLocked) return;
+      $("a-input").value = "";
+      if (Net.isHost()) hostAnswer("H", myName, t);
+      else Net.send({ t:"answer", text: t });
+    };
+    $("a-go").onclick = submit;
+    $("a-input").addEventListener("keydown", e => { if (e.key==="Enter") submit(); });
+    if (isHost) $("h-next").onclick = () => (round.clueIdx >= 4 ? hostReveal() : hostNext());
   }
   function feedWrong(d){
+    const f = $("r-feed");
+    if (!f) return;
     const div = document.createElement("div");
     div.className = "bad";
     div.textContent = `${d.name} a proposé « ${d.guess} » — raté !`;
-    $("round-feed").prepend(div);
+    f.prepend(div);
   }
-  function showRoundEnd(d){
-    players = d.scores.map(p=>({...p}));
-    $("res-eyebrow").textContent = d.name ? "Trouvé !" : "Personne n'a trouvé";
-    $("res-title").textContent = "C'était " + d.answer + " !";
-    $("res-sub").textContent = d.name ? `${d.name} marque ${d.pts} point${d.pts>1?"s":""}.` : "Aucun point cette manche.";
-    $("res-scores").innerHTML = scoresHtml(d.scores);
-    $("b-next").style.display = Net.isHost() ? "" : "none";
-    $("res-wait").textContent = Net.isHost() ? "" : "L'hôte peut relancer une manche.";
-    UI.show("s-result");
-  }
-  function guestData(_, d){
-    if (!d || !d.t) return;
-    if (d.t === "lobby") { players = d.players.map(p=>({...p})); renderLobby(d.players); if (!started) UI.show("s-lobby"); }
-    if (d.t === "code") $("lobby-code").textContent = d.code;
-    if (d.t === "clue") { started = true; showClue(d); }
-    if (d.t === "wrong") { if (d.name !== myName) feedWrong(d); }
-    if (d.t === "youlocked") {
-      iAmLocked = true;
-      $("answer-input").disabled = true; $("b-answer").disabled = true;
-      $("round-status").textContent = "Raté ! Tu es bloqué jusqu'à l'indice suivant.";
-      $("round-status").className = "status warn";
+  function sRoundEnd(d, isHost){
+    screen(`<div class="center">
+      <div class="eyebrow">${d.winner ? "🎉 Trouvé !" : "Personne n'a trouvé"}</div>
+      <h2 class="big">C'était ${UI.esc(d.answer)} !</h2>
+      <p class="sub">${d.winner ? `<b>${UI.esc(d.winner)}</b> marque ${d.pts} point${d.pts>1?"s":""}.` : "Aucun point cette manche."}</p>
+      <div class="scores">${scoresHtml(d.scores)}</div>
+      ${isHost ? `<div class="btn-row">
+          <button class="btn primary" id="r-next">Nouvelle manche</button>
+          <button class="btn ghost" id="r-theme">Changer de thème</button>
+        </div>` : `<div class="status">L'hôte relance quand vous êtes prêts.</div>`}
+    </div>`);
+    if (isHost){
+      $("r-next").onclick = () => hostRound();
+      $("r-theme").onclick = () => sThemeHost();
     }
-    if (d.t === "locked") { /* déjà bloqué */ }
-    if (d.t === "solved") showRoundEnd(d);
   }
 
-  function submitAnswer(){
-    const text = $("answer-input").value.trim();
-    if (!text || iAmLocked) return;
-    $("answer-input").value = "";
-    if (Net.isHost()) hostAnswer("H", myName, text);
-    else Net.send({ t:"answer", text });
-  }
-  $("b-answer").onclick = submitAnswer;
-  $("answer-input").addEventListener("keydown", e => { if (e.key === "Enter") submitAnswer(); });
-
-  // ══ CONNEXION ══
-  $("b-create").onclick = () => { joinMode = false; openName(); };
-  $("b-join").onclick = () => { joinMode = true; openName(); };
-  function openName(){
-    $("name-code").style.display = joinMode ? "" : "none";
-    $("name-eyebrow").textContent = joinMode ? "Rejoindre un salon" : "Créer un salon";
-    $("name-err").style.display = "none";
-    checkForm(); UI.show("s-name");
-  }
-  function checkForm(){
-    const okN = $("name-input").value.trim().length >= 2;
-    const okC = !joinMode || $("name-code").value.length === 4;
-    $("b-name-go").disabled = !(okN && okC);
-  }
-  $("name-input").addEventListener("input", checkForm);
-  $("name-code").addEventListener("input", e => {
-    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
-    checkForm();
-  });
-  $("b-name-back").onclick = () => { Net.destroy(); UI.show("s-home"); };
-  $("b-name-go").onclick = () => {
-    myName = $("name-input").value.trim();
-    $("b-name-go").disabled = true;
-    if (!joinMode) {
-      Net.create(GAME, {
-        onOpen: code => {
-          $("lobby-code").textContent = code;
-          players = [{ id:"H", name: myName, score: 0 }];
-          syncLobby(); UI.show("s-lobby");
-        },
-        onData: (id, d) => {
-          if (d && d.t === "hello") {
-            players.push({ id, name: uniqueName(d.name), score: 0 });
-            Net.sendTo(id, { t:"code", code: $("lobby-code").textContent });
-            syncLobby();
-            if (started && round && !round.solved)
-              Net.sendTo(id, { t:"clue", idx: round.clueIdx, clues: round.entry.clues.slice(0, round.clueIdx+1) });
-          }
-          else if (d && d.t === "answer") {
-            const p = players.find(x=>x.id===id);
-            if (p) hostAnswer(id, p.name, d.text);
-          }
-        },
-        onLeave: id => {
-          const p = players.find(x=>x.id===id);
-          players = players.filter(x=>x.id!==id);
-          if (p) UI.banner(`${p.name} s'est déconnecté.`, true);
-          syncLobby();
-        },
-        onError: () => UI.banner("Erreur de connexion. Recharge la page.", true, 6000),
-      });
-    } else {
-      Net.join(GAME, $("name-code").value, {
-        onOpen: () => Net.send({ t:"hello", name: myName }),
-        onData: guestData,
-        onLeave: () => UI.banner("L'hôte s'est déconnecté — partie terminée.", true, 6000),
-        onError: () => {
-          $("name-err").textContent = "Impossible de rejoindre. Vérifie le code.";
-          $("name-err").style.display = "block";
-          $("b-name-go").disabled = false;
-        },
-      });
-    }
-  };
-  $("b-launch").onclick = () => { started = true; hostLaunch(); };
-  $("b-nextclue").onclick = () => hostNextClue();
-  $("b-revealend").onclick = () => hostReveal();
-  $("b-next").onclick = () => { if (Net.isHost()) hostLaunch(); };
-
-  // ══ MODE 1 TÉLÉPHONE ══
+  /* ═══ MODE 1 TÉLÉPHONE ═══ */
   let solo = null;
-  $("b-solo").onclick = () => {
+  function sSoloPlayers(){
     solo = { names: [], scores: {}, entry: null, clueIdx: 0 };
-    $("solo-list").innerHTML = ""; $("b-solo-start").disabled = true;
-    UI.show("s-solo-setup");
-  };
-  $("b-solo-add").onclick = () => {
-    const n = $("solo-name").value.trim();
-    if (n.length < 2) return;
-    let name = n, i = 2;
-    while (solo.names.includes(name)) name = n + " " + (i++);
-    solo.names.push(name); solo.scores[name] = 0;
-    $("solo-name").value = "";
-    $("solo-list").innerHTML = solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join("");
-    $("b-solo-start").disabled = solo.names.length < 2;
-  };
-  $("b-solo-start").onclick = () => soloRound();
-  function soloRound(){
-    solo.entry = pickEntry(); solo.clueIdx = 0;
-    soloShow();
+    screen(`<div class="center">${stepper(2,4)}
+      <div class="eyebrow">1 téléphone — écran partagé</div>
+      <h2 class="big">Qui joue ?</h2>
+      <p class="sub">Les indices s'affichent pour tous, on répond à voix haute. Ajoute au moins 2 prénoms.</p>
+      <input class="field" id="sp-name" maxlength="14" placeholder="Prénom">
+      <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="sp-add">+ Ajouter</button></div>
+      <div class="list" id="sp-list"></div>
+      <div class="btn-row">
+        <button class="btn ghost" id="sp-back">Retour</button>
+        <button class="btn primary" id="sp-go" disabled>Choisir le thème ➜</button>
+      </div></div>`);
+    const add = () => {
+      const n = $("sp-name").value.trim();
+      if (n.length < 2) return;
+      let name = n, i = 2;
+      while (solo.names.includes(name)) name = n+" "+(i++);
+      solo.names.push(name); solo.scores[name] = 0;
+      $("sp-name").value = "";
+      $("sp-list").innerHTML = solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join("");
+      $("sp-go").disabled = solo.names.length < 2;
+      $("sp-name").focus();
+    };
+    $("sp-add").onclick = add;
+    $("sp-name").addEventListener("keydown", e => { if (e.key==="Enter") add(); });
+    $("sp-back").onclick = sHome;
+    $("sp-go").onclick = sSoloTheme;
   }
-  function soloShow(){
-    $("solo-clue-num").textContent = `Indice ${solo.clueIdx+1} / 5`;
-    $("solo-pts").textContent = `${PTS(solo.clueIdx)} point${PTS(solo.clueIdx)>1?"s":""} à gagner`;
-    $("solo-clues").innerHTML = solo.entry.clues.slice(0, solo.clueIdx+1)
-      .map((c,i)=>`<div class="clue-box"><div class="clue-num">Indice ${i+1}</div>${UI.esc(c)}</div>`).join("");
-    $("solo-found").innerHTML = "";
+  function sSoloTheme(){
+    screen(`<div class="center">${stepper(3,4)}
+      <div class="eyebrow">Thème</div><h2 class="big">Choisissez le thème</h2>
+      <div class="theme-grid">${Object.keys(META).map(k =>
+        `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}</div>
+      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="st-back">Retour</button></div></div>`);
+    document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => { theme = b.dataset.th; soloRound(); });
+    $("st-back").onclick = sSoloPlayers;
+  }
+  function soloRound(){
+    solo.entry = pickEntry(theme); solo.clueIdx = 0;
+    soloClue();
+  }
+  function soloClue(){
+    screen(`<div class="center" style="justify-content:flex-start;">
+      <div class="eyebrow">Thème : ${META[theme].label} · Indice ${solo.clueIdx+1}/5</div>
+      <div class="pts-left">🏆 ${PTS(solo.clueIdx)} point${PTS(solo.clueIdx)>1?"s":""} à gagner</div>
+      <div style="width:100%;">${solo.entry.clues.slice(0, solo.clueIdx+1)
+        .map((c,i)=>`<div class="clue-box"><div class="clue-tag">Indice ${i+1}</div>${UI.esc(c)}</div>`).join("")}</div>
+      <p class="sub" style="font-size:.8rem;margin:8px auto 4px;">Quelqu'un a trouvé à voix haute ? Touche son prénom :</p>
+      <div class="list" id="sf-list"></div>
+      <div class="btn-row">
+        ${solo.clueIdx < 4 ? `<button class="btn ghost" id="s-next">Personne ➜ indice suivant</button>` : ""}
+        <button class="btn danger" id="s-reveal">Personne ne trouvera ➜ révéler</button>
+      </div></div>`);
     solo.names.forEach(n => {
       const b = document.createElement("button");
-      b.className = "item"; b.innerHTML = `<span>${UI.esc(n)}</span><span class="tag">a trouvé !</span>`;
-      b.onclick = () => {
-        solo.scores[n] += PTS(solo.clueIdx);
-        soloEnd(n, PTS(solo.clueIdx));
-      };
-      $("solo-found").appendChild(b);
+      b.className="item"; b.innerHTML = `<span>${UI.esc(n)}</span><span class="tag">a trouvé !</span>`;
+      b.onclick = () => { solo.scores[n] += PTS(solo.clueIdx); soloEnd(n, PTS(solo.clueIdx)); };
+      $("sf-list").appendChild(b);
     });
-    $("b-solo-nextclue").style.display = solo.clueIdx >= 4 ? "none" : "";
-    UI.show("s-solo-round");
+    const nx=$("s-next");
+    if (nx) nx.onclick = () => { solo.clueIdx++; soloClue(); };
+    $("s-reveal").onclick = () => soloEnd(null, 0);
   }
-  $("b-solo-nextclue").onclick = () => { solo.clueIdx++; soloShow(); };
-  $("b-solo-reveal").onclick = () => soloEnd(null, 0);
   function soloEnd(winner, pts){
-    $("res-eyebrow").textContent = winner ? "Trouvé !" : "Personne n'a trouvé";
-    $("res-title").textContent = "C'était " + solo.entry.name + " !";
-    $("res-sub").textContent = winner ? `${winner} marque ${pts} point${pts>1?"s":""}.` : "Aucun point cette manche.";
-    $("res-scores").innerHTML = solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a])
-      .map((n,i)=>`<div class="row${i===0&&solo.scores[n]>0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pt${solo.scores[n]>1?"s":""}</span></div>`).join("");
-    $("b-next").style.display = "";
-    $("b-next").onclick = () => soloRound();
-    $("res-wait").textContent = "";
-    UI.show("s-result");
+    screen(`<div class="center">
+      <div class="eyebrow">${winner ? "🎉 Trouvé !" : "Personne n'a trouvé"}</div>
+      <h2 class="big">C'était ${UI.esc(solo.entry.name)} !</h2>
+      <p class="sub">${winner ? `<b>${UI.esc(winner)}</b> marque ${pts} point${pts>1?"s":""}.` : "Aucun point cette manche."}</p>
+      <div class="scores">${solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a])
+        .map((n,i)=>`<div class="row${i===0&&solo.scores[n]>0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pt${solo.scores[n]>1?"s":""}</span></div>`).join("")}</div>
+      <div class="btn-row">
+        <button class="btn primary" id="r-next">Nouvelle manche</button>
+        <button class="btn ghost" id="r-theme">Changer de thème</button>
+      </div></div>`);
+    $("r-next").onclick = () => soloRound();
+    $("r-theme").onclick = sSoloTheme;
   }
+
+  sHome();
 })();
 </script>
 </body>

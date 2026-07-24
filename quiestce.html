@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Qui est-ce ? — LoL Edition</title>
+<title>Qui est-ce ?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -14,7 +14,7 @@
     clip-path:polygon(10% 0,90% 0,100% 12%,100% 88%,90% 100%,10% 100%,0 88%,0 12%);
     padding:4px 4px 6px;text-align:center;cursor:pointer;transition:transform .1s ease;}
   .card:active{transform:scale(.93);}
-  .card .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;}
+  .card .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--panel2);}
   .card .badge{width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
     font-family:'Cinzel',serif;font-weight:700;font-size:1rem;color:#04211E;}
   .card .cname{font-size:.58rem;margin-top:4px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -26,382 +26,379 @@
     background:linear-gradient(115deg,transparent 46%,var(--danger) 48%,var(--danger) 52%,transparent 54%);opacity:.85;}
   .sticky-actions{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--void) 30%);
     padding:14px 0 4px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-  .attempts{font-size:.75rem;color:var(--dim);text-align:center;margin-bottom:4px;}
 </style>
 </head>
 <body>
-<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Qui est-ce ? — LoL</h1><div class="rune"></div></div>
-<div class="wrap">
-
-  <div class="screen active center" id="s-home">
-    <div class="eyebrow">2 joueurs</div>
-    <h2 class="big">Devine le champion secret de ton adversaire</h2>
-    <p class="sub">Chacun choisit un champion en secret, puis posez-vous des questions oui/non à voix haute (en vrai ou en visio) en éliminant des portraits. Le premier qui identifie le secret de l'autre gagne — mais une mauvaise proposition se voit !</p>
-    <div class="btn-col">
-      <button class="btn primary" id="b-create">Créer une partie (2 téléphones)</button>
-      <button class="btn" id="b-join">Rejoindre avec un code</button>
-      <button class="btn ghost" id="b-solo">Jouer sur 1 seul téléphone</button>
-    </div>
-  </div>
-
-  <div class="screen center" id="s-join">
-    <div class="eyebrow">Rejoindre</div>
-    <h2 class="big">Entre le code de ton pote</h2>
-    <input class="field code" id="join-code" maxlength="4" autocapitalize="characters" placeholder="XXXX">
-    <div class="status warn" id="join-err" style="display:none;"></div>
-    <div class="btn-row">
-      <button class="btn ghost" id="b-join-back">Retour</button>
-      <button class="btn primary" id="b-join-go" disabled>Rejoindre</button>
-    </div>
-  </div>
-
-  <div class="screen center" id="s-wait">
-    <div class="eyebrow">Partie créée</div>
-    <h2 class="big">Fais rejoindre ton pote</h2>
-    <div class="code-box" id="room-code">····</div>
-    <p class="sub">Il ouvre le même lien sur son téléphone → Qui est-ce → « Rejoindre avec un code » → il tape ce code.</p>
-    <div class="status" id="wait-status">En attente de connexion…</div>
-  </div>
-
-  <div class="screen" id="s-select">
-    <div class="center" style="flex:0;padding-bottom:4px;">
-      <span class="pill" id="select-pill">Choisis ton champion secret</span>
-      <p class="sub" style="margin-bottom:6px;" id="select-sub">Personne d'autre ne doit voir ton écran.</p>
-    </div>
-    <div class="board" id="select-board"></div>
-    <div class="sticky-actions"><button class="btn primary" id="b-confirm" disabled>Confirmer ce champion</button></div>
-  </div>
-
-  <div class="screen center" id="s-handoff">
-    <div class="eyebrow">Passe le téléphone</div>
-    <h2 class="big" id="handoff-title"></h2>
-    <p class="sub" id="handoff-sub"></p>
-    <div class="btn-row"><button class="btn primary" id="b-handoff">J'ai le téléphone</button></div>
-  </div>
-
-  <div class="screen" id="s-play">
-    <div class="center" style="flex:0;padding-bottom:2px;">
-      <span class="pill" id="play-pill">Ton plateau</span>
-      <div class="status" id="play-status"></div>
-      <div class="attempts" id="play-attempts"></div>
-    </div>
-    <div class="board" id="play-board"></div>
-    <div class="sticky-actions">
-      <button class="btn danger" id="b-guess">Proposer un champion</button>
-      <button class="btn ghost" id="b-turn" style="display:none;">Terminer mon tour</button>
-    </div>
-  </div>
-
-  <div class="screen center" id="s-end">
-    <div class="eyebrow" id="end-eyebrow">Victoire</div>
-    <h2 class="big" id="end-title"></h2>
-    <div id="end-reveal" style="display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin:14px 0 20px;"></div>
-    <div class="btn-row">
-      <button class="btn primary" id="b-again">Rejouer</button>
-      <a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Menu des jeux</a>
-    </div>
-  </div>
-
-</div>
-<footer class="note">Portraits via l'API publique Data Dragon (Riot Games). Non affilié à Riot Games.</footer>
+<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Qui est-ce ?</h1><div class="rune"></div></div>
+<div class="wrap" id="wrap"></div>
+<footer class="note">Portraits LoL : Data Dragon (Riot Games) · sprites Pokémon : PokeAPI. Non affilié.</footer>
 <div id="modal-root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script src="net.js"></script>
+<script src="themes.js"></script>
 <script>
 (function(){
-  const BOARD_SIZE = 24, GAME = "qec";
-  const V = "16.14.1";
-  const imgUrl = id => `https://ddragon.leagueoflegends.com/cdn/${V}/img/champion/${id}.png`;
+  const GAME = "qec", BOARD_SIZE = 24;
+  const T = THEMES.quiestce, META = THEMES.meta;
+  const wrap = document.getElementById("wrap");
   const PALETTE = ["#C8AA6E","#0AC8B9","#E15A4C","#8B7FD1","#5B9BD5","#D98B4A","#6FBF73","#D65D8C"];
-  const POOL = [
-    "Ahri","Akali","Amumu","Annie","Ashe","Blitzcrank","Braum","Caitlyn","Camille",
-    "Darius","Diana","Draven","Ekko","Elise","Ezreal","Fiora","Fizz","Galio","Garen",
-    "Gragas","Graves","Irelia","Ivern","Janna","Jax","Jayce","Jhin","Jinx","Karma",
-    "Karthus","Katarina","Kayle","Kayn","Kennen","Leona","Lissandra","Lucian","Lulu",
-    "Lux","Malphite","Malzahar","Maokai","Mordekaiser","Morgana","Nami","Nasus",
-    "Nautilus","Neeko","Nidalee","Nocturne","Olaf","Orianna","Pantheon","Poppy","Pyke",
-    "Quinn","Rakan","Rammus","Rengar","Riven","Rumble","Ryze","Samira","Sejuani",
-    "Senna","Seraphine","Shen","Shyvana","Singed","Sion","Sivir","Skarner","Sona",
-    "Soraka","Swain","Sylas","Syndra","Talon","Taric","Teemo","Thresh","Tristana",
-    "Tryndamere","Twitch","Urgot","Varus","Vayne","Veigar","Vi","Viego","Viktor",
-    "Vladimir","Volibear","Xayah","Xerath","XinZhao","Yasuo","Yone","Yorick","Yuumi",
-    "Zac","Zed","Ziggs","Zilean","Zoe","Zyra"
-  ].map(id => ({ id, name: id === "XinZhao" ? "Xin Zhao" : id }));
-  const byId = id => POOL.find(c => c.id === id);
-  const colorFor = id => { let h=0; for(let i=0;i<id.length;i++) h=(h*17+id.charCodeAt(i))>>>0; return PALETTE[h%PALETTE.length]; };
-  const initials = n => n.replace("'","").split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  const colorFor = s => { let h=0; for(let i=0;i<s.length;i++) h=(h*17+s.charCodeAt(i))>>>0; return PALETTE[h%PALETTE.length]; };
+  const initials = n => n.replace(/['.]/g,"").split(/\s+/).map(w=>w[0]).filter(Boolean).join("").slice(0,2).toUpperCase();
 
-  // ── état ──
-  let mode = null;              // 'net' | 'solo'
-  let board = [];               // ids
+  // état
+  let theme = null, board = [];        // board = [{name, img|null}]
   let mySecret = null, oppSecret = null, oppReady = false;
   let myElim = new Set(), myAttempts = 0, oppAttempts = 0;
-  let pendingGuess = false, gameOver = false;
-  // solo :
-  let solo = null;
+  let pendingGuess = false, over = false, solo = null;
 
-  function cardEl(champ, opts){
-    const card = document.createElement("div");
-    card.className = "card";
-    if (opts.elim && opts.elim.has(champ.id)) card.classList.add("eliminated");
-    if (opts.chosen === champ.id) card.classList.add("chosen");
-    const img = document.createElement("img");
-    img.className = "thumb"; img.loading = "lazy"; img.alt = champ.name; img.src = imgUrl(champ.id);
-    img.onerror = () => {
-      const b = document.createElement("div");
-      b.className = "badge"; b.style.background = colorFor(champ.id); b.textContent = initials(champ.name);
-      img.replaceWith(b);
-    };
-    const label = document.createElement("div");
-    label.className = "cname"; label.textContent = champ.name;
-    card.appendChild(img); card.appendChild(label);
-    if (opts.onClick) card.addEventListener("click", () => opts.onClick(champ, card));
-    return card;
-  }
-  function renderBoard(container, opts){
-    container.innerHTML = "";
-    board.forEach(id => container.appendChild(cardEl(byId(id), opts)));
+  function buildBoard(themeKey){
+    const pool = T[themeKey].chars;
+    const idx = UI.shuffle(pool.map((_,i)=>i)).slice(0, BOARD_SIZE);
+    return idx.map(i => ({
+      name: pool[i],
+      img: T[themeKey].img ? T[themeKey].img(pool[i], i) : null,
+    }));
   }
 
-  // ── écrans communs ──
+  // ── rendu générique d'écran (efface tout, une seule chose à la fois) ──
+  function screen(html){ wrap.innerHTML = `<div class="screen active">${html}</div>`; window.scrollTo(0,0); }
+  function stepper(n, total){
+    return `<div class="step-label">Étape ${n} sur ${total}</div>
+      <div class="stepper">${Array.from({length:total},(_,i)=>`<div class="dot${i<n?" on":""}"></div>`).join("")}</div>`;
+  }
   const $ = id => document.getElementById(id);
 
-  function openSelect(pillText, subText, onConfirm){
-    $("select-pill").textContent = pillText;
-    $("select-sub").textContent = subText;
-    $("b-confirm").disabled = true;
-    let temp = null;
-    renderBoard($("select-board"), {
-      onClick: (champ, el) => {
-        temp = champ.id;
-        $("select-board").querySelectorAll(".card").forEach(c => c.classList.remove("chosen"));
-        el.classList.add("chosen");
-        $("b-confirm").disabled = false;
-      }
+  function cardEl(c, opts){
+    const card = document.createElement("div");
+    card.className = "card";
+    if (opts.elim && opts.elim.has(c.name)) card.classList.add("eliminated");
+    if (opts.chosen === c.name) card.classList.add("chosen");
+    if (c.img){
+      const img = document.createElement("img");
+      img.className="thumb"; img.loading="lazy"; img.alt=c.name; img.src=c.img;
+      img.onerror = () => { img.replaceWith(badge()); };
+      card.appendChild(img);
+    } else card.appendChild(badge());
+    function badge(){
+      const b = document.createElement("div");
+      b.className="badge"; b.style.background=colorFor(c.name); b.textContent=initials(c.name);
+      return b;
+    }
+    const l = document.createElement("div"); l.className="cname"; l.textContent=c.name;
+    card.appendChild(l);
+    if (opts.onClick) card.addEventListener("click", ()=>opts.onClick(c, card));
+    return card;
+  }
+  function boardHtml(container, opts){
+    container.innerHTML="";
+    board.forEach(c => container.appendChild(cardEl(c, opts)));
+  }
+
+  /* ═══════════ ÉCRANS ═══════════ */
+
+  function sHome(){
+    over=false; pendingGuess=false; mySecret=null; oppSecret=null; oppReady=false;
+    myElim=new Set(); myAttempts=0; oppAttempts=0; solo=null; Net.destroy();
+    screen(`
+      <div class="center">
+        <div class="eyebrow">2 joueurs</div>
+        <h2 class="big">Devine le personnage secret de ton adversaire</h2>
+        <p class="sub">Questions oui/non à voix haute, élimination de portraits, et le premier qui trouve gagne.</p>
+        ${stepper(1,4)}
+        <p class="sub" style="margin-bottom:10px;"><b>Vous jouez comment ?</b></p>
+        <div class="choice-col">
+          <button class="choice accent" id="c-net"><div class="c-title">📱📱 Chacun son téléphone</div><div class="c-sub">Vous êtes chacun sur votre tel — un code à partager, tout se synchronise.</div></button>
+          <button class="choice" id="c-solo"><div class="c-title">📱 Tous sur ce téléphone</div><div class="c-sub">On se passe le téléphone à tour de rôle.</div></button>
+        </div>
+      </div>`);
+    $("c-net").onclick = sNetChoice;
+    $("c-solo").onclick = () => sTheme(t => { theme=t; board=buildBoard(t); soloSelect(0); });
+  }
+
+  function sNetChoice(){
+    screen(`
+      <div class="center">
+        ${stepper(2,4)}
+        <p class="sub" style="margin-bottom:10px;"><b>L'un de vous deux crée la partie, l'autre la rejoint.</b></p>
+        <div class="choice-col">
+          <button class="choice accent" id="c-create"><div class="c-title">➕ Créer la partie</div><div class="c-sub">Tu obtiens un code à donner à ton pote.</div></button>
+          <button class="choice" id="c-join"><div class="c-title">🔑 Rejoindre</div><div class="c-sub">Ton pote t'a donné un code ? C'est ici.</div></button>
+        </div>
+        <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="c-back">Retour</button></div>
+      </div>`);
+    $("c-create").onclick = sCreate;
+    $("c-join").onclick = sJoin;
+    $("c-back").onclick = sHome;
+  }
+
+  function sCreate(){
+    screen(`
+      <div class="center">
+        ${stepper(3,4)}
+        <div class="eyebrow">Partie créée</div>
+        <h2 class="big">Donne ce code à ton pote</h2>
+        <div class="code-box" id="room-code">····</div>
+        <p class="sub">Sur son téléphone : même lien → Qui est-ce ? → <b>Chacun son téléphone</b> → <b>Rejoindre</b> → il tape ce code.</p>
+        <div class="status" id="wait-status">En attente de sa connexion…</div>
+      </div>`);
+    Net.create(GAME, {
+      onOpen: code => { const el=$("room-code"); if(el) el.textContent=code; },
+      onData: (id, d) => {
+        if (d && d.t === "hello"){
+          if (Net.peersCount() > 1) { Net.sendTo(id, { t:"full" }); return; }
+          sThemeHost();
+        } else netData(id, d);
+      },
+      onLeave: () => { if(!over) UI.banner("Ton adversaire s'est déconnecté.", true, 6000); },
+      onError: () => UI.banner("Erreur de connexion. Recharge la page.", true, 6000),
     });
-    $("b-confirm").onclick = () => { if (temp) onConfirm(temp); };
-    UI.show("s-select");
+  }
+
+  function sJoin(){
+    screen(`
+      <div class="center">
+        ${stepper(3,4)}
+        <div class="eyebrow">Rejoindre</div>
+        <h2 class="big">Tape le code de ton pote</h2>
+        <input class="field code" id="join-code" maxlength="4" autocapitalize="characters" placeholder="XXXX">
+        <div class="status warn" id="join-err" style="display:none;"></div>
+        <div class="btn-row">
+          <button class="btn ghost" id="j-back">Retour</button>
+          <button class="btn primary" id="j-go" disabled>Rejoindre</button>
+        </div>
+      </div>`);
+    $("join-code").addEventListener("input", e => {
+      e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+      $("j-go").disabled = e.target.value.length !== 4;
+    });
+    $("j-back").onclick = sNetChoice;
+    $("j-go").onclick = () => {
+      $("j-go").disabled = true;
+      Net.join(GAME, $("join-code").value, {
+        onOpen: () => {
+          Net.send({ t:"hello" });
+          screen(`<div class="center">${stepper(4,4)}<div class="eyebrow">Connecté !</div>
+            <h2 class="big">Ton pote choisit le thème…</h2>
+            <p class="sub">Ça démarre dans quelques secondes.</p></div>`);
+        },
+        onData: netData,
+        onLeave: () => { if(!over) UI.banner("L'hôte s'est déconnecté.", true, 6000); },
+        onError: () => {
+          const e1=$("join-err"), g=$("j-go");
+          if(e1){ e1.textContent="Impossible de rejoindre. Vérifie le code et que ton pote est bien sur l'écran du code."; e1.style.display="block"; }
+          if(g) g.disabled=false;
+        },
+      });
+    };
+  }
+
+  function themeButtons(onPick){
+    return { html: `<div class="theme-grid">${Object.keys(META).map(k =>
+        `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}
+      </div>`,
+      bind(){ document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => onPick(b.dataset.th)); } };
+  }
+
+  function sTheme(onPick){
+    const tb = themeButtons(onPick);
+    screen(`<div class="center">${stepper(2,4)}
+      <div class="eyebrow">Thème</div><h2 class="big">Choisissez le thème</h2>
+      <p class="sub">Le plateau est tiré au hasard à chaque partie — aucune partie ne se ressemble.</p>
+      ${tb.html}
+      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="t-back">Retour</button></div></div>`);
+    tb.bind(); $("t-back").onclick = sHome;
+  }
+
+  function sThemeHost(){
+    const tb = themeButtons(t => {
+      theme = t; board = buildBoard(t);
+      Net.broadcast({ t:"start", theme, board });
+      netSelect();
+    });
+    screen(`<div class="center">${stepper(4,4)}
+      <div class="eyebrow">Adversaire connecté ✓</div><h2 class="big">Choisis le thème</h2>
+      <p class="sub">Le plateau (24 personnages tirés au hasard) sera le même pour vous deux.</p>
+      ${tb.html}</div>`);
+    tb.bind();
+  }
+
+  /* ── sélection du secret (commun net/solo) ── */
+  function selectScreen(title, sub, onConfirm, backFn){
+    screen(`
+      <div style="text-align:center;padding-bottom:4px;">
+        <span class="pill">${title}</span>
+        <p class="sub" style="margin-bottom:6px;">${sub}</p>
+      </div>
+      <div class="board" id="sel-board"></div>
+      <div class="sticky-actions"><button class="btn primary" id="sel-ok" disabled>C'est mon personnage secret</button></div>`);
+    let temp=null;
+    boardHtml($("sel-board"), { onClick:(c, el)=>{
+      temp=c.name;
+      $("sel-board").querySelectorAll(".card").forEach(x=>x.classList.remove("chosen"));
+      el.classList.add("chosen");
+      $("sel-ok").disabled=false;
+    }});
+    $("sel-ok").onclick = () => { if(temp) onConfirm(temp); };
+  }
+
+  /* ── plateau de jeu ── */
+  function playScreen(pillText, statusText, extra){
+    screen(`
+      <div style="text-align:center;padding-bottom:2px;">
+        <span class="pill">${pillText}</span>
+        <div class="status" id="play-status">${statusText}</div>
+        <div class="status" id="play-sub" style="margin-top:-4px;">${extra||""}</div>
+      </div>
+      <div class="board" id="play-board"></div>
+      <div class="sticky-actions">
+        <button class="btn danger" id="b-guess">💡 Proposer un personnage</button>
+        <button class="btn ghost" id="b-turn" style="display:none;">Terminer mon tour ➜</button>
+      </div>`);
   }
 
   function guessModal(onPick){
-    const root = $("modal-root");
-    const overlay = document.createElement("div");
-    overlay.className = "modal-backdrop";
-    overlay.innerHTML = `
-      <div class="modal">
-        <div class="eyebrow" style="margin-bottom:8px;">Ta proposition</div>
-        <h3 style="font-size:1rem;">Quel est le champion secret de ton adversaire ?</h3>
-        <p class="sub" style="font-size:.78rem;margin:6px auto 8px;">Ton adversaire sera notifié de ta proposition, bonne ou mauvaise.</p>
-        <div class="board" id="g-board" style="max-height:46vh;overflow-y:auto;"></div>
-        <div class="btn-row" style="margin-top:12px;">
-          <button class="btn ghost" id="g-cancel">Annuler</button>
-          <button class="btn danger" id="g-ok" disabled>Valider</button>
-        </div>
-      </div>`;
-    root.appendChild(overlay);
-    let sel = null;
-    const gb = overlay.querySelector("#g-board");
-    board.forEach(id => gb.appendChild(cardEl(byId(id), {
-      onClick: (champ, el) => {
-        sel = champ.id;
-        gb.querySelectorAll(".card").forEach(c => c.classList.remove("chosen"));
-        el.classList.add("chosen");
-        overlay.querySelector("#g-ok").disabled = false;
-      }
-    })));
-    overlay.querySelector("#g-cancel").onclick = () => overlay.remove();
-    overlay.querySelector("#g-ok").onclick = () => { overlay.remove(); if (sel) onPick(sel); };
+    const root = document.getElementById("modal-root");
+    const ov = document.createElement("div");
+    ov.className="modal-backdrop";
+    ov.innerHTML = `<div class="modal">
+      <div class="eyebrow" style="margin-bottom:8px;">Ta proposition</div>
+      <h3 style="font-size:1rem;">Touche le personnage que tu penses être le secret adverse</h3>
+      <div class="board" id="g-board" style="max-height:44vh;overflow-y:auto;margin-top:8px;"></div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn ghost" id="g-cancel">Annuler</button>
+        <button class="btn danger" id="g-ok" disabled>Je valide</button>
+      </div></div>`;
+    root.appendChild(ov);
+    let sel=null;
+    const gb = ov.querySelector("#g-board");
+    board.forEach(c => gb.appendChild(cardEl(c, { onClick:(cc, el)=>{
+      sel=cc.name;
+      gb.querySelectorAll(".card").forEach(x=>x.classList.remove("chosen"));
+      el.classList.add("chosen");
+      ov.querySelector("#g-ok").disabled=false;
+    }})));
+    ov.querySelector("#g-cancel").onclick=()=>ov.remove();
+    ov.querySelector("#g-ok").onclick=()=>{ ov.remove(); if(sel) onPick(sel); };
   }
 
-  function showEnd(iWon, mySecretId, oppSecretId, labels){
-    gameOver = true;
-    $("end-eyebrow").textContent = iWon ? "Victoire" : "Défaite";
-    $("end-title").textContent = iWon ? "Tu as trouvé le champion secret !" : "Ton adversaire a trouvé avant toi.";
-    if (labels) $("end-title").textContent = labels;
-    $("end-reveal").innerHTML = ["Ton secret::" + mySecretId, "Secret adverse::" + oppSecretId].map(s => {
-      const [t, id] = s.split("::");
-      const c = byId(id);
-      return `<div><div class="pill">${t}</div>
-        <img src="${imgUrl(id)}" onerror="this.style.display='none'" style="width:88px;height:88px;object-fit:cover;border:2px solid var(--gold);display:block;margin:8px auto 4px;">
-        <div style="font-size:.8rem;text-align:center;">${c ? c.name : id}</div></div>`;
-    }).join("");
-    UI.show("s-end");
+  function endScreen(title, eyebrow, mine, theirs){
+    over = true;
+    const rv = n => {
+      const c = board.find(x=>x.name===n) || {name:n, img:null};
+      const visual = c.img ? `<img src="${c.img}" onerror="this.style.display='none'" style="width:84px;height:84px;object-fit:cover;border:2px solid var(--gold);display:block;margin:8px auto 4px;">`
+        : `<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-weight:700;color:#04211E;background:${colorFor(c.name)};border:2px solid var(--gold);margin:8px auto 4px;">${initials(c.name)}</div>`;
+      return visual + `<div style="font-size:.8rem;text-align:center;">${UI.esc(c.name)}</div>`;
+    };
+    screen(`<div class="center">
+      <div class="eyebrow">${eyebrow}</div>
+      <h2 class="big">${title}</h2>
+      <div style="display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin:14px 0 20px;">
+        <div><div class="pill">Ton secret</div>${rv(mine)}</div>
+        <div><div class="pill">Secret adverse</div>${rv(theirs)}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="b-again">Rejouer</button>
+        <a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a>
+      </div></div>`);
+    $("b-again").onclick = () => location.reload();
   }
 
-  // ══ MODE 2 TÉLÉPHONES ══
-  function netStatus(){
-    $("play-status").textContent = oppReady ? "Adversaire prêt — posez-vous vos questions à voix haute !" : "En attente que ton adversaire choisisse son secret…";
-    $("play-status").className = "status" + (oppReady ? " ok" : "");
-    $("play-attempts").textContent = `Propositions — toi : ${myAttempts} · adversaire : ${oppAttempts}`;
-  }
-
-  function startNetPlay(){
-    $("play-pill").textContent = "Ton plateau";
-    $("b-turn").style.display = "none";
-    renderBoard($("play-board"), {
-      elim: myElim,
-      onClick: (champ, el) => {
-        if (myElim.has(champ.id)) { myElim.delete(champ.id); el.classList.remove("eliminated"); }
-        else { myElim.add(champ.id); el.classList.add("eliminated"); }
-      }
+  /* ═══ MODE 2 TÉLÉPHONES ═══ */
+  function netSelect(){
+    selectScreen("Ton personnage secret", "Personne d'autre ne doit voir ton écran. Touche un portrait puis confirme.", name => {
+      mySecret = name;
+      sendMsg({ t:"ready" });
+      netPlay();
     });
-    netStatus();
-    UI.show("s-play");
+  }
+  function netPlay(){
+    playScreen("Ton plateau", "", "");
+    refreshNetStatus();
+    boardHtml($("play-board"), { elim: myElim, onClick:(c, el)=>{
+      if (myElim.has(c.name)) { myElim.delete(c.name); el.classList.remove("eliminated"); }
+      else { myElim.add(c.name); el.classList.add("eliminated"); }
+    }});
     $("b-guess").onclick = () => {
-      if (gameOver || pendingGuess) return;
-      if (!oppReady) { UI.banner("Attends que ton adversaire ait choisi son secret.", true); return; }
-      guessModal(champId => {
-        pendingGuess = true;
-        sendMsg({ t: "guess", champ: champId });
-      });
+      if (over || pendingGuess) return;
+      if (!oppReady) { UI.banner("Ton adversaire n'a pas encore choisi son secret.", true); return; }
+      guessModal(name => { pendingGuess=true; sendMsg({ t:"guess", name }); });
     };
   }
-
-  function handleNetData(_, d){
+  function refreshNetStatus(){
+    const s=$("play-status"), s2=$("play-sub");
+    if(!s) return;
+    s.textContent = oppReady ? "✓ Adversaire prêt — posez vos questions à voix haute, barrez au fur et à mesure." : "⏳ Ton adversaire choisit encore son secret…";
+    s.className = "status" + (oppReady ? " ok" : "");
+    if (s2) s2.textContent = `Propositions — toi : ${myAttempts} · lui : ${oppAttempts}`;
+  }
+  function sendMsg(o){ Net.isHost() ? Net.broadcast(o) : Net.send(o); }
+  function netData(_, d){
     if (!d || !d.t) return;
-    if (d.t === "hello-ack") { /* place confirmée */ }
-    if (d.t === "full") { UI.banner("Cette partie est déjà complète (2 joueurs max).", true, 6000); Net.destroy(); UI.show("s-home"); }
-    if (d.t === "board") { board = d.board; openNetSelect(); }
-    if (d.t === "ready") { oppReady = true; if ($("s-play").classList.contains("active")) netStatus(); }
-    if (d.t === "guess") {
-      // l'adversaire propose un champion : c'est MON secret qu'on teste
+    if (d.t === "full"){ UI.banner("Partie déjà complète (2 joueurs max).", true, 6000); Net.destroy(); sHome(); }
+    if (d.t === "start"){ theme=d.theme; board=d.board; netSelect(); }
+    if (d.t === "ready"){ oppReady=true; refreshNetStatus(); }
+    if (d.t === "guess"){
       oppAttempts++;
-      const correct = d.champ === mySecret;
-      sendMsg({ t: "verdict", champ: d.champ, correct });
-      const name = byId(d.champ).name;
-      if (correct) {
-        showEnd(false, mySecret, oppSecret || d.champ);
-        UI.banner(`Ton adversaire a proposé ${name} — c'était ton secret !`, true, 6000);
-      } else {
-        UI.banner(`Proposition adverse : ${name} — raté !`, false, 5000);
-        netStatus();
-      }
+      const ok = d.name === mySecret;
+      sendMsg({ t:"verdict", name:d.name, correct: ok, secret: ok ? mySecret : null });
+      if (ok) endScreen("Ton adversaire a trouvé ton secret.", "Défaite", mySecret, oppSecret || "?");
+      else { UI.banner(`Proposition adverse : ${d.name} — raté pour lui !`, false, 5000); refreshNetStatus(); }
     }
-    if (d.t === "verdict") {
-      pendingGuess = false;
-      myAttempts++;
-      const name = byId(d.champ).name;
-      if (d.correct) {
-        oppSecret = d.champ;
-        showEnd(true, mySecret, d.champ);
-      } else {
-        UI.banner(`${name} : ce n'est pas le bon champion.`, true, 4500);
-        netStatus();
-      }
+    if (d.t === "verdict"){
+      pendingGuess=false; myAttempts++;
+      if (d.correct){ oppSecret=d.name; sendMsg({ t:"reveal", secret: mySecret }); endScreen("Tu as trouvé le personnage secret !", "Victoire", mySecret, d.name); }
+      else { UI.banner(`${d.name} : ce n'est pas le bon. (-1 essai)`, true, 4500); refreshNetStatus(); }
     }
-    if (d.t === "secretinfo") { oppSecret = d.champ; } // envoyé en fin de partie pour la révélation
-    if (d.t === "bye") { if (!gameOver) UI.banner("Ton adversaire a quitté la partie.", true, 6000); }
-  }
-  function sendMsg(obj){ Net.isHost() ? Net.broadcast(obj) : Net.send(obj); }
-
-  function openNetSelect(){
-    openSelect("Choisis ton champion secret", "Personne d'autre ne doit voir ton écran.", champId => {
-      mySecret = champId;
-      sendMsg({ t: "ready" });
-      startNetPlay();
-    });
+    if (d.t === "reveal"){
+      // le gagnant révèle son secret au perdant pour l'écran de fin
+      if (over) { /* déjà affiché avec ? */ }
+      oppSecret = d.secret;
+      if (over) endScreen("Ton adversaire a trouvé ton secret.", "Défaite", mySecret, oppSecret);
+    }
   }
 
-  $("b-create").onclick = () => {
-    mode = "net"; resetState();
-    UI.show("s-wait");
-    board = UI.shuffle(POOL.map(c=>c.id)).slice(0, BOARD_SIZE);
-    Net.create(GAME, {
-      onOpen: code => { $("room-code").textContent = code; },
-      onData: (id, d) => {
-        if (d && d.t === "hello") {
-          if (Net.peersCount() > 1) { Net.sendTo(id, { t: "full" }); return; }
-          $("wait-status").textContent = "Adversaire connecté !";
-          Net.sendTo(id, { t: "board", board });
-          openNetSelect();
-        } else handleNetData(id, d);
-      },
-      onLeave: () => { if (!gameOver) UI.banner("Ton adversaire s'est déconnecté.", true, 6000); },
-      onError: () => UI.banner("Erreur de connexion. Recharge la page et réessaie.", true, 6000),
-    });
-  };
-
-  $("b-join").onclick = () => { UI.show("s-join"); $("join-err").style.display = "none"; };
-  $("join-code").addEventListener("input", e => {
-    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
-    $("b-join-go").disabled = e.target.value.length !== 4;
-  });
-  $("b-join-back").onclick = () => { Net.destroy(); UI.show("s-home"); };
-  $("b-join-go").onclick = () => {
-    mode = "net"; resetState();
-    $("join-err").style.display = "none";
-    $("b-join-go").disabled = true;
-    Net.join(GAME, $("join-code").value, {
-      onOpen: () => Net.send({ t: "hello" }),
-      onData: handleNetData,
-      onLeave: () => { if (!gameOver) UI.banner("L'hôte s'est déconnecté.", true, 6000); },
-      onError: () => {
-        $("join-err").textContent = "Impossible de rejoindre. Vérifie le code et que ton pote a bien l'écran « Partie créée » ouvert.";
-        $("join-err").style.display = "block";
-        $("b-join-go").disabled = false;
-      },
-    });
-  };
-
-  // ══ MODE 1 TÉLÉPHONE ══
-  function handoff(title, sub, next){
-    $("handoff-title").textContent = title;
-    $("handoff-sub").textContent = sub;
-    $("b-handoff").onclick = next;
-    UI.show("s-handoff");
-  }
-  $("b-solo").onclick = () => {
-    mode = "solo"; resetState();
-    board = UI.shuffle(POOL.map(c=>c.id)).slice(0, BOARD_SIZE);
-    solo = { secrets: [null, null], elims: [new Set(), new Set()], turn: 0 };
-    openSelect("Joueur 1 — ton champion secret", "Joueur 2 ne doit pas regarder l'écran.", id => {
-      solo.secrets[0] = id;
-      handoff("Passe le téléphone à Joueur 2", "Joueur 1 ne doit plus regarder.", () => {
-        openSelect("Joueur 2 — ton champion secret", "Joueur 1 ne doit pas regarder l'écran.", id2 => {
-          solo.secrets[1] = id2;
-          handoff("La partie commence — Joueur 1", "Les deux secrets sont enregistrés.", () => soloTurn());
-        });
+  /* ═══ MODE 1 TÉLÉPHONE ═══ */
+  function soloSelect(p){
+    if (!solo) solo = { secrets:[null,null], elims:[new Set(), new Set()], turn:0 };
+    handoff(`Téléphone à Joueur ${p+1}`, "L'autre joueur détourne les yeux.", () => {
+      selectScreen(`Joueur ${p+1} — ton personnage secret`, "Touche un portrait puis confirme. L'autre ne regarde pas !", name => {
+        solo.secrets[p] = name;
+        if (p === 0) soloSelect(1);
+        else handoff("C'est parti — Joueur 1 commence", "Les deux secrets sont enregistrés.", soloTurn);
       });
     });
-  };
+  }
+  function handoff(title, sub, next){
+    screen(`<div class="center">
+      <div class="eyebrow">Passe le téléphone</div>
+      <h2 class="big">${title}</h2>
+      <p class="sub">${sub}</p>
+      <div class="btn-row"><button class="btn primary" id="h-go">✋ J'ai le téléphone</button></div></div>`);
+    $("h-go").onclick = next;
+  }
   function soloTurn(){
     const p = solo.turn;
-    $("play-pill").textContent = `Joueur ${p+1} — ton plateau`;
-    $("play-status").textContent = "Pose ta question à voix haute, barre les champions, puis termine ton tour.";
-    $("play-status").className = "status";
-    $("play-attempts").textContent = "";
-    $("b-turn").style.display = "";
+    playScreen(`Joueur ${p+1} — ton plateau`,
+      "1. Pose ta question à voix haute · 2. Barre les portraits · 3. Termine ton tour", "");
+    $("b-turn").style.display="";
     const elim = solo.elims[p];
-    renderBoard($("play-board"), {
-      elim,
-      onClick: (champ, el) => {
-        if (elim.has(champ.id)) { elim.delete(champ.id); el.classList.remove("eliminated"); }
-        else { elim.add(champ.id); el.classList.add("eliminated"); }
-      }
-    });
-    UI.show("s-play");
+    boardHtml($("play-board"), { elim, onClick:(c, el)=>{
+      if (elim.has(c.name)) { elim.delete(c.name); el.classList.remove("eliminated"); }
+      else { elim.add(c.name); el.classList.add("eliminated"); }
+    }});
     $("b-turn").onclick = () => {
       solo.turn = 1 - solo.turn;
-      handoff(`Passe le téléphone à Joueur ${solo.turn+1}`, `Joueur ${p+1} ne doit plus regarder.`, () => soloTurn());
+      handoff(`Téléphone à Joueur ${solo.turn+1}`, `Joueur ${p+1} ne regarde plus.`, soloTurn);
     };
-    $("b-guess").onclick = () => {
-      guessModal(champId => {
-        const oppIdx = 1 - p;
-        const correct = champId === solo.secrets[oppIdx];
-        const winner = correct ? p : oppIdx;
-        $("end-eyebrow").textContent = correct ? "Victoire" : "Mauvaise proposition";
-        showEnd(true, solo.secrets[p], solo.secrets[oppIdx], `Joueur ${winner+1} a gagné !`);
-      });
-    };
+    $("b-guess").onclick = () => guessModal(name => {
+      const opp = 1 - p;
+      const ok = name === solo.secrets[opp];
+      const winner = ok ? p : opp;
+      endScreen(`Joueur ${winner+1} a gagné !`, ok ? "Bonne proposition" : "Mauvaise proposition — l'autre gagne", solo.secrets[p], solo.secrets[opp]);
+    });
   }
 
-  function resetState(){
-    mySecret = null; oppSecret = null; oppReady = false;
-    myElim = new Set(); myAttempts = 0; oppAttempts = 0;
-    pendingGuess = false; gameOver = false; solo = null;
-  }
-  $("b-again").onclick = () => { Net.destroy(); location.reload(); };
-  window.addEventListener("beforeunload", () => { try { sendMsg({ t: "bye" }); } catch(e){} });
+  sHome();
 })();
 </script>
 </body>

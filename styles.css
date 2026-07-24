@@ -77,3 +77,26 @@ input.code{font-family:'Cinzel',Georgia,serif;font-size:1.35rem;letter-spacing:.
 @keyframes slideDown{from{opacity:0;transform:translate(-50%,-14px);}to{opacity:1;transform:translate(-50%,0);}}
 footer.note{text-align:center;color:var(--dim);font-size:.66rem;margin-top:16px;padding-top:12px;
   border-top:1px solid rgba(200,170,110,.12);width:100%;max-width:560px;}
+
+/* ── Assistant étape par étape ── */
+.stepper{display:flex;gap:6px;justify-content:center;margin:2px 0 16px;}
+.stepper .dot{width:8px;height:8px;border-radius:50%;background:var(--panel2);border:1px solid rgba(200,170,110,.3);}
+.stepper .dot.on{background:var(--accent);border-color:var(--accent);box-shadow:0 0 6px var(--accent);}
+.step-label{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.14em;text-align:center;margin-bottom:4px;}
+.choice-col{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;margin:0 auto;}
+.choice{background:var(--panel);border:1px solid rgba(200,170,110,.35);color:var(--ink);cursor:pointer;
+  padding:16px;text-align:left;font-family:inherit;width:100%;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+  transition:transform .1s ease,border-color .1s ease;}
+.choice:active{transform:scale(.98);}
+.choice .c-title{font-family:'Cinzel',Georgia,serif;font-size:.95rem;color:var(--gold);margin-bottom:3px;}
+.choice .c-sub{font-size:.78rem;color:var(--text);line-height:1.4;}
+.choice.accent{border-color:var(--accent);}
+.choice.accent .c-title{color:var(--accent);}
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:360px;margin:0 auto;}
+.theme-btn{background:var(--panel);border:1px solid rgba(200,170,110,.4);color:var(--ink);cursor:pointer;
+  padding:18px 10px;text-align:center;font-family:'Cinzel',Georgia,serif;font-size:.9rem;
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+.theme-btn:active{transform:scale(.96);}
+.theme-btn .t-emoji{display:block;font-size:1.5rem;margin-bottom:6px;font-family:'Inter',sans-serif;}
+.theme-btn.wide{grid-column:1 / -1;}
