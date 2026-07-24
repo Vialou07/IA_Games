@@ -26,127 +26,122 @@
     background:linear-gradient(115deg,transparent 46%,var(--danger) 48%,var(--danger) 52%,transparent 54%);opacity:.85;}
   .sticky-actions{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--void) 30%);
     padding:14px 0 4px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .gen-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:380px;margin:0 auto 14px;}
+  .gen-btn{background:var(--panel);border:1px solid rgba(200,170,110,.35);color:var(--text);cursor:pointer;
+    padding:12px 8px;font-size:.8rem;font-family:inherit;text-align:center;}
+  .gen-btn.on{border-color:var(--accent);color:var(--ink);background:var(--panel2);}
+  .gen-btn.on::after{content:" ✓";color:var(--accent);}
+  .spinner{width:36px;height:36px;border:3px solid rgba(200,170,110,.25);border-top-color:var(--accent);
+    border-radius:50%;animation:spin 1s linear infinite;margin:14px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 <div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Qui est-ce ?</h1><div class="rune"></div></div>
 <div class="wrap" id="wrap"></div>
-<footer class="note">Portraits LoL : Data Dragon (Riot Games) · sprites Pokémon : PokeAPI. Non affilié.</footer>
+<footer class="note">Images : Data Dragon (Riot), PokeAPI, Wikipédia. Non affilié.</footer>
 <div id="modal-root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script src="net.js"></script>
 <script src="themes.js"></script>
 <script>
 (function(){
-  const GAME = "qec", BOARD_SIZE = 24;
+  const GAME = "qec", SIZE = 24;
   const T = THEMES.quiestce, META = THEMES.meta;
   const wrap = document.getElementById("wrap");
+  const $ = id => document.getElementById(id);
   const PALETTE = ["#C8AA6E","#0AC8B9","#E15A4C","#8B7FD1","#5B9BD5","#D98B4A","#6FBF73","#D65D8C"];
   const colorFor = s => { let h=0; for(let i=0;i<s.length;i++) h=(h*17+s.charCodeAt(i))>>>0; return PALETTE[h%PALETTE.length]; };
   const initials = n => n.replace(/['.]/g,"").split(/\s+/).map(w=>w[0]).filter(Boolean).join("").slice(0,2).toUpperCase();
-
-  // état
-  let theme = null, board = [];        // board = [{name, img|null}]
-  let mySecret = null, oppSecret = null, oppReady = false;
-  let myElim = new Set(), myAttempts = 0, oppAttempts = 0;
-  let pendingGuess = false, over = false, solo = null;
-
-  function buildBoard(themeKey){
-    const pool = T[themeKey].chars;
-    const idx = UI.shuffle(pool.map((_,i)=>i)).slice(0, BOARD_SIZE);
-    return idx.map(i => ({
-      name: pool[i],
-      img: T[themeKey].img ? T[themeKey].img(pool[i], i) : null,
-    }));
-  }
-
-  // ── rendu générique d'écran (efface tout, une seule chose à la fois) ──
   function screen(html){ wrap.innerHTML = `<div class="screen active">${html}</div>`; window.scrollTo(0,0); }
-  function stepper(n, total){
-    return `<div class="step-label">Étape ${n} sur ${total}</div>
-      <div class="stepper">${Array.from({length:total},(_,i)=>`<div class="dot${i<n?" on":""}"></div>`).join("")}</div>`;
+  function stepper(n,t){ return `<div class="step-label">Étape ${n} sur ${t}</div>
+    <div class="stepper">${Array.from({length:t},(_,i)=>`<div class="dot${i<n?" on":""}"></div>`).join("")}</div>`; }
+
+  let isNet = false, board = [], theme = null;
+  let mySecret=null, oppSecret=null, oppReady=false, myElim=new Set(), myTries=0, oppTries=0;
+  let pending=false, over=false, solo=null;
+
+  async function buildBoard(themeKey, gens){
+    if (themeKey === "pokemon") return await Roster.pokemon(gens, SIZE);
+    if (T[themeKey].kind === "wiki") return await Roster.wiki(T[themeKey].chars, SIZE);
+    return Roster.ddragon(T[themeKey].chars, SIZE);
   }
-  const $ = id => document.getElementById(id);
+  function loading(msg){
+    screen(`<div class="center"><div class="spinner"></div><p class="sub">${msg}</p></div>`);
+  }
 
   function cardEl(c, opts){
     const card = document.createElement("div");
     card.className = "card";
     if (opts.elim && opts.elim.has(c.name)) card.classList.add("eliminated");
     if (opts.chosen === c.name) card.classList.add("chosen");
-    if (c.img){
-      const img = document.createElement("img");
-      img.className="thumb"; img.loading="lazy"; img.alt=c.name; img.src=c.img;
-      img.onerror = () => { img.replaceWith(badge()); };
-      card.appendChild(img);
-    } else card.appendChild(badge());
-    function badge(){
+    const badge = () => {
       const b = document.createElement("div");
       b.className="badge"; b.style.background=colorFor(c.name); b.textContent=initials(c.name);
       return b;
-    }
+    };
+    if (c.img){
+      const img = document.createElement("img");
+      img.className="thumb"; img.loading="lazy"; img.alt=c.name; img.src=c.img;
+      img.onerror = () => img.replaceWith(badge());
+      card.appendChild(img);
+    } else card.appendChild(badge());
     const l = document.createElement("div"); l.className="cname"; l.textContent=c.name;
     card.appendChild(l);
     if (opts.onClick) card.addEventListener("click", ()=>opts.onClick(c, card));
     return card;
   }
-  function boardHtml(container, opts){
-    container.innerHTML="";
-    board.forEach(c => container.appendChild(cardEl(c, opts)));
-  }
+  function fillBoard(el, opts){ el.innerHTML=""; board.forEach(c=>el.appendChild(cardEl(c,opts))); }
 
-  /* ═══════════ ÉCRANS ═══════════ */
-
+  /* ═══ ACCUEIL ═══ */
   function sHome(){
-    over=false; pendingGuess=false; mySecret=null; oppSecret=null; oppReady=false;
-    myElim=new Set(); myAttempts=0; oppAttempts=0; solo=null; Net.destroy();
-    screen(`
-      <div class="center">
-        <div class="eyebrow">2 joueurs</div>
-        <h2 class="big">Devine le personnage secret de ton adversaire</h2>
-        <p class="sub">Questions oui/non à voix haute, élimination de portraits, et le premier qui trouve gagne.</p>
-        ${stepper(1,4)}
-        <p class="sub" style="margin-bottom:10px;"><b>Vous jouez comment ?</b></p>
-        <div class="choice-col">
-          <button class="choice accent" id="c-net"><div class="c-title">📱📱 Chacun son téléphone</div><div class="c-sub">Vous êtes chacun sur votre tel — un code à partager, tout se synchronise.</div></button>
-          <button class="choice" id="c-solo"><div class="c-title">📱 Tous sur ce téléphone</div><div class="c-sub">On se passe le téléphone à tour de rôle.</div></button>
-        </div>
-      </div>`);
-    $("c-net").onclick = sNetChoice;
-    $("c-solo").onclick = () => sTheme(t => { theme=t; board=buildBoard(t); soloSelect(0); });
+    isNet=false; over=false; pending=false; mySecret=null; oppSecret=null; oppReady=false;
+    myElim=new Set(); myTries=0; oppTries=0; solo=null; Net.destroy();
+    screen(`<div class="center">
+      <div class="eyebrow">2 joueurs</div>
+      <h2 class="big">Devine le personnage secret de ton adversaire</h2>
+      <p class="sub">Questions oui/non à voix haute, élimination de portraits, le premier qui trouve gagne.</p>
+      ${stepper(1,4)}
+      <p class="sub" style="margin-bottom:10px;"><b>Vous jouez comment ?</b></p>
+      <div class="choice-col">
+        <button class="choice accent" id="c-net"><div class="c-title">📱📱 Chacun son téléphone</div><div class="c-sub">Un code à partager, tout se synchronise.</div></button>
+        <button class="choice" id="c-solo"><div class="c-title">📱 Tous sur ce téléphone</div><div class="c-sub">On se passe le téléphone à tour de rôle.</div></button>
+      </div></div>`);
+    $("c-net").onclick = () => { isNet=true; sNetChoice(); };
+    $("c-solo").onclick = () => sTheme(2,4, sHome, async (th, gens) => {
+      theme=th; loading("Préparation du plateau…");
+      board = await buildBoard(th, gens);
+      solo = { secrets:[null,null], elims:[new Set(), new Set()], turn:0 };
+      soloSelect(0);
+    });
   }
 
   function sNetChoice(){
-    screen(`
-      <div class="center">
-        ${stepper(2,4)}
-        <p class="sub" style="margin-bottom:10px;"><b>L'un de vous deux crée la partie, l'autre la rejoint.</b></p>
-        <div class="choice-col">
-          <button class="choice accent" id="c-create"><div class="c-title">➕ Créer la partie</div><div class="c-sub">Tu obtiens un code à donner à ton pote.</div></button>
-          <button class="choice" id="c-join"><div class="c-title">🔑 Rejoindre</div><div class="c-sub">Ton pote t'a donné un code ? C'est ici.</div></button>
-        </div>
-        <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="c-back">Retour</button></div>
-      </div>`);
+    screen(`<div class="center">${stepper(2,4)}
+      <p class="sub" style="margin-bottom:10px;"><b>L'un crée la partie, l'autre la rejoint.</b></p>
+      <div class="choice-col">
+        <button class="choice accent" id="c-create"><div class="c-title">➕ Créer la partie</div><div class="c-sub">Tu obtiens un code à donner à ton pote.</div></button>
+        <button class="choice" id="c-join"><div class="c-title">🔑 Rejoindre</div><div class="c-sub">Ton pote t'a donné un code ? C'est ici.</div></button>
+      </div>
+      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="c-back">Retour</button></div></div>`);
     $("c-create").onclick = sCreate;
     $("c-join").onclick = sJoin;
     $("c-back").onclick = sHome;
   }
 
   function sCreate(){
-    screen(`
-      <div class="center">
-        ${stepper(3,4)}
-        <div class="eyebrow">Partie créée</div>
-        <h2 class="big">Donne ce code à ton pote</h2>
-        <div class="code-box" id="room-code">····</div>
-        <p class="sub">Sur son téléphone : même lien → Qui est-ce ? → <b>Chacun son téléphone</b> → <b>Rejoindre</b> → il tape ce code.</p>
-        <div class="status" id="wait-status">En attente de sa connexion…</div>
-      </div>`);
+    screen(`<div class="center">${stepper(3,4)}
+      <div class="eyebrow">Partie créée</div>
+      <h2 class="big">Donne ce code à ton pote</h2>
+      <div class="code-box" id="rc">····</div>
+      <p class="sub">Sur son tel : même lien → Qui est-ce ? → <b>Chacun son téléphone</b> → <b>Rejoindre</b> → ce code.</p>
+      <div class="status">En attente de sa connexion…</div></div>`);
     Net.create(GAME, {
-      onOpen: code => { const el=$("room-code"); if(el) el.textContent=code; },
+      onOpen: code => { const e=$("rc"); if(e) e.textContent=code; },
       onData: (id, d) => {
-        if (d && d.t === "hello"){
-          if (Net.peersCount() > 1) { Net.sendTo(id, { t:"full" }); return; }
-          sThemeHost();
+        if (d && d.t==="hello"){
+          if (Net.peersCount() > 1){ Net.sendTo(id,{t:"full"}); return; }
+          hostTheme();
         } else netData(id, d);
       },
       onLeave: () => { if(!over) UI.banner("Ton adversaire s'est déconnecté.", true, 6000); },
@@ -155,139 +150,147 @@
   }
 
   function sJoin(){
-    screen(`
-      <div class="center">
-        ${stepper(3,4)}
-        <div class="eyebrow">Rejoindre</div>
-        <h2 class="big">Tape le code de ton pote</h2>
-        <input class="field code" id="join-code" maxlength="4" autocapitalize="characters" placeholder="XXXX">
-        <div class="status warn" id="join-err" style="display:none;"></div>
-        <div class="btn-row">
-          <button class="btn ghost" id="j-back">Retour</button>
-          <button class="btn primary" id="j-go" disabled>Rejoindre</button>
-        </div>
-      </div>`);
-    $("join-code").addEventListener("input", e => {
+    screen(`<div class="center">${stepper(3,4)}
+      <div class="eyebrow">Rejoindre</div>
+      <h2 class="big">Tape le code de ton pote</h2>
+      <input class="field code" id="jc" maxlength="4" autocapitalize="characters" placeholder="XXXX">
+      <div class="btn-row">
+        <button class="btn ghost" id="j-back">Retour</button>
+        <button class="btn primary" id="j-go" disabled>Rejoindre</button>
+      </div></div>`);
+    $("jc").addEventListener("input", e => {
       e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
       $("j-go").disabled = e.target.value.length !== 4;
     });
     $("j-back").onclick = sNetChoice;
     $("j-go").onclick = () => {
       $("j-go").disabled = true;
-      Net.join(GAME, $("join-code").value, {
-        onOpen: () => {
-          Net.send({ t:"hello" });
-          screen(`<div class="center">${stepper(4,4)}<div class="eyebrow">Connecté !</div>
-            <h2 class="big">Ton pote choisit le thème…</h2>
-            <p class="sub">Ça démarre dans quelques secondes.</p></div>`);
-        },
+      Net.join(GAME, $("jc").value, {
+        onOpen: () => { Net.send({t:"hello"}); guestWait(); },
         onData: netData,
         onLeave: () => { if(!over) UI.banner("L'hôte s'est déconnecté.", true, 6000); },
         onError: () => {
-          const e1=$("join-err"), g=$("j-go");
-          if(e1){ e1.textContent="Impossible de rejoindre. Vérifie le code et que ton pote est bien sur l'écran du code."; e1.style.display="block"; }
-          if(g) g.disabled=false;
+          screen(`<div class="center"><div class="eyebrow">Oups</div>
+            <h2 class="big">Connexion impossible</h2>
+            <p class="sub">Vérifie le code et que ton pote est bien sur l'écran du code.</p>
+            <div class="btn-row"><button class="btn primary" id="rt">Réessayer</button></div></div>`);
+          $("rt").onclick = sNetChoice;
         },
       });
     };
   }
-
-  function themeButtons(onPick){
-    return { html: `<div class="theme-grid">${Object.keys(META).map(k =>
-        `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}
-      </div>`,
-      bind(){ document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => onPick(b.dataset.th)); } };
+  function guestWait(){
+    screen(`<div class="center">${stepper(4,4)}<div class="eyebrow">Connecté !</div>
+      <h2 class="big">Ton pote choisit le thème…</h2>
+      <p class="sub">Ça démarre dans quelques secondes.</p></div>`);
   }
 
-  function sTheme(onPick){
-    const tb = themeButtons(onPick);
-    screen(`<div class="center">${stepper(2,4)}
+  /* ═══ CHOIX DU THÈME (+ générations Pokémon) ═══ */
+  function sTheme(step, total, backFn, onDone){
+    screen(`<div class="center">${stepper(step,total)}
       <div class="eyebrow">Thème</div><h2 class="big">Choisissez le thème</h2>
-      <p class="sub">Le plateau est tiré au hasard à chaque partie — aucune partie ne se ressemble.</p>
-      ${tb.html}
-      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="t-back">Retour</button></div></div>`);
-    tb.bind(); $("t-back").onclick = sHome;
+      <p class="sub">Le plateau de 24 est tiré au hasard à chaque partie.</p>
+      <div class="theme-grid">${Object.keys(META).map(k =>
+        `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}</div>
+      ${backFn ? `<div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="t-back">Retour</button></div>` : ""}</div>`);
+    document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => {
+      const th = b.dataset.th;
+      if (th === "pokemon") sGens(gens => onDone(th, gens), () => sTheme(step,total,backFn,onDone));
+      else onDone(th, null);
+    });
+    if (backFn) $("t-back").onclick = backFn;
+  }
+  function sGens(onDone, backFn){
+    const sel = new Set([1]);
+    screen(`<div class="center">
+      <div class="eyebrow">Pokémon</div><h2 class="big">Quelles générations ?</h2>
+      <p class="sub">Touche pour cocher / décocher. Au moins une.</p>
+      <div class="gen-grid">${THEMES.pokemonGens.map(g =>
+        `<button class="gen-btn${g.id===1?" on":""}" data-g="${g.id}">${g.label}</button>`).join("")}</div>
+      <div class="btn-row">
+        <button class="btn ghost" id="g-all">Tout cocher</button>
+        <button class="btn ghost" id="g-back">Retour</button>
+        <button class="btn primary" id="g-go">C'est parti ➜</button>
+      </div></div>`);
+    const refresh = () => document.querySelectorAll(".gen-btn").forEach(b =>
+      b.classList.toggle("on", sel.has(+b.dataset.g)));
+    document.querySelectorAll(".gen-btn").forEach(b => b.onclick = () => {
+      const g = +b.dataset.g;
+      sel.has(g) ? sel.delete(g) : sel.add(g);
+      if (!sel.size) sel.add(g);
+      refresh();
+    });
+    $("g-all").onclick = () => { THEMES.pokemonGens.forEach(g=>sel.add(g.id)); refresh(); };
+    $("g-back").onclick = backFn;
+    $("g-go").onclick = () => onDone([...sel]);
   }
 
-  function sThemeHost(){
-    const tb = themeButtons(t => {
-      theme = t; board = buildBoard(t);
+  function hostTheme(){
+    sTheme(4,4, null, async (th, gens) => {
+      theme = th;
+      loading("Préparation du plateau…");
+      board = await buildBoard(th, gens);
       Net.broadcast({ t:"start", theme, board });
       netSelect();
     });
-    screen(`<div class="center">${stepper(4,4)}
-      <div class="eyebrow">Adversaire connecté ✓</div><h2 class="big">Choisis le thème</h2>
-      <p class="sub">Le plateau (24 personnages tirés au hasard) sera le même pour vous deux.</p>
-      ${tb.html}</div>`);
-    tb.bind();
   }
 
-  /* ── sélection du secret (commun net/solo) ── */
-  function selectScreen(title, sub, onConfirm, backFn){
-    screen(`
-      <div style="text-align:center;padding-bottom:4px;">
+  /* ═══ SÉLECTION / JEU ═══ */
+  function selectScreen(title, sub, onOk){
+    screen(`<div style="text-align:center;padding-bottom:4px;">
         <span class="pill">${title}</span>
-        <p class="sub" style="margin-bottom:6px;">${sub}</p>
-      </div>
-      <div class="board" id="sel-board"></div>
-      <div class="sticky-actions"><button class="btn primary" id="sel-ok" disabled>C'est mon personnage secret</button></div>`);
+        <p class="sub" style="margin-bottom:6px;">${sub}</p></div>
+      <div class="board" id="sb"></div>
+      <div class="sticky-actions"><button class="btn primary" id="sok" disabled>C'est mon personnage secret</button></div>`);
     let temp=null;
-    boardHtml($("sel-board"), { onClick:(c, el)=>{
+    fillBoard($("sb"), { onClick:(c,el)=>{
       temp=c.name;
-      $("sel-board").querySelectorAll(".card").forEach(x=>x.classList.remove("chosen"));
-      el.classList.add("chosen");
-      $("sel-ok").disabled=false;
+      $("sb").querySelectorAll(".card").forEach(x=>x.classList.remove("chosen"));
+      el.classList.add("chosen"); $("sok").disabled=false;
     }});
-    $("sel-ok").onclick = () => { if(temp) onConfirm(temp); };
+    $("sok").onclick = () => { if(temp) onOk(temp); };
   }
-
-  /* ── plateau de jeu ── */
-  function playScreen(pillText, statusText, extra){
-    screen(`
-      <div style="text-align:center;padding-bottom:2px;">
-        <span class="pill">${pillText}</span>
-        <div class="status" id="play-status">${statusText}</div>
-        <div class="status" id="play-sub" style="margin-top:-4px;">${extra||""}</div>
-      </div>
-      <div class="board" id="play-board"></div>
+  function playScreen(pill, status, sub){
+    screen(`<div style="text-align:center;padding-bottom:2px;">
+        <span class="pill">${pill}</span>
+        <div class="status" id="pst">${status}</div>
+        <div class="status" id="psb" style="margin-top:-4px;">${sub||""}</div></div>
+      <div class="board" id="pb"></div>
       <div class="sticky-actions">
-        <button class="btn danger" id="b-guess">💡 Proposer un personnage</button>
-        <button class="btn ghost" id="b-turn" style="display:none;">Terminer mon tour ➜</button>
+        <button class="btn danger" id="bg">💡 Proposer un personnage</button>
+        <button class="btn ghost" id="bt" style="display:none;">Terminer mon tour ➜</button>
       </div>`);
   }
-
   function guessModal(onPick){
-    const root = document.getElementById("modal-root");
     const ov = document.createElement("div");
     ov.className="modal-backdrop";
     ov.innerHTML = `<div class="modal">
       <div class="eyebrow" style="margin-bottom:8px;">Ta proposition</div>
       <h3 style="font-size:1rem;">Touche le personnage que tu penses être le secret adverse</h3>
-      <div class="board" id="g-board" style="max-height:44vh;overflow-y:auto;margin-top:8px;"></div>
+      <div class="board" id="gb" style="max-height:44vh;overflow-y:auto;margin-top:8px;"></div>
       <div class="btn-row" style="margin-top:12px;">
-        <button class="btn ghost" id="g-cancel">Annuler</button>
-        <button class="btn danger" id="g-ok" disabled>Je valide</button>
+        <button class="btn ghost" id="gc">Annuler</button>
+        <button class="btn danger" id="go" disabled>Je valide</button>
       </div></div>`;
-    root.appendChild(ov);
+    document.getElementById("modal-root").appendChild(ov);
     let sel=null;
-    const gb = ov.querySelector("#g-board");
-    board.forEach(c => gb.appendChild(cardEl(c, { onClick:(cc, el)=>{
+    const gb = ov.querySelector("#gb");
+    board.forEach(c => gb.appendChild(cardEl(c, { onClick:(cc,el)=>{
       sel=cc.name;
       gb.querySelectorAll(".card").forEach(x=>x.classList.remove("chosen"));
-      el.classList.add("chosen");
-      ov.querySelector("#g-ok").disabled=false;
+      el.classList.add("chosen"); ov.querySelector("#go").disabled=false;
     }})));
-    ov.querySelector("#g-cancel").onclick=()=>ov.remove();
-    ov.querySelector("#g-ok").onclick=()=>{ ov.remove(); if(sel) onPick(sel); };
+    ov.querySelector("#gc").onclick=()=>ov.remove();
+    ov.querySelector("#go").onclick=()=>{ ov.remove(); if(sel) onPick(sel); };
   }
-
-  function endScreen(title, eyebrow, mine, theirs){
+  function endScreen(title, eyebrow, mine, theirs, replayFn, replayLabel){
     over = true;
     const rv = n => {
-      const c = board.find(x=>x.name===n) || {name:n, img:null};
-      const visual = c.img ? `<img src="${c.img}" onerror="this.style.display='none'" style="width:84px;height:84px;object-fit:cover;border:2px solid var(--gold);display:block;margin:8px auto 4px;">`
-        : `<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-weight:700;color:#04211E;background:${colorFor(c.name)};border:2px solid var(--gold);margin:8px auto 4px;">${initials(c.name)}</div>`;
-      return visual + `<div style="font-size:.8rem;text-align:center;">${UI.esc(c.name)}</div>`;
+      const c = board.find(x=>x.name===n) || { name:n, img:null };
+      const vis = c.img
+        ? `<img src="${c.img}" onerror="this.outerHTML='<div style=&quot;width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:${colorFor(c.name)};color:#04211E;font-family:Cinzel,serif;font-weight:700;border:2px solid var(--gold);margin:8px auto 4px;&quot;>${initials(c.name)}</div>'" style="width:84px;height:84px;object-fit:cover;border:2px solid var(--gold);display:block;margin:8px auto 4px;">`
+        : `<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:${colorFor(c.name)};color:#04211E;font-family:Cinzel,serif;font-weight:700;border:2px solid var(--gold);margin:8px auto 4px;">${initials(c.name)}</div>`;
+      return vis + `<div style="font-size:.8rem;text-align:center;">${UI.esc(c.name)}</div>`;
     };
     screen(`<div class="center">
       <div class="eyebrow">${eyebrow}</div>
@@ -297,104 +300,124 @@
         <div><div class="pill">Secret adverse</div>${rv(theirs)}</div>
       </div>
       <div class="btn-row">
-        <button class="btn primary" id="b-again">Rejouer</button>
+        ${replayFn ? `<button class="btn primary" id="ba">${replayLabel||"Rejouer"}</button>` : `<div class="status">L'hôte peut relancer une partie.</div>`}
         <a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a>
       </div></div>`);
-    $("b-again").onclick = () => location.reload();
+    if (replayFn) $("ba").onclick = replayFn;
   }
 
-  /* ═══ MODE 2 TÉLÉPHONES ═══ */
+  /* ═══ MODE RÉSEAU ═══ */
   function netSelect(){
-    selectScreen("Ton personnage secret", "Personne d'autre ne doit voir ton écran. Touche un portrait puis confirme.", name => {
-      mySecret = name;
-      sendMsg({ t:"ready" });
-      netPlay();
+    over=false; pending=false; myElim=new Set(); myTries=0; oppTries=0; oppReady=false; mySecret=null; oppSecret=null;
+    selectScreen("Ton personnage secret", "Personne d'autre ne doit voir ton écran.", name => {
+      mySecret = name; sendMsg({t:"ready"}); netPlay();
     });
   }
   function netPlay(){
-    playScreen("Ton plateau", "", "");
-    refreshNetStatus();
-    boardHtml($("play-board"), { elim: myElim, onClick:(c, el)=>{
-      if (myElim.has(c.name)) { myElim.delete(c.name); el.classList.remove("eliminated"); }
+    playScreen("Ton plateau","","");
+    refreshNet();
+    fillBoard($("pb"), { elim: myElim, onClick:(c,el)=>{
+      if (myElim.has(c.name)){ myElim.delete(c.name); el.classList.remove("eliminated"); }
       else { myElim.add(c.name); el.classList.add("eliminated"); }
     }});
-    $("b-guess").onclick = () => {
-      if (over || pendingGuess) return;
-      if (!oppReady) { UI.banner("Ton adversaire n'a pas encore choisi son secret.", true); return; }
-      guessModal(name => { pendingGuess=true; sendMsg({ t:"guess", name }); });
+    $("bg").onclick = () => {
+      if (over || pending) return;
+      if (!oppReady){ UI.banner("Ton adversaire n'a pas encore choisi son secret.", true); return; }
+      guessModal(name => { pending=true; sendMsg({t:"guess", name}); });
     };
   }
-  function refreshNetStatus(){
-    const s=$("play-status"), s2=$("play-sub");
+  function refreshNet(){
+    const s=$("pst"), s2=$("psb");
     if(!s) return;
-    s.textContent = oppReady ? "✓ Adversaire prêt — posez vos questions à voix haute, barrez au fur et à mesure." : "⏳ Ton adversaire choisit encore son secret…";
+    s.textContent = oppReady ? "✓ Adversaire prêt — posez vos questions à voix haute." : "⏳ Ton adversaire choisit son secret…";
     s.className = "status" + (oppReady ? " ok" : "");
-    if (s2) s2.textContent = `Propositions — toi : ${myAttempts} · lui : ${oppAttempts}`;
+    if (s2) s2.textContent = `Propositions — toi : ${myTries} · lui : ${oppTries}`;
   }
   function sendMsg(o){ Net.isHost() ? Net.broadcast(o) : Net.send(o); }
   function netData(_, d){
     if (!d || !d.t) return;
-    if (d.t === "full"){ UI.banner("Partie déjà complète (2 joueurs max).", true, 6000); Net.destroy(); sHome(); }
-    if (d.t === "start"){ theme=d.theme; board=d.board; netSelect(); }
-    if (d.t === "ready"){ oppReady=true; refreshNetStatus(); }
-    if (d.t === "guess"){
-      oppAttempts++;
+    if (d.t==="full"){ UI.banner("Partie déjà complète (2 joueurs max).", true, 6000); Net.destroy(); sHome(); }
+    if (d.t==="start"){ theme=d.theme; board=d.board; netSelect(); }
+    if (d.t==="restart"){ guestWait(); }
+    if (d.t==="ready"){ oppReady=true; refreshNet(); }
+    if (d.t==="guess"){
+      oppTries++;
       const ok = d.name === mySecret;
-      sendMsg({ t:"verdict", name:d.name, correct: ok, secret: ok ? mySecret : null });
-      if (ok) endScreen("Ton adversaire a trouvé ton secret.", "Défaite", mySecret, oppSecret || "?");
-      else { UI.banner(`Proposition adverse : ${d.name} — raté pour lui !`, false, 5000); refreshNetStatus(); }
+      sendMsg({ t:"verdict", name:d.name, correct:ok, secret: ok ? mySecret : null });
+      if (ok) endScreen("Ton adversaire a trouvé ton secret.", "Défaite", mySecret, oppSecret || "?", null);
+      else { UI.banner(`Proposition adverse : ${d.name} — raté pour lui !`, false, 5000); refreshNet(); }
     }
-    if (d.t === "verdict"){
-      pendingGuess=false; myAttempts++;
-      if (d.correct){ oppSecret=d.name; sendMsg({ t:"reveal", secret: mySecret }); endScreen("Tu as trouvé le personnage secret !", "Victoire", mySecret, d.name); }
-      else { UI.banner(`${d.name} : ce n'est pas le bon. (-1 essai)`, true, 4500); refreshNetStatus(); }
+    if (d.t==="verdict"){
+      pending=false; myTries++;
+      if (d.correct){
+        oppSecret = d.name;
+        sendMsg({ t:"reveal", secret: mySecret });
+        endScreen("Tu as trouvé le personnage secret !", "Victoire", mySecret, d.name,
+          Net.isHost() ? hostReplay : null, "Rejouer");
+      } else { UI.banner(`${d.name} : ce n'est pas le bon.`, true, 4500); refreshNet(); }
     }
-    if (d.t === "reveal"){
-      // le gagnant révèle son secret au perdant pour l'écran de fin
-      if (over) { /* déjà affiché avec ? */ }
+    if (d.t==="reveal"){
       oppSecret = d.secret;
-      if (over) endScreen("Ton adversaire a trouvé ton secret.", "Défaite", mySecret, oppSecret);
+      if (over) endScreen("Ton adversaire a trouvé ton secret.", "Défaite", mySecret, oppSecret,
+        Net.isHost() ? hostReplay : null, "Rejouer");
     }
+  }
+  function hostReplay(){
+    Net.broadcast({ t:"restart" });
+    sTheme(1,1, null, async (th, gens) => {
+      theme = th; loading("Préparation du plateau…");
+      board = await buildBoard(th, gens);
+      Net.broadcast({ t:"start", theme, board });
+      netSelect();
+    });
   }
 
   /* ═══ MODE 1 TÉLÉPHONE ═══ */
+  function handoff(title, sub, next){
+    screen(`<div class="center">
+      <div class="eyebrow">Passe le téléphone</div>
+      <h2 class="big">${title}</h2><p class="sub">${sub}</p>
+      <div class="btn-row"><button class="btn primary" id="hg">✋ J'ai le téléphone</button></div></div>`);
+    $("hg").onclick = next;
+  }
   function soloSelect(p){
-    if (!solo) solo = { secrets:[null,null], elims:[new Set(), new Set()], turn:0 };
     handoff(`Téléphone à Joueur ${p+1}`, "L'autre joueur détourne les yeux.", () => {
-      selectScreen(`Joueur ${p+1} — ton personnage secret`, "Touche un portrait puis confirme. L'autre ne regarde pas !", name => {
+      selectScreen(`Joueur ${p+1} — ton personnage secret`, "L'autre ne regarde pas !", name => {
         solo.secrets[p] = name;
-        if (p === 0) soloSelect(1);
+        if (p===0) soloSelect(1);
         else handoff("C'est parti — Joueur 1 commence", "Les deux secrets sont enregistrés.", soloTurn);
       });
     });
   }
-  function handoff(title, sub, next){
-    screen(`<div class="center">
-      <div class="eyebrow">Passe le téléphone</div>
-      <h2 class="big">${title}</h2>
-      <p class="sub">${sub}</p>
-      <div class="btn-row"><button class="btn primary" id="h-go">✋ J'ai le téléphone</button></div></div>`);
-    $("h-go").onclick = next;
-  }
   function soloTurn(){
     const p = solo.turn;
     playScreen(`Joueur ${p+1} — ton plateau`,
-      "1. Pose ta question à voix haute · 2. Barre les portraits · 3. Termine ton tour", "");
-    $("b-turn").style.display="";
+      "1. Pose ta question · 2. Barre les portraits · 3. Termine ton tour","");
+    $("bt").style.display="";
     const elim = solo.elims[p];
-    boardHtml($("play-board"), { elim, onClick:(c, el)=>{
-      if (elim.has(c.name)) { elim.delete(c.name); el.classList.remove("eliminated"); }
+    fillBoard($("pb"), { elim, onClick:(c,el)=>{
+      if (elim.has(c.name)){ elim.delete(c.name); el.classList.remove("eliminated"); }
       else { elim.add(c.name); el.classList.add("eliminated"); }
     }});
-    $("b-turn").onclick = () => {
-      solo.turn = 1 - solo.turn;
+    $("bt").onclick = () => {
+      solo.turn = 1-solo.turn;
       handoff(`Téléphone à Joueur ${solo.turn+1}`, `Joueur ${p+1} ne regarde plus.`, soloTurn);
     };
-    $("b-guess").onclick = () => guessModal(name => {
-      const opp = 1 - p;
+    $("bg").onclick = () => guessModal(name => {
+      const opp = 1-p;
       const ok = name === solo.secrets[opp];
-      const winner = ok ? p : opp;
-      endScreen(`Joueur ${winner+1} a gagné !`, ok ? "Bonne proposition" : "Mauvaise proposition — l'autre gagne", solo.secrets[p], solo.secrets[opp]);
+      const w = ok ? p : opp;
+      endScreen(`Joueur ${w+1} a gagné !`, ok ? "Bonne proposition" : "Mauvaise proposition — l'autre gagne",
+        solo.secrets[p], solo.secrets[opp], soloReplay, "Rejouer");
+    });
+  }
+  function soloReplay(){
+    sTheme(1,1, null, async (th, gens) => {
+      theme=th; loading("Préparation du plateau…");
+      board = await buildBoard(th, gens);
+      solo = { secrets:[null,null], elims:[new Set(), new Set()], turn:0 };
+      over=false;
+      soloSelect(0);
     });
   }
 

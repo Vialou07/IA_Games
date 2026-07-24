@@ -93,3 +93,44 @@ window.UI = {
     return dp[g.length][t.length] <= maxD;
   },
 };
+
+/* Chargement des visuels de plateau (Pokémon via PokeAPI, autres via Wikipédia FR). */
+window.Roster = {
+  async pokemon(gens, count){
+    const ranges = THEMES.pokemonGens.filter(g => gens.includes(g.id));
+    let ids = [];
+    ranges.forEach(r => { for (let i = r.from; i <= r.to; i++) ids.push(i); });
+    ids = UI.shuffle(ids).slice(0, count);
+    const out = await Promise.all(ids.map(async id => {
+      const img = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+      try {
+        const r = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+        const j = await r.json();
+        const fr = (j.names || []).find(n => n.language && n.language.name === "fr");
+        return { name: fr ? fr.name : (j.name || ("N°" + id)), img };
+      } catch (e) {
+        return { name: "N° " + id, img };
+      }
+    }));
+    return out;
+  },
+  async wiki(pairs, count){
+    const picked = UI.shuffle(pairs.slice()).slice(0, count);
+    return await Promise.all(picked.map(async ([name, title]) => {
+      try {
+        const r = await fetch("https://fr.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(title));
+        const j = await r.json();
+        const src = j && j.thumbnail && j.thumbnail.source ? j.thumbnail.source : null;
+        return { name, img: src };
+      } catch (e) {
+        return { name, img: null };
+      }
+    }));
+  },
+  ddragon(chars, count){
+    return UI.shuffle(chars.slice()).slice(0, count).map(n => ({
+      name: n,
+      img: `https://ddragon.leagueoflegends.com/cdn/16.14.1/img/champion/${n.replace(/[^A-Za-z]/g, "")}.png`,
+    }));
+  },
+};

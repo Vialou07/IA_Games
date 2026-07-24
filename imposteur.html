@@ -10,20 +10,17 @@
 <style>
   body{--accent:#D65D8C;--accent-dark:#8F3A5D;}
   .word-card{background:var(--panel);border:1px solid var(--gold);max-width:320px;width:100%;margin:10px auto;
-    padding:26px 18px;text-align:center;cursor:pointer;user-select:none;
+    padding:30px 18px;text-align:center;cursor:pointer;user-select:none;
     clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
-  .word-card .role{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;}
-  .word-card .role.civil{color:var(--ok);}
-  .word-card .role.imp{color:var(--danger);}
-  .word-card .word{font-family:'Cinzel',serif;font-size:1.45rem;color:var(--ink);word-break:break-word;}
-  .word-card.masked .word,.word-card.masked .role{filter:blur(10px);}
-  .word-card .hint{font-size:.7rem;color:var(--dim);margin-top:12px;}
+  .word-card .word{font-family:'Cinzel',serif;font-size:1.5rem;color:var(--ink);word-break:break-word;}
+  .word-card.masked .word{filter:blur(12px);}
+  .word-card .hint{font-size:.7rem;color:var(--dim);margin-top:14px;}
 </style>
 </head>
 <body>
 <div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>L'Imposteur</h1><div class="rune"></div></div>
 <div class="wrap" id="wrap"></div>
-<footer class="note">Jeu d'ambiance — les indices se donnent à voix haute.</footer>
+<footer class="note">Personne ne sait s'il est l'imposteur — à toi de le deviner.</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script src="net.js"></script>
 <script src="themes.js"></script>
@@ -34,39 +31,39 @@
   const wrap = document.getElementById("wrap");
   const $ = id => document.getElementById(id);
   function screen(html){ wrap.innerHTML = `<div class="screen active">${html}</div>`; window.scrollTo(0,0); }
-  function stepper(n,total){ return `<div class="step-label">Étape ${n} sur ${total}</div>
-    <div class="stepper">${Array.from({length:total},(_,i)=>`<div class="dot${i<n?" on":""}"></div>`).join("")}</div>`; }
+  function stepper(n,t){ return `<div class="step-label">Étape ${n} sur ${t}</div>
+    <div class="stepper">${Array.from({length:t},(_,i)=>`<div class="dot${i<n?" on":""}"></div>`).join("")}</div>`; }
 
-  let players = [], myName = "", theme = null, started = false;
-  let round = null, used = {};
+  let players=[], myName="", theme=null, started=false, roomCode="";
+  let round=null, used={};
 
   function pickPair(th){
     used[th] = used[th] || new Set();
-    const avail = BANK[th].map((p,i)=>i).filter(i=>!used[th].has(i));
+    const avail = BANK[th].map((_,i)=>i).filter(i=>!used[th].has(i));
     if (!avail.length){ used[th].clear(); return pickPair(th); }
     const i = avail[Math.floor(Math.random()*avail.length)];
     used[th].add(i);
     return BANK[th][i];
   }
   function uniqueName(n){
-    let base = (n||"Joueur").trim(), name = base, i = 2;
+    let base=(n||"Joueur").trim(), name=base, i=2;
     while (players.some(p=>p.name===name)) name = base+" "+(i++);
     return name;
   }
-  const scoresHtml = list => list.slice().sort((a,b)=>b.score-a.score)
+  const scoresHtml = l => l.slice().sort((a,b)=>b.score-a.score)
     .map((p,i)=>`<div class="row${i===0&&p.score>0?" top":""}"><span>${UI.esc(p.name)}</span><span class="pts">${p.score} pt${p.score>1?"s":""}</span></div>`).join("");
 
-  /* ═══ ÉCRANS GUIDÉS ═══ */
+  /* ═══ ACCUEIL ═══ */
   function sHome(){
     players=[]; started=false; round=null; Net.destroy();
     screen(`<div class="center">
       <div class="eyebrow">3 joueurs ou plus</div>
       <h2 class="big">Un mot pour tous… sauf un</h2>
-      <p class="sub">Chacun reçoit le même mot secret, sauf l'imposteur qui en reçoit un très proche. Indices à voix haute, puis vote pour le démasquer.</p>
+      <p class="sub">Chacun reçoit un mot — mais l'un d'eux n'a pas le même, <b>sans le savoir</b>. Donnez vos indices, repérez celui qui rame, et votez.</p>
       ${stepper(1,4)}
       <p class="sub" style="margin-bottom:10px;"><b>Vous jouez comment ?</b></p>
       <div class="choice-col">
-        <button class="choice accent" id="c-net"><div class="c-title">📱📱📱 Chacun son téléphone</div><div class="c-sub">Mot secret et vote sur chaque écran — le plus confortable.</div></button>
+        <button class="choice accent" id="c-net"><div class="c-title">📱📱📱 Chacun son téléphone</div><div class="c-sub">Mot secret et vote sur chaque écran.</div></button>
         <button class="choice" id="c-solo"><div class="c-title">📱 Tous sur ce téléphone</div><div class="c-sub">On se passe le téléphone pour voir son mot et voter.</div></button>
       </div></div>`);
     $("c-net").onclick = sNetChoice;
@@ -75,9 +72,9 @@
 
   function sNetChoice(){
     screen(`<div class="center">${stepper(2,4)}
-      <p class="sub" style="margin-bottom:10px;"><b>Un seul joueur crée la partie, les autres la rejoignent.</b></p>
+      <p class="sub" style="margin-bottom:10px;"><b>Un seul joueur crée la partie, les autres rejoignent.</b></p>
       <div class="choice-col">
-        <button class="choice accent" id="c-create"><div class="c-title">➕ Créer la partie</div><div class="c-sub">Tu seras l'hôte : tu obtiens un code à donner aux autres.</div></button>
+        <button class="choice accent" id="c-create"><div class="c-title">➕ Créer la partie</div><div class="c-sub">Tu seras l'hôte : tu obtiens un code.</div></button>
         <button class="choice" id="c-join"><div class="c-title">🔑 Rejoindre</div><div class="c-sub">On t'a donné un code ? C'est ici.</div></button>
       </div>
       <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="c-back">Retour</button></div></div>`);
@@ -88,117 +85,104 @@
 
   function sName(joining){
     screen(`<div class="center">${stepper(3,4)}
-      <div class="eyebrow">${joining ? "Rejoindre" : "Créer la partie"}</div>
+      <div class="eyebrow">${joining?"Rejoindre":"Créer la partie"}</div>
       <h2 class="big">Ton prénom ?</h2>
-      <input class="field" id="f-name" maxlength="14" placeholder="Prénom">
-      ${joining ? `<p class="sub" style="margin:4px 0 2px;">…et le code donné par l'hôte :</p>
-      <input class="field code" id="f-code" maxlength="4" autocapitalize="characters" placeholder="XXXX">` : ""}
-      <div class="status warn" id="f-err" style="display:none;"></div>
+      <input class="field" id="fn" maxlength="14" placeholder="Prénom">
+      ${joining?`<p class="sub" style="margin:4px 0 2px;">…et le code de l'hôte :</p>
+      <input class="field code" id="fc" maxlength="4" autocapitalize="characters" placeholder="XXXX">`:""}
       <div class="btn-row">
-        <button class="btn ghost" id="f-back">Retour</button>
-        <button class="btn primary" id="f-go" disabled>${joining ? "Rejoindre" : "Créer"}</button>
+        <button class="btn ghost" id="fb">Retour</button>
+        <button class="btn primary" id="fg" disabled>${joining?"Rejoindre":"Créer"}</button>
       </div></div>`);
     const check = () => {
-      const okN = $("f-name").value.trim().length >= 2;
-      const okC = !joining || ($("f-code") && $("f-code").value.length === 4);
-      $("f-go").disabled = !(okN && okC);
+      const okN = $("fn").value.trim().length>=2;
+      const okC = !joining || ($("fc") && $("fc").value.length===4);
+      $("fg").disabled = !(okN && okC);
     };
-    $("f-name").addEventListener("input", check);
-    if (joining) $("f-code").addEventListener("input", e => {
+    $("fn").addEventListener("input", check);
+    if (joining) $("fc").addEventListener("input", e => {
       e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4); check();
     });
-    $("f-back").onclick = sNetChoice;
-    $("f-go").onclick = () => {
-      myName = $("f-name").value.trim();
-      $("f-go").disabled = true;
-      joining ? doJoin($("f-code").value) : doCreate();
+    $("fb").onclick = sNetChoice;
+    $("fg").onclick = () => {
+      myName = $("fn").value.trim(); $("fg").disabled = true;
+      joining ? doJoin($("fc").value) : doCreate();
     };
   }
 
   function doCreate(){
     Net.create(GAME, {
-      onOpen: code => {
-        players = [{ id:"H", name: myName, score: 0 }];
-        sLobby(code);
-      },
-      onData: (id, d) => {
-        if (d && d.t === "hello"){
-          if (started) { Net.sendTo(id, { t:"late" }); return; }
-          players.push({ id, name: uniqueName(d.name), score: 0 });
+      onOpen: code => { roomCode=code; players=[{id:"H",name:myName,score:0}]; sLobby(); },
+      onData: (id,d) => {
+        if (d && d.t==="hello"){
+          if (started){ Net.sendTo(id,{t:"late"}); return; }
+          players.push({ id, name: uniqueName(d.name), score:0 });
           syncLobby();
         }
-        else if (d && d.t === "myvote") hostVote(id, d.target);
+        else if (d && d.t==="myvote") hostVote(id, d.target);
       },
       onLeave: id => {
         const p = players.find(x=>x.id===id);
         players = players.filter(x=>x.id!==id);
         if (p) UI.banner(`${p.name} s'est déconnecté.`, true);
         if (!started) syncLobby();
-        else if (round && round.votes){
-          delete round.votes[id];
-          checkVotes();
-        }
+        else if (round && round.votes){ delete round.votes[id]; checkVotes(); }
       },
       onError: () => UI.banner("Erreur de connexion. Recharge la page.", true, 6000),
     });
   }
-  let roomCode = "";
-  function sLobby(code){
-    if (code) roomCode = code;
+  function sLobby(){
     screen(`<div class="center">${stepper(4,4)}
       <div class="eyebrow">Salon ouvert</div>
       <h2 class="big">Fais rejoindre les autres</h2>
       <div class="code-box">${roomCode}</div>
       <p class="sub">Chacun : même lien → L'Imposteur → <b>Chacun son téléphone</b> → <b>Rejoindre</b> → prénom + ce code.</p>
-      <div class="list" id="l-list"></div>
-      <div class="status" id="l-status"></div>
-      <div class="btn-row"><button class="btn primary" id="l-launch" disabled>Choisir le thème ➜</button></div></div>`);
-    $("l-launch").onclick = () => sThemeHost();
+      <div class="list" id="ll"></div>
+      <div class="status" id="ls"></div>
+      <div class="btn-row"><button class="btn primary" id="lg" disabled>Choisir le thème ➜</button></div></div>`);
+    $("lg").onclick = () => sThemeHost();
     syncLobby();
   }
   function syncLobby(){
     Net.broadcast({ t:"lobby", players: players.map(p=>({name:p.name,score:p.score})) });
-    renderLobby();
-  }
-  function renderLobby(){
-    const l=$("l-list"); if(!l) return;
+    const l=$("ll"); if(!l) return;
     l.innerHTML = players.map(p=>`<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span><span class="tag">${p.id==="H"?"hôte":"✓"}</span></div>`).join("");
-    const st=$("l-status"), b=$("l-launch");
-    if (st) st.textContent = players.length < 3 ? `${players.length}/3 joueurs minimum` : `${players.length} joueurs — prêt !`;
-    if (b) b.disabled = players.length < 3;
+    const st=$("ls"), b=$("lg");
+    if (st) st.textContent = players.length<3 ? `${players.length}/3 joueurs minimum` : `${players.length} joueurs — prêt !`;
+    if (b) b.disabled = players.length<3;
   }
-
   function doJoin(code){
     Net.join(GAME, code, {
-      onOpen: () => {
-        Net.send({ t:"hello", name: myName });
-        screen(`<div class="center">${stepper(4,4)}
-          <div class="eyebrow">Connecté !</div><h2 class="big">Bien reçu, ${UI.esc(myName)}</h2>
-          <div class="list" id="l-list"></div>
-          <p class="sub" id="g-wait">En attente que l'hôte lance la partie…</p></div>`);
-      },
+      onOpen: () => { Net.send({t:"hello", name:myName}); guestWait(); },
       onData: guestData,
       onLeave: () => UI.banner("L'hôte s'est déconnecté — partie terminée.", true, 7000),
       onError: () => {
         screen(`<div class="center"><div class="eyebrow">Oups</div>
           <h2 class="big">Connexion impossible</h2>
-          <p class="sub">Vérifie le code, et que l'hôte est bien sur l'écran de son salon.</p>
-          <div class="btn-row"><button class="btn primary" id="e-retry">Réessayer</button></div></div>`);
-        $("e-retry").onclick = sNetChoice;
+          <p class="sub">Vérifie le code et que l'hôte est bien sur l'écran de son salon.</p>
+          <div class="btn-row"><button class="btn primary" id="rt">Réessayer</button></div></div>`);
+        $("rt").onclick = sNetChoice;
       },
     });
   }
+  function guestWait(){
+    screen(`<div class="center">${stepper(4,4)}
+      <div class="eyebrow">Connecté !</div><h2 class="big">Bien reçu, ${UI.esc(myName)}</h2>
+      <div class="list" id="ll"></div>
+      <p class="sub">En attente que l'hôte lance la manche…</p></div>`);
+  }
   function guestData(_, d){
     if (!d || !d.t) return;
-    if (d.t === "lobby"){
-      const l=$("l-list");
-      if (l) l.innerHTML = d.players.map(p=>`<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span></div>`).join("");
+    if (d.t==="lobby"){
+      const l=$("ll");
+      if (l) l.innerHTML = d.players.map(p=>`<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span><span class="tag">${p.score} pts</span></div>`).join("");
     }
-    if (d.t === "late"){ UI.banner("La partie a déjà commencé — attends la prochaine.", true, 6000); }
-    if (d.t === "round"){ started = true; sWord(d, false); }
-    if (d.t === "vote") sVote(d.players, false);
-    if (d.t === "votecount") setVoteStatus(d.remaining);
-    if (d.t === "result") sResult(d, false);
+    if (d.t==="late") UI.banner("La partie a déjà commencé — attends la prochaine manche.", true, 6000);
+    if (d.t==="wait") guestWait();
+    if (d.t==="round"){ started=true; sWord(d,false); }
+    if (d.t==="vote") sVote(d.players,false);
+    if (d.t==="votecount") setVoteStatus(d.remaining);
+    if (d.t==="result") sResult(d,false);
   }
 
   function sThemeHost(){
@@ -207,244 +191,235 @@
       <p class="sub">Tu pourras en changer entre les manches.</p>
       <div class="theme-grid">${Object.keys(META).map(k =>
         `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}</div>
-      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="t-back">Retour au salon</button></div></div>`);
-    document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => { theme = b.dataset.th; started = true; hostRound(); });
-    $("t-back").onclick = () => sLobby();
+      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="tb">Retour au salon</button></div></div>`);
+    document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => { theme=b.dataset.th; started=true; hostRound(); });
+    $("tb").onclick = sLobby;
   }
 
-  /* ═══ MANCHE (hôte) ═══ */
+  /* ═══ MANCHE — RÔLE CACHÉ ═══ */
   function hostRound(){
     const pair = pickPair(theme);
     const impIdx = Math.floor(Math.random()*players.length);
-    const [wC, wI] = Math.random() < .5 ? pair : [pair[1], pair[0]];
-    round = { wC, wI, impId: players[impIdx].id, votes: {}, order: UI.shuffle(players.map(p=>p.name)) };
+    const [wC,wI] = Math.random()<.5 ? pair : [pair[1],pair[0]];
+    round = { wC, wI, impId: players[impIdx].id, votes:{}, order: UI.shuffle(players.map(p=>p.name)) };
     players.forEach(p => {
       const payload = { t:"round", theme, order: round.order,
-        role: p.id === round.impId ? "imp" : "civil",
-        word: p.id === round.impId ? wI : wC };
-      p.id === "H" ? sWord(payload, true) : Net.sendTo(p.id, payload);
+        word: p.id===round.impId ? wI : wC };
+      p.id==="H" ? sWord(payload,true) : Net.sendTo(p.id, payload);
     });
   }
   function sWord(d, isHost){
     screen(`<div class="center">
       <div class="eyebrow">Thème : ${META[d.theme].label}</div>
-      <h2 class="big" style="font-size:1.1rem;">Ton mot secret</h2>
-      <div class="word-card masked" id="w-card">
-        <div class="role ${d.role==="imp"?"imp":"civil"}">${d.role==="imp" ? "🤫 IMPOSTEUR — bluffe !" : "✅ Civil — mot commun"}</div>
+      <h2 class="big" style="font-size:1.1rem;">Ton mot</h2>
+      <div class="word-card masked" id="wc">
         <div class="word">${UI.esc(d.word)}</div>
-        <div class="hint">Touche la carte pour révéler / cacher</div>
+        <div class="hint">Touche pour révéler / cacher</div>
       </div>
-      <p class="sub" style="font-size:.84rem;">Chacun donne <b>2 indices à voix haute</b>, dans cet ordre :<br><b>${d.order.map(UI.esc).join(" → ")}</b></p>
-      ${isHost ? `<div class="btn-row"><button class="btn primary" id="w-vote">Les indices sont donnés ➜ Vote</button></div>`
-               : `<div class="status">L'hôte lancera le vote après les indices.</div>`}
-    </div>`);
-    $("w-card").onclick = () => $("w-card").classList.toggle("masked");
-    if (isHost) $("w-vote").onclick = () => {
+      <p class="sub" style="font-size:.84rem;">⚠️ Tu ne sais pas si c'est le mot commun ou pas. Peut-être que c'est toi l'imposteur…<br><br>
+        Chacun donne <b>2 indices à voix haute</b>, dans cet ordre :<br><b>${d.order.map(UI.esc).join(" → ")}</b></p>
+      ${isHost ? `<div class="btn-row"><button class="btn primary" id="wv">Les indices sont donnés ➜ Vote</button></div>`
+               : `<div class="status">L'hôte lancera le vote après les indices.</div>`}</div>`);
+    $("wc").onclick = () => $("wc").classList.toggle("masked");
+    if (isHost) $("wv").onclick = () => {
       round.votes = {};
       const names = players.map(p=>({id:p.id,name:p.name}));
-      Net.broadcast({ t:"vote", players: names });
+      Net.broadcast({ t:"vote", players:names });
       sVote(names, true);
     };
   }
-
   function sVote(names, isHost){
     screen(`<div class="center">
       <div class="eyebrow">Vote secret</div>
-      <h2 class="big">Qui est l'imposteur ?</h2>
+      <h2 class="big">Qui avait un mot différent ?</h2>
       <p class="sub">Touche un prénom — ton vote est définitif.</p>
-      <div class="list" id="v-list"></div>
-      <div class="status" id="v-status">Vote en cours…</div></div>`);
-    let voted = false;
+      <div class="list" id="vl"></div>
+      <div class="status" id="vs">Vote en cours…</div></div>`);
+    let voted=false;
     names.forEach(p => {
-      if (p.name === myName) return;
-      const b = document.createElement("button");
-      b.className="item"; b.innerHTML = `<span>${UI.esc(p.name)}</span><span class="tag">voter</span>`;
+      if (p.name===myName) return;
+      const b=document.createElement("button");
+      b.className="item"; b.innerHTML=`<span>${UI.esc(p.name)}</span><span class="tag">voter</span>`;
       b.onclick = () => {
         if (voted) return;
-        voted = true;
-        $("v-list").querySelectorAll("button").forEach(x=>x.disabled=true);
+        voted=true;
+        $("vl").querySelectorAll("button").forEach(x=>x.disabled=true);
         b.classList.add("sel");
-        isHost ? hostVote("H", p.id) : Net.send({ t:"myvote", target: p.id });
+        isHost ? hostVote("H", p.id) : Net.send({t:"myvote", target:p.id});
       };
-      $("v-list").appendChild(b);
+      $("vl").appendChild(b);
     });
   }
   function hostVote(voterId, targetId){
-    if (!round || round.votes[voterId] !== undefined) return;
-    round.votes[voterId] = targetId;
+    if (!round || round.votes[voterId]!==undefined) return;
+    round.votes[voterId]=targetId;
     checkVotes();
   }
   function checkVotes(){
-    const remaining = players.length - Object.keys(round.votes).filter(k => players.some(p=>p.id===k)).length;
+    const remaining = players.length - Object.keys(round.votes).filter(k=>players.some(p=>p.id===k)).length;
     Net.broadcast({ t:"votecount", remaining });
     setVoteStatus(remaining);
-    if (remaining <= 0) hostResolve();
+    if (remaining<=0) hostResolve();
   }
   function setVoteStatus(r){
-    const s=$("v-status"); if(!s) return;
-    s.textContent = r > 0 ? `⏳ Encore ${r} vote${r>1?"s":""}…` : "Dépouillement…";
+    const s=$("vs"); if(!s) return;
+    s.textContent = r>0 ? `⏳ Encore ${r} vote${r>1?"s":""}…` : "Dépouillement…";
   }
   function hostResolve(){
-    const counts = {};
+    const counts={};
     players.forEach(p=>counts[p.id]=0);
     Object.values(round.votes).forEach(t=>{ if(counts[t]!==undefined) counts[t]++; });
     const max = Math.max(...Object.values(counts));
-    const caught = counts[round.impId] === max && max > 0;
+    const caught = counts[round.impId]===max && max>0;
     players.forEach(p => {
-      if (p.id === round.impId){ if (!caught) p.score += 3; }
-      else if (round.votes[p.id] === round.impId) p.score += 1;
+      if (p.id===round.impId){ if(!caught) p.score += 3; }
+      else if (round.votes[p.id]===round.impId) p.score += 1;
     });
-    const impPlayer = players.find(p=>p.id===round.impId);
-    const payload = { t:"result", caught, impName: impPlayer ? impPlayer.name : "(parti)",
-      wC: round.wC, wI: round.wI, theme,
-      scores: players.map(p=>({name:p.name,score:p.score})) };
+    const imp = players.find(p=>p.id===round.impId);
+    const payload = { t:"result", caught, impName: imp?imp.name:"(parti)",
+      wC:round.wC, wI:round.wI, theme, scores: players.map(p=>({name:p.name,score:p.score})) };
     Net.broadcast(payload);
     sResult(payload, true);
   }
   function sResult(d, isHost){
     screen(`<div class="center">
-      <div class="eyebrow">${d.caught ? "🎯 Imposteur démasqué" : "😏 L'imposteur s'en sort"}</div>
+      <div class="eyebrow">${d.caught?"🎯 Imposteur démasqué":"😏 L'imposteur s'en sort"}</div>
       <h2 class="big">${UI.esc(d.impName)} était l'imposteur !</h2>
-      <p class="sub">Mot commun : <b>${UI.esc(d.wC)}</b> · mot de l'imposteur : <b>${UI.esc(d.wI)}</b><br>
-        ${d.caught ? "+1 point pour ceux qui ont voté juste." : "+3 points pour l'imposteur !"}</p>
+      <p class="sub">Mot commun : <b>${UI.esc(d.wC)}</b> · son mot à lui : <b>${UI.esc(d.wI)}</b><br>
+        ${d.caught?"+1 point pour ceux qui ont voté juste.":"+3 points pour l'imposteur !"}</p>
       <div class="scores">${scoresHtml(d.scores)}</div>
-      ${isHost ? `<div class="btn-row">
-          <button class="btn primary" id="r-next">Nouvelle manche</button>
-          <button class="btn ghost" id="r-theme">Changer de thème</button>
-        </div>` : `<div class="status">L'hôte relance quand vous êtes prêts.</div>`}
-    </div>`);
+      ${isHost?`<div class="btn-row">
+          <button class="btn primary" id="rn">Nouvelle manche (même thème)</button>
+          <button class="btn ghost" id="rt">Changer de thème</button>
+        </div>`:`<div class="status">L'hôte relance quand vous êtes prêts.</div>`}</div>`);
     if (isHost){
-      $("r-next").onclick = () => hostRound();
-      $("r-theme").onclick = () => sThemeHost();
+      $("rn").onclick = () => hostRound();
+      $("rt").onclick = () => sThemeHost();
     }
   }
 
   /* ═══ MODE 1 TÉLÉPHONE ═══ */
-  let solo = null;
+  let solo=null;
   function sSoloPlayers(){
-    solo = { names: [], scores: {}, idx: 0, round: null, votes: [] };
+    solo = { names:[], scores:{}, idx:0, round:null, votes:{} };
     screen(`<div class="center">${stepper(2,4)}
-      <div class="eyebrow">1 téléphone</div>
-      <h2 class="big">Qui joue ?</h2>
+      <div class="eyebrow">1 téléphone</div><h2 class="big">Qui joue ?</h2>
       <p class="sub">Ajoute au moins 3 prénoms.</p>
-      <input class="field" id="sp-name" maxlength="14" placeholder="Prénom">
-      <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="sp-add">+ Ajouter</button></div>
-      <div class="list" id="sp-list"></div>
+      <input class="field" id="sn" maxlength="14" placeholder="Prénom">
+      <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="sa">+ Ajouter</button></div>
+      <div class="list" id="sl"></div>
       <div class="btn-row">
-        <button class="btn ghost" id="sp-back">Retour</button>
-        <button class="btn primary" id="sp-go" disabled>Choisir le thème ➜</button>
+        <button class="btn ghost" id="sb">Retour</button>
+        <button class="btn primary" id="sg" disabled>Choisir le thème ➜</button>
       </div></div>`);
     const add = () => {
-      const n = $("sp-name").value.trim();
-      if (n.length < 2) return;
-      let name = n, i = 2;
-      while (solo.names.includes(name)) name = n+" "+(i++);
-      solo.names.push(name); solo.scores[name] = 0;
-      $("sp-name").value = "";
-      $("sp-list").innerHTML = solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join("");
-      $("sp-go").disabled = solo.names.length < 3;
-      $("sp-name").focus();
+      const n=$("sn").value.trim();
+      if (n.length<2) return;
+      let name=n, i=2;
+      while (solo.names.includes(name)) name=n+" "+(i++);
+      solo.names.push(name); solo.scores[name]=0;
+      $("sn").value="";
+      $("sl").innerHTML = solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join("");
+      $("sg").disabled = solo.names.length<3;
+      $("sn").focus();
     };
-    $("sp-add").onclick = add;
-    $("sp-name").addEventListener("keydown", e => { if (e.key==="Enter") add(); });
-    $("sp-back").onclick = sHome;
-    $("sp-go").onclick = () => sSoloTheme();
+    $("sa").onclick=add;
+    $("sn").addEventListener("keydown", e=>{ if(e.key==="Enter") add(); });
+    $("sb").onclick=sHome;
+    $("sg").onclick=sSoloTheme;
   }
   function sSoloTheme(){
     screen(`<div class="center">${stepper(3,4)}
       <div class="eyebrow">Thème</div><h2 class="big">Choisissez le thème</h2>
       <div class="theme-grid">${Object.keys(META).map(k =>
         `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}</div>
-      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="st-back">Retour</button></div></div>`);
-    document.querySelectorAll(".theme-btn").forEach(b => b.onclick = () => { theme = b.dataset.th; soloRound(); });
-    $("st-back").onclick = sSoloPlayers;
+      <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="stb">Retour</button></div></div>`);
+    document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>{ theme=b.dataset.th; soloRound(); });
+    $("stb").onclick=sSoloPlayers;
   }
   function soloRound(){
     const pair = pickPair(theme);
     const impIdx = Math.floor(Math.random()*solo.names.length);
-    const [wC, wI] = Math.random() < .5 ? pair : [pair[1], pair[0]];
+    const [wC,wI] = Math.random()<.5 ? pair : [pair[1],pair[0]];
     solo.round = { wC, wI, impIdx, order: UI.shuffle(solo.names.slice()) };
-    solo.idx = 0; solo.votes = {};
+    solo.idx=0; solo.votes={};
     soloPass();
   }
   function soloPass(){
-    if (solo.idx >= solo.names.length){ soloVote(0); return; }
+    if (solo.idx>=solo.names.length){ soloDiscuss(); return; }
     const who = solo.names[solo.idx];
     screen(`<div class="center">
       <div class="eyebrow">Passe le téléphone</div>
       <h2 class="big">Téléphone à ${UI.esc(who)}</h2>
       <p class="sub">Les autres détournent les yeux.</p>
-      <div class="btn-row"><button class="btn primary" id="sp-reveal">✋ C'est moi — voir mon mot</button></div></div>`);
-    $("sp-reveal").onclick = () => {
-      const isImp = solo.idx === solo.round.impIdx;
+      <div class="btn-row"><button class="btn primary" id="sr">✋ C'est moi — voir mon mot</button></div></div>`);
+    $("sr").onclick = () => {
+      const isImp = solo.idx===solo.round.impIdx;
       screen(`<div class="center">
         <div class="eyebrow">Thème : ${META[theme].label}</div>
-        <h2 class="big" style="font-size:1.1rem;">${UI.esc(who)}, ton mot secret</h2>
-        <div class="word-card masked" id="w-card">
-          <div class="role ${isImp?"imp":"civil"}">${isImp ? "🤫 IMPOSTEUR — bluffe !" : "✅ Civil — mot commun"}</div>
-          <div class="word">${UI.esc(isImp ? solo.round.wI : solo.round.wC)}</div>
-          <div class="hint">Touche la carte pour révéler / cacher</div>
+        <h2 class="big" style="font-size:1.1rem;">${UI.esc(who)}, ton mot</h2>
+        <div class="word-card masked" id="wc">
+          <div class="word">${UI.esc(isImp?solo.round.wI:solo.round.wC)}</div>
+          <div class="hint">Touche pour révéler / cacher</div>
         </div>
-        <div class="btn-row"><button class="btn primary" id="w-next">${solo.idx === solo.names.length-1 ? "Tous ont vu ➜ indices puis vote" : "J'ai vu ➜ joueur suivant"}</button></div></div>`);
-      $("w-card").onclick = () => $("w-card").classList.toggle("masked");
-      $("w-next").onclick = () => {
-        solo.idx++;
-        if (solo.idx >= solo.names.length){
-          screen(`<div class="center">
-            <div class="eyebrow">Discussion</div>
-            <h2 class="big">Indices à voix haute !</h2>
-            <p class="sub">Chacun donne <b>2 indices</b>, dans cet ordre :<br><b>${solo.round.order.map(UI.esc).join(" → ")}</b></p>
-            <div class="btn-row"><button class="btn primary" id="d-vote">Passer au vote ➜</button></div></div>`);
-          $("d-vote").onclick = () => soloVote(0);
-        } else soloPass();
-      };
+        <p class="sub" style="font-size:.82rem;">⚠️ Tu ne sais pas si tout le monde a le même mot que toi…</p>
+        <div class="btn-row"><button class="btn primary" id="wn">${solo.idx===solo.names.length-1?"Tous ont vu ➜ indices":"J'ai vu ➜ joueur suivant"}</button></div></div>`);
+      $("wc").onclick = () => $("wc").classList.toggle("masked");
+      $("wn").onclick = () => { solo.idx++; soloPass(); };
     };
   }
+  function soloDiscuss(){
+    screen(`<div class="center">
+      <div class="eyebrow">Discussion</div><h2 class="big">Indices à voix haute !</h2>
+      <p class="sub">Chacun donne <b>2 indices</b>, dans cet ordre :<br><b>${solo.round.order.map(UI.esc).join(" → ")}</b></p>
+      <div class="btn-row"><button class="btn primary" id="dv">Passer au vote ➜</button></div></div>`);
+    $("dv").onclick = () => soloVote(0);
+  }
   function soloVote(i){
-    if (i >= solo.names.length){ soloResolve(); return; }
+    if (i>=solo.names.length){ soloResolve(); return; }
     const voter = solo.names[i];
     screen(`<div class="center">
       <div class="eyebrow">Vote secret ${i+1}/${solo.names.length}</div>
       <h2 class="big">Téléphone à ${UI.esc(voter)}</h2>
       <p class="sub">Les autres détournent les yeux.</p>
-      <div class="btn-row"><button class="btn primary" id="v-me">✋ C'est moi — voter</button></div></div>`);
-    $("v-me").onclick = () => {
+      <div class="btn-row"><button class="btn primary" id="vm">✋ C'est moi — voter</button></div></div>`);
+    $("vm").onclick = () => {
       screen(`<div class="center">
         <div class="eyebrow">${UI.esc(voter)}, à toi</div>
-        <h2 class="big">Qui est l'imposteur ?</h2>
-        <div class="list" id="v-list"></div></div>`);
+        <h2 class="big">Qui avait un mot différent ?</h2>
+        <div class="list" id="vl"></div></div>`);
       solo.names.forEach(n => {
-        if (n === voter) return;
-        const b = document.createElement("button");
+        if (n===voter) return;
+        const b=document.createElement("button");
         b.className="item"; b.innerHTML=`<span>${UI.esc(n)}</span><span class="tag">voter</span>`;
-        b.onclick = () => { solo.votes[voter] = n; soloVote(i+1); };
-        $("v-list").appendChild(b);
+        b.onclick=()=>{ solo.votes[voter]=n; soloVote(i+1); };
+        $("vl").appendChild(b);
       });
     };
   }
   function soloResolve(){
     const impName = solo.names[solo.round.impIdx];
-    const counts = {};
+    const counts={};
     solo.names.forEach(n=>counts[n]=0);
     Object.values(solo.votes).forEach(v=>counts[v]++);
     const max = Math.max(...Object.values(counts));
-    const caught = counts[impName] === max && max > 0;
+    const caught = counts[impName]===max && max>0;
     solo.names.forEach(n => {
-      if (n === impName){ if (!caught) solo.scores[n] += 3; }
-      else if (solo.votes[n] === impName) solo.scores[n] += 1;
+      if (n===impName){ if(!caught) solo.scores[n]+=3; }
+      else if (solo.votes[n]===impName) solo.scores[n]+=1;
     });
     screen(`<div class="center">
-      <div class="eyebrow">${caught ? "🎯 Imposteur démasqué" : "😏 L'imposteur s'en sort"}</div>
+      <div class="eyebrow">${caught?"🎯 Imposteur démasqué":"😏 L'imposteur s'en sort"}</div>
       <h2 class="big">${UI.esc(impName)} était l'imposteur !</h2>
-      <p class="sub">Mot commun : <b>${UI.esc(solo.round.wC)}</b> · mot de l'imposteur : <b>${UI.esc(solo.round.wI)}</b></p>
+      <p class="sub">Mot commun : <b>${UI.esc(solo.round.wC)}</b> · son mot à lui : <b>${UI.esc(solo.round.wI)}</b></p>
       <div class="scores">${solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a])
         .map((n,i)=>`<div class="row${i===0&&solo.scores[n]>0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pt${solo.scores[n]>1?"s":""}</span></div>`).join("")}</div>
       <div class="btn-row">
-        <button class="btn primary" id="r-next">Nouvelle manche</button>
-        <button class="btn ghost" id="r-theme">Changer de thème</button>
+        <button class="btn primary" id="rn">Nouvelle manche (même thème)</button>
+        <button class="btn ghost" id="rt">Changer de thème</button>
       </div></div>`);
-    $("r-next").onclick = () => soloRound();
-    $("r-theme").onclick = () => sSoloTheme();
+    $("rn").onclick=()=>soloRound();
+    $("rt").onclick=sSoloTheme;
   }
 
   sHome();
