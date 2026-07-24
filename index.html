@@ -48,6 +48,36 @@ const GAMES = [
     desc: "5 indices de plus en plus précis. Plus tu trouves tôt, plus tu marques.",
     meta: "2+ joueurs · 4 thèmes · chacun son tel ou 1 seul",
   },
+  {
+    href: "duel.html",
+    title: "Duel de Culture",
+    desc: "10 questions à choix multiple. 1 point par bonne réponse.",
+    meta: "2+ joueurs · 4 thèmes · chacun son tel ou 1 seul",
+  },
+  {
+    href: "plusoumoins.html",
+    title: "Plus ou Moins",
+    desc: "Le suivant a-t-il une valeur plus haute ou plus basse ? Enchaîne les bonnes.",
+    meta: "2+ joueurs · 4 thèmes · chacun son tel ou 1 seul",
+  },
+  {
+    href: "vraioufaux.html",
+    title: "Vrai ou Faux",
+    desc: "10 affirmations, à toi de démêler le vrai du faux.",
+    meta: "2+ joueurs · 4 thèmes · chacun son tel ou 1 seul",
+  },
+  {
+    href: "menteur.html",
+    title: "Le Menteur",
+    desc: "Trois affirmations, une seule est fausse. Trouve l'intrus.",
+    meta: "2+ joueurs · 4 thèmes · chacun son tel ou 1 seul",
+  },
+  {
+    href: "association.html",
+    title: "Association",
+    desc: "Range 6 éléments dans le bon camp parmi 2 catégories.",
+    meta: "2+ joueurs · 4 thèmes · chacun son tel ou 1 seul",
+  },
 ];
 document.getElementById("games").innerHTML = GAMES.map(g => `
   <a class="game-card" href="${g.href}">

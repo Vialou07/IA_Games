@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vrai ou Faux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body{--accent:#8B7FD1;--accent-dark:#544B8A;}
+  .stmt{background:var(--panel);border:1px solid var(--gold);max-width:440px;width:100%;margin:12px auto;
+    padding:24px 18px;text-align:center;font-size:1.2rem;line-height:1.5;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
+</style>
+</head>
+<body>
+<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Vrai ou Faux</h1><div class="rune"></div></div>
+<div class="wrap" id="wrap"></div>
+<footer class="note">10 affirmations — sauras-tu démêler le vrai du faux ?</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="net.js"></script>
+<script src="themes.js"></script>
+<script src="gamedata.js"></script>
+<script src="duo.js"></script>
+<script src="lobby.js"></script>
+<script>
+(function(){
+  const DATA=GDATA.truefalse, META=Duo.META, $=Duo.$, screen=Duo.screen;
+  const ROUND=10;
+  let L, theme=null, game=null, answered=false, solo=null;
+  const build=th=>UI.shuffle(DATA[th].slice()).slice(0,ROUND);
+
+  L=makeLobby({
+    game:"tf", title:"Vrai ou Faux",
+    subtitle:"10 affirmations s'enchaînent. Chacun répond Vrai ou Faux, 1 point par bonne réponse. Le meilleur score gagne.",
+    minPlayers:2, themeHint:"10 affirmations tirées au hasard.",
+    reset:()=>{game=null;},
+    onThemeChosen:()=>{ theme=L.theme; hostStart(); },
+    onHostData:(id,d)=>{ if(d&&d.t==="answer")hostAnswer(id,d.val); },
+    onLeave:()=>{ if(game&&!game.done)checkAll(); },
+    onData:d=>guestData(d),
+    soloStart:()=>soloPlayers(),
+  });
+
+  function hostStart(){ L.players.forEach(p=>p.score=0); game={list:build(theme),idx:0,answers:{},done:false}; push(); }
+  function push(){ game.answers={}; const it=game.list[game.idx]; const p={t:"stmt",theme,idx:game.idx,total:ROUND,text:it[0]}; L.broadcast(p); sStmt(p,true); }
+  function hostAnswer(pid,val){ if(!game||game.done||game.answers[pid]!==undefined)return; game.answers[pid]=val; checkAll(); }
+  function checkAll(){ const rem=L.players.length-Object.keys(game.answers).filter(k=>L.players.some(p=>p.id===k)).length; L.broadcast({t:"waitcount",remaining:rem}); setWait(rem); if(rem<=0)reveal(); }
+  function reveal(){
+    const truth=game.list[game.idx][1];
+    const rows=L.players.map(p=>{ const a=game.answers[p.id]; const ok=a===truth; if(ok)p.score++; return {name:p.name,ok,ans:a}; });
+    const last=game.idx>=ROUND-1;
+    const pl={t:"reveal",truth,rows,scores:L.players.map(p=>({name:p.name,score:p.score})),last};
+    L.broadcast(pl); sReveal(pl,true);
+  }
+  function hostNext(){ if(game.idx>=ROUND-1){ game.done=true; const f={t:"final",scores:L.players.map(p=>({name:p.name,score:p.score}))}; L.broadcast(f); sFinal(f,true);} else { game.idx++; push(); } }
+  function guestData(d){ if(!d||!d.t)return;
+    if(d.t==="stmt"){ L.started=true; theme=d.theme; sStmt(d,false); }
+    if(d.t==="waitcount")setWait(d.remaining);
+    if(d.t==="reveal")sReveal(d,false);
+    if(d.t==="final")sFinal(d,false);
+  }
+
+  function sStmt(d,isHost){
+    answered=false;
+    screen(`<div class="center">
+      <div class="eyebrow">Thème : ${META[d.theme].label} · ${d.idx+1}/${d.total}</div>
+      <div class="stmt">${UI.esc(d.text)}</div>
+      <div class="btn-row"><button class="btn primary" id="bv">✅ Vrai</button><button class="btn danger" id="bf">❌ Faux</button></div>
+      <div class="status" id="ws" style="margin-top:12px;">Vrai ou faux ?</div></div>`);
+    const pick=v=>{ if(answered)return; answered=true; $("bv").disabled=true; $("bf").disabled=true; $("ws").textContent="✓ Réponse envoyée — on attend les autres…"; $("ws").className="status ok"; if(Net.isHost())hostAnswer("H",v); else Net.send({t:"answer",val:v}); };
+    $("bv").onclick=()=>pick(true); $("bf").onclick=()=>pick(false);
+  }
+  function setWait(r){ const s=$("ws"); if(s&&answered)s.textContent=r>0?`✓ Réponse envoyée — encore ${r}…`:"Résultat…"; }
+  function sReveal(d,isHost){
+    screen(`<div class="center"><div class="eyebrow">Résultat</div>
+      <h2 class="big">C'était ${d.truth?"✅ VRAI":"❌ FAUX"}</h2>
+      <div class="reveal-list" style="width:100%;max-width:340px;margin:12px auto;">${d.rows.map(r=>`<div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--panel);border:1px solid ${r.ok?"var(--ok)":"rgba(225,90,76,.5)"};margin-bottom:6px;"><span>${UI.esc(r.name)}</span><span style="color:var(--text);">${r.ans===undefined?"(rien)":(r.ans?"Vrai":"Faux")}</span><span>${r.ok?"✅":"❌"}</span></div>`).join("")}</div>
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="nx">${d.last?"Résultat final ➜":"Suivante ➜"}</button></div>`:`<div class="status">L'hôte continue…</div>`}</div>`);
+    if(isHost)$("nx").onclick=hostNext;
+  }
+  function sFinal(d,isHost){
+    const s=d.scores.slice().sort((a,b)=>b.score-a.score),top=s[0].score,w=s.filter(x=>x.score===top).map(x=>x.name);
+    screen(`<div class="center"><div class="eyebrow">Fin</div><h2 class="big">${w.length>1?"Égalité !":"🏆 "+UI.esc(w[0])+" gagne !"}</h2>
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="rn">Rejouer (même thème)</button><button class="btn ghost" id="rt">Changer de thème</button></div>`:`<div class="status">L'hôte peut relancer.</div>`}
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+    if(isHost){ $("rn").onclick=hostStart; $("rt").onclick=L.themeHost; }
+  }
+
+  /* SOLO */
+  function soloPlayers(){
+    solo={names:[],scores:{},list:null,idx:0};
+    screen(`<div class="center">${Duo.stepper(2,4)}<div class="eyebrow">1 téléphone</div><h2 class="big">Qui joue ?</h2>
+      <p class="sub">Au moins 2 prénoms.</p><input class="field" id="sn" maxlength="14" placeholder="Prénom">
+      <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="sa">+ Ajouter</button></div>
+      <div class="list" id="sl"></div><div class="btn-row"><button class="btn ghost" id="sb">Retour</button><button class="btn primary" id="sg" disabled>Choisir le thème ➜</button></div></div>`);
+    const add=()=>{ const n=$("sn").value.trim(); if(n.length<2)return; let name=n,i=2; while(solo.names.includes(name))name=n+" "+(i++); solo.names.push(name); solo.scores[name]=0; $("sn").value=""; $("sl").innerHTML=solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join(""); $("sg").disabled=solo.names.length<2; $("sn").focus(); };
+    $("sa").onclick=add; $("sn").addEventListener("keydown",e=>{if(e.key==="Enter")add();});
+    $("sb").onclick=L.home; $("sg").onclick=()=>soloTheme(th=>{ theme=th; solo.list=build(theme); solo.idx=0; solo.names.forEach(n=>solo.scores[n]=0); soloStmt(); },soloPlayers);
+  }
+  function soloStmt(){
+    if(solo.idx>=ROUND){ soloFinal(); return; }
+    screen(`<div class="center"><div class="eyebrow">${solo.idx+1}/${ROUND}</div>
+      <div class="stmt">${UI.esc(solo.list[solo.idx][0])}</div>
+      <p class="sub">Chacun répond à son tour :</p><div class="btn-row"><button class="btn primary" id="go">C'est parti ➜</button></div></div>`);
+    $("go").onclick=()=>soloAsk(0,{});
+  }
+  function soloAsk(pi,res){
+    if(pi>=solo.names.length){ const truth=solo.list[solo.idx][1]; solo.names.forEach(n=>{if(res[n]===truth)solo.scores[n]++;}); soloReveal(res,truth); return; }
+    const who=solo.names[pi];
+    screen(`<div class="center"><div class="eyebrow">${UI.esc(who)}, à toi</div>
+      <div class="stmt">${UI.esc(solo.list[solo.idx][0])}</div>
+      <div class="btn-row"><button class="btn primary" id="bv">✅ Vrai</button><button class="btn danger" id="bf">❌ Faux</button></div></div>`);
+    $("bv").onclick=()=>{ res[who]=true; soloAsk(pi+1,res); };
+    $("bf").onclick=()=>{ res[who]=false; soloAsk(pi+1,res); };
+  }
+  function soloReveal(res,truth){
+    screen(`<div class="center"><div class="eyebrow">Résultat</div><h2 class="big">C'était ${truth?"✅ VRAI":"❌ FAUX"}</h2>
+      <div class="reveal-list" style="width:100%;max-width:340px;margin:12px auto;">${solo.names.map(n=>{const ok=res[n]===truth;return `<div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--panel);border:1px solid ${ok?"var(--ok)":"rgba(225,90,76,.5)"};margin-bottom:6px;"><span>${UI.esc(n)}</span><span style="color:var(--text);">${res[n]?"Vrai":"Faux"}</span><span>${ok?"✅":"❌"}</span></div>`;}).join("")}</div>
+      <div class="scores">${solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a]).map((n,i)=>`<div class="row${i===0&&solo.scores[n]>0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pts</span></div>`).join("")}</div>
+      <div class="btn-row"><button class="btn primary" id="nx">${solo.idx>=ROUND-1?"Résultat final ➜":"Suivante ➜"}</button></div></div>`);
+    $("nx").onclick=()=>{ solo.idx++; soloStmt(); };
+  }
+  function soloFinal(){
+    const sorted=solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a]),top=solo.scores[sorted[0]],w=sorted.filter(n=>solo.scores[n]===top);
+    screen(`<div class="center"><div class="eyebrow">Fin</div><h2 class="big">${w.length>1?"Égalité !":"🏆 "+UI.esc(w[0])+" gagne !"}</h2>
+      <div class="scores">${sorted.map((n,i)=>`<div class="row${i===0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pts</span></div>`).join("")}</div>
+      <div class="btn-row"><button class="btn primary" id="rn">Rejouer</button><button class="btn ghost" id="rt">Changer de thème</button></div>
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+    $("rn").onclick=()=>{ solo.list=build(theme); solo.idx=0; solo.names.forEach(n=>solo.scores[n]=0); soloStmt(); };
+    $("rt").onclick=()=>soloTheme(th=>{theme=th;solo.list=build(theme);solo.idx=0;solo.names.forEach(n=>solo.scores[n]=0);soloStmt();},soloPlayers);
+  }
+
+  L.home();
+})();
+</script>
+</body>
+</html>

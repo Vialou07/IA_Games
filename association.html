@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Association</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body{--accent:#D98B4A;--accent-dark:#8A5526;}
+  .btn.primary{color:#231400;}
+  .assoc-item{background:var(--panel);border:1px solid rgba(200,170,110,.4);padding:12px 14px;margin:0 auto 10px;
+    max-width:400px;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+  .assoc-item .nm{font-size:.98rem;}
+  .assoc-item .grp-btns{display:flex;gap:6px;}
+  .grp-btn{background:transparent;border:1px solid rgba(200,170,110,.35);color:var(--dim);cursor:pointer;
+    padding:8px 10px;font-size:.72rem;font-family:'Cinzel',serif;border-radius:2px;max-width:110px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .grp-btn.on{border-color:var(--accent);color:var(--ink);background:var(--panel2);}
+  .grp-btn.right{border-color:var(--ok);color:var(--ok);}
+  .grp-btn.wrong{border-color:var(--danger);color:var(--danger);}
+  .legend{font-size:.78rem;color:var(--dim);text-align:center;margin-bottom:12px;}
+</style>
+</head>
+<body>
+<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Association</h1><div class="rune"></div></div>
+<div class="wrap" id="wrap"></div>
+<footer class="note">Range chaque élément dans le bon camp — 1 point par bon classement.</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="net.js"></script>
+<script src="themes.js"></script>
+<script src="gamedata.js"></script>
+<script src="duo.js"></script>
+<script src="lobby.js"></script>
+<script>
+(function(){
+  const DATA=GDATA.match, META=Duo.META, $=Duo.$, screen=Duo.screen;
+  const N=6, ROUNDS=5;
+  let L, theme=null, game=null, solo=null;
+
+  function buildRound(th){
+    const g=DATA[th];
+    const picks=UI.shuffle(g.pairs.slice()).slice(0,N);
+    return { groups:g.groups, items:UI.shuffle(picks) }; // items = [name, correctGroup]
+  }
+
+  L=makeLobby({
+    game:"assoc", title:"Association",
+    subtitle:"6 éléments, 2 camps. Range chacun dans le bon groupe. 1 point par bon classement. Le meilleur score sur "+ROUNDS+" manches gagne.",
+    minPlayers:2, themeHint:ROUNDS+" grilles tirées au hasard.",
+    reset:()=>{game=null;},
+    onThemeChosen:()=>{ theme=L.theme; hostStart(); },
+    onHostData:(id,d)=>{ if(d&&d.t==="submit")hostSubmit(id,d.assign); },
+    onLeave:()=>{ if(game&&!game.done)checkAll(); },
+    onData:d=>guestData(d),
+    soloStart:()=>soloPlayers(),
+  });
+
+  function hostStart(){ L.players.forEach(p=>p.score=0); game={idx:0,round:null,subs:{},done:false}; pushRound(); }
+  function pushRound(){ game.round=buildRound(theme); game.subs={};
+    const p={t:"grid",theme,idx:game.idx,total:ROUNDS,groups:game.round.groups,items:game.round.items.map(x=>x[0])};
+    L.broadcast(p); sGrid(p,true);
+  }
+  function hostSubmit(pid,assign){ if(!game||game.done||game.subs[pid]!==undefined)return; game.subs[pid]=assign; checkAll(); }
+  function checkAll(){ const rem=L.players.length-Object.keys(game.subs).filter(k=>L.players.some(p=>p.id===k)).length; L.broadcast({t:"waitcount",remaining:rem}); setWait(rem); if(rem<=0)reveal(); }
+  function reveal(){
+    const correct={}; game.round.items.forEach(x=>correct[x[0]]=x[1]);
+    const rows=L.players.map(p=>{ const a=game.subs[p.id]||{}; let good=0; game.round.items.forEach(x=>{ if(a[x[0]]===x[1])good++; }); p.score+=good; return {name:p.name,good}; });
+    const last=game.idx>=ROUNDS-1;
+    const pl={t:"reveal",correct:game.round.items,groups:game.round.groups,rows,scores:L.players.map(p=>({name:p.name,score:p.score})),last};
+    L.broadcast(pl); sReveal(pl,true);
+  }
+  function hostNext(){ if(game.idx>=ROUNDS-1){ game.done=true; const f={t:"final",scores:L.players.map(p=>({name:p.name,score:p.score}))}; L.broadcast(f); sFinal(f,true);} else { game.idx++; pushRound(); } }
+  function guestData(d){ if(!d||!d.t)return;
+    if(d.t==="grid"){ L.started=true; theme=d.theme; sGrid(d,false); }
+    if(d.t==="waitcount")setWait(d.remaining);
+    if(d.t==="reveal")sReveal(d,false);
+    if(d.t==="final")sFinal(d,false);
+  }
+
+  let submitted=false;
+  function sGrid(d,isHost){
+    submitted=false;
+    const assign={};
+    screen(`<div class="center" style="justify-content:flex-start;">
+      <div class="eyebrow">Thème : ${META[d.theme].label} · Grille ${d.idx+1}/${d.total}</div>
+      <div class="legend">Range chaque élément : <b>${UI.esc(d.groups[0])}</b> ou <b>${UI.esc(d.groups[1])}</b></div>
+      <div id="items" style="width:100%;"></div>
+      <div class="sticky-actions" style="position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--void) 30%);padding:12px 0 4px;">
+        <button class="btn primary" id="submit" disabled>Valider mes choix</button>
+      </div>
+      <div class="status" id="ws"></div></div>`);
+    d.items.forEach(name=>{
+      const row=document.createElement("div"); row.className="assoc-item";
+      row.innerHTML=`<span class="nm">${UI.esc(name)}</span><div class="grp-btns">
+        <button class="grp-btn" data-g="0">${UI.esc(d.groups[0])}</button>
+        <button class="grp-btn" data-g="1">${UI.esc(d.groups[1])}</button></div>`;
+      row.querySelectorAll(".grp-btn").forEach(btn=>btn.onclick=()=>{
+        if(submitted)return;
+        assign[name]=d.groups[+btn.dataset.g];
+        row.querySelectorAll(".grp-btn").forEach(x=>x.classList.remove("on"));
+        btn.classList.add("on");
+        if(Object.keys(assign).length===d.items.length)$("submit").disabled=false;
+      });
+      $("items").appendChild(row);
+    });
+    $("submit").onclick=()=>{
+      if(submitted)return; submitted=true;
+      document.querySelectorAll(".grp-btn").forEach(x=>x.disabled=true);
+      $("submit").disabled=true;
+      $("ws").textContent="✓ Envoyé — on attend les autres…"; $("ws").className="status ok";
+      if(Net.isHost())hostSubmit("H",assign); else Net.send({t:"submit",assign});
+    };
+  }
+  function setWait(r){ const s=$("ws"); if(s&&submitted)s.textContent=r>0?`✓ Envoyé — encore ${r}…`:"Résultat…"; }
+  function sReveal(d,isHost){
+    screen(`<div class="center" style="justify-content:flex-start;"><div class="eyebrow">Corrigé</div>
+      <h2 class="big" style="font-size:1.1rem;">Les bonnes réponses</h2>
+      <div style="width:100%;max-width:400px;margin:8px auto;">${d.correct.map(x=>`<div class="assoc-item"><span class="nm">${UI.esc(x[0])}</span><span class="grp-btn right on">${UI.esc(x[1])}</span></div>`).join("")}</div>
+      <div class="reveal-list" style="width:100%;max-width:340px;margin:12px auto;">${d.rows.map(r=>`<div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--panel);border:1px solid ${r.good===d.correct.length?"var(--ok)":"rgba(200,170,110,.3)"};margin-bottom:6px;"><span>${UI.esc(r.name)}</span><span class="pts" style="color:var(--gold);">${r.good}/${d.correct.length}</span></div>`).join("")}</div>
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="nx">${d.last?"Résultat final ➜":"Grille suivante ➜"}</button></div>`:`<div class="status">L'hôte continue…</div>`}</div>`);
+    if(isHost)$("nx").onclick=hostNext;
+  }
+  function sFinal(d,isHost){
+    const s=d.scores.slice().sort((a,b)=>b.score-a.score),top=s[0].score,w=s.filter(x=>x.score===top).map(x=>x.name);
+    screen(`<div class="center"><div class="eyebrow">Fin</div><h2 class="big">${w.length>1?"Égalité !":"🏆 "+UI.esc(w[0])+" gagne !"}</h2>
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="rn">Rejouer (même thème)</button><button class="btn ghost" id="rt">Changer de thème</button></div>`:`<div class="status">L'hôte peut relancer.</div>`}
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+    if(isHost){ $("rn").onclick=hostStart; $("rt").onclick=L.themeHost; }
+  }
+
+  /* SOLO */
+  function soloPlayers(){
+    solo={names:[],scores:{},idx:0,round:null};
+    screen(`<div class="center">${Duo.stepper(2,4)}<div class="eyebrow">1 téléphone</div><h2 class="big">Qui joue ?</h2>
+      <p class="sub">Au moins 2 prénoms.</p><input class="field" id="sn" maxlength="14" placeholder="Prénom">
+      <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="sa">+ Ajouter</button></div>
+      <div class="list" id="slist"></div><div class="btn-row"><button class="btn ghost" id="sb">Retour</button><button class="btn primary" id="sg" disabled>Choisir le thème ➜</button></div></div>`);
+    const add=()=>{ const n=$("sn").value.trim(); if(n.length<2)return; let name=n,i=2; while(solo.names.includes(name))name=n+" "+(i++); solo.names.push(name); solo.scores[name]=0; $("sn").value=""; $("slist").innerHTML=solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join(""); $("sg").disabled=solo.names.length<2; $("sn").focus(); };
+    $("sa").onclick=add; $("sn").addEventListener("keydown",e=>{if(e.key==="Enter")add();});
+    $("sb").onclick=L.home; $("sg").onclick=()=>soloTheme(th=>{ theme=th; solo.idx=0; solo.names.forEach(n=>solo.scores[n]=0); soloRound(); },soloPlayers);
+  }
+  function soloRound(){
+    if(solo.idx>=ROUNDS){ soloFinal(); return; }
+    solo.round=buildRound(theme);
+    screen(`<div class="center"><div class="eyebrow">Grille ${solo.idx+1}/${ROUNDS}</div>
+      <h2 class="big" style="font-size:1.1rem;">Chacun son tour</h2>
+      <p class="sub">Passez le téléphone. Chacun range les 6 éléments.</p>
+      <div class="btn-row"><button class="btn primary" id="go">Commencer ➜</button></div></div>`);
+    $("go").onclick=()=>soloAsk(0,{});
+  }
+  function soloAsk(pi,res){
+    if(pi>=solo.names.length){ const correct={}; solo.round.items.forEach(x=>correct[x[0]]=x[1]); solo.names.forEach(n=>{ let g=0; solo.round.items.forEach(x=>{if((res[n]||{})[x[0]]===x[1])g++;}); solo.scores[n]+=g; res[n]={_good:g}; }); soloReveal(res); return; }
+    const who=solo.names[pi], r=solo.round;
+    const assign={};
+    screen(`<div class="center" style="justify-content:flex-start;"><div class="eyebrow">${UI.esc(who)}, à toi</div>
+      <div class="legend">Range : <b>${UI.esc(r.groups[0])}</b> ou <b>${UI.esc(r.groups[1])}</b></div>
+      <div id="items" style="width:100%;"></div>
+      <div class="sticky-actions" style="position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--void) 30%);padding:12px 0 4px;"><button class="btn primary" id="submit" disabled>Valider</button></div></div>`);
+    r.items.forEach(x=>{
+      const name=x[0];
+      const row=document.createElement("div"); row.className="assoc-item";
+      row.innerHTML=`<span class="nm">${UI.esc(name)}</span><div class="grp-btns"><button class="grp-btn" data-g="0">${UI.esc(r.groups[0])}</button><button class="grp-btn" data-g="1">${UI.esc(r.groups[1])}</button></div>`;
+      row.querySelectorAll(".grp-btn").forEach(btn=>btn.onclick=()=>{ assign[name]=r.groups[+btn.dataset.g]; row.querySelectorAll(".grp-btn").forEach(y=>y.classList.remove("on")); btn.classList.add("on"); if(Object.keys(assign).length===r.items.length)$("submit").disabled=false; });
+      $("items").appendChild(row);
+    });
+    $("submit").onclick=()=>{ res[who]=assign; soloAsk(pi+1,res); };
+  }
+  function soloReveal(res){
+    screen(`<div class="center" style="justify-content:flex-start;"><div class="eyebrow">Corrigé</div>
+      <div style="width:100%;max-width:400px;margin:8px auto;">${solo.round.items.map(x=>`<div class="assoc-item"><span class="nm">${UI.esc(x[0])}</span><span class="grp-btn right on">${UI.esc(x[1])}</span></div>`).join("")}</div>
+      <div class="reveal-list" style="width:100%;max-width:340px;margin:12px auto;">${solo.names.map(n=>`<div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--panel);border:1px solid rgba(200,170,110,.3);margin-bottom:6px;"><span>${UI.esc(n)}</span><span class="pts" style="color:var(--gold);">${res[n]._good}/${N}</span></div>`).join("")}</div>
+      <div class="scores">${solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a]).map((n,i)=>`<div class="row${i===0&&solo.scores[n]>0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pts</span></div>`).join("")}</div>
+      <div class="btn-row"><button class="btn primary" id="nx">${solo.idx>=ROUNDS-1?"Résultat final ➜":"Grille suivante ➜"}</button></div></div>`);
+    $("nx").onclick=()=>{ solo.idx++; soloRound(); };
+  }
+  function soloFinal(){
+    const sorted=solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a]),top=solo.scores[sorted[0]],w=sorted.filter(n=>solo.scores[n]===top);
+    screen(`<div class="center"><div class="eyebrow">Fin</div><h2 class="big">${w.length>1?"Égalité !":"🏆 "+UI.esc(w[0])+" gagne !"}</h2>
+      <div class="scores">${sorted.map((n,i)=>`<div class="row${i===0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pts</span></div>`).join("")}</div>
+      <div class="btn-row"><button class="btn primary" id="rn">Rejouer</button><button class="btn ghost" id="rt">Changer de thème</button></div>
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+    $("rn").onclick=()=>{ solo.idx=0; solo.names.forEach(n=>solo.scores[n]=0); soloRound(); };
+    $("rt").onclick=()=>soloTheme(th=>{theme=th;solo.idx=0;solo.names.forEach(n=>solo.scores[n]=0);soloRound();},soloPlayers);
+  }
+
+  L.home();
+})();
+</script>
+</body>
+</html>

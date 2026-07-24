@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Plus ou Moins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body{--accent:#6FBF73;--accent-dark:#3F7A43;}
+  .btn.primary{color:#04210E;}
+  .vs-wrap{display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;margin:10px auto;}
+  .vs-card{background:var(--panel);border:1px solid var(--gold);padding:16px;text-align:center;
+    clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);}
+  .vs-card .name{font-family:'Cinzel',serif;font-size:1.15rem;color:var(--ink);}
+  .vs-card .val{font-family:'Cinzel',serif;font-size:1.6rem;color:var(--accent);margin-top:6px;}
+  .vs-card .unit{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-top:2px;}
+  .vs-mid{text-align:center;font-family:'Cinzel',serif;color:var(--gold);font-size:.9rem;}
+</style>
+</head>
+<body>
+<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>Plus ou Moins</h1><div class="rune"></div></div>
+<div class="wrap" id="wrap"></div>
+<footer class="note">Compare deux éléments — plus haut ou plus bas ?</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="net.js"></script>
+<script src="themes.js"></script>
+<script src="gamedata.js"></script>
+<script src="duo.js"></script>
+<script src="lobby.js"></script>
+<script>
+(function(){
+  const DATA=GDATA.higher, META=Duo.META, $=Duo.$, screen=Duo.screen;
+  const ROUNDS=8;
+  let L, theme=null, game=null, answered=false, solo=null;
+
+  function buildChain(th){
+    const items=UI.shuffle(DATA[th].items.slice()).slice(0,ROUNDS+1);
+    return { unit:DATA[th].unit, seq:items };
+  }
+
+  L = makeLobby({
+    game:"hilo", title:"Plus ou Moins",
+    subtitle:"Un élément est affiché avec sa valeur. Devine si le suivant a une valeur plus haute ou plus basse. Bonne réponse = 1 point, et on continue avec le nouveau.",
+    minPlayers:2, playersLabel:"2 joueurs ou plus",
+    themeHint:"8 duels tirés au hasard.",
+    reset:()=>{ game=null; },
+    onThemeChosen:(th)=>{ theme=th; hostStart(); },
+    onHostData:(id,d)=>{ if(d&&d.t==="answer") hostAnswer(id,d.dir); },
+    onLeave:()=>{ if(game&&!game.done) checkAll(); },
+    onData:(d)=>guestData(d),
+    soloStart:()=>soloPlayers(),
+  });
+
+  /* ─ NET (hôte) ─ */
+  function hostStart(){ L.players.forEach(p=>p.score=0); const c=buildChain(theme); game={unit:c.unit,seq:c.seq,idx:0,answers:{},done:false}; pushDuel(); }
+  function pushDuel(){ game.answers={}; const cur=game.seq[game.idx], nxt=game.seq[game.idx+1];
+    const p={t:"duel",theme,unit:game.unit,idx:game.idx,total:ROUNDS,cur:{name:cur[0],val:cur[1]},nextName:nxt[0]};
+    L.broadcast(p); sDuel(p,true);
+  }
+  function hostAnswer(pid,dir){ if(!game||game.done||game.answers[pid]!==undefined)return; game.answers[pid]=dir; checkAll(); }
+  function checkAll(){ const rem=L.players.length-Object.keys(game.answers).filter(k=>L.players.some(p=>p.id===k)).length; L.broadcast({t:"waitcount",remaining:rem}); setWait(rem); if(rem<=0)hostReveal(); }
+  function hostReveal(){
+    const cur=game.seq[game.idx], nxt=game.seq[game.idx+1];
+    const correct = nxt[1]>=cur[1] ? "plus" : "moins";
+    const rows=L.players.map(p=>{ const a=game.answers[p.id]; const ok=a===correct; if(ok)p.score++; return {name:p.name,ok,ans:a||null}; });
+    const last=game.idx>=ROUNDS-1;
+    L.broadcast({t:"reveal",cur:{name:cur[0],val:cur[1]},next:{name:nxt[0],val:nxt[1]},unit:game.unit,correct,rows,scores:L.players.map(p=>({name:p.name,score:p.score})),last});
+    sReveal({cur:{name:cur[0],val:cur[1]},next:{name:nxt[0],val:nxt[1]},unit:game.unit,correct,rows,scores:L.players.map(p=>({name:p.name,score:p.score})),last},true);
+  }
+  function hostNext(){ if(game.idx>=ROUNDS-1){ game.done=true; const f={t:"final",scores:L.players.map(p=>({name:p.name,score:p.score}))}; L.broadcast(f); sFinal(f,true);} else { game.idx++; pushDuel(); } }
+  function guestData(d){
+    if(!d||!d.t)return;
+    if(d.t==="duel"){ L.started=true; theme=d.theme; sDuel(d,false); }
+    if(d.t==="waitcount")setWait(d.remaining);
+    if(d.t==="reveal")sReveal(d,false);
+    if(d.t==="final")sFinal(d,false);
+  }
+
+  /* ─ AFFICHAGE ─ */
+  function sDuel(d,isHost){
+    answered=false;
+    screen(`<div class="center">
+      <div class="eyebrow">Thème : ${META[d.theme].label} · Duel ${d.idx+1}/${d.total}</div>
+      <div class="vs-wrap">
+        <div class="vs-card"><div class="name">${UI.esc(d.cur.name)}</div><div class="val">${d.cur.val}</div><div class="unit">${UI.esc(d.unit)}</div></div>
+        <div class="vs-mid">▼ et ${UI.esc(d.nextName)} ? ▼</div>
+        <div class="vs-card"><div class="name">${UI.esc(d.nextName)}</div><div class="val">?</div><div class="unit">${UI.esc(d.unit)}</div></div>
+      </div>
+      <div class="btn-row" style="margin-top:6px;">
+        <button class="btn primary" id="b-plus">⬆️ Plus</button>
+        <button class="btn danger" id="b-moins">⬇️ Moins</button>
+      </div>
+      <div class="status" id="ws" style="margin-top:12px;">Plus haut ou plus bas que ${d.cur.val} ?</div></div>`);
+    const pick=dir=>{ if(answered)return; answered=true;
+      $("b-plus").disabled=true; $("b-moins").disabled=true;
+      $("ws").textContent="✓ Réponse envoyée — on attend les autres…"; $("ws").className="status ok";
+      if(Net.isHost())hostAnswer("H",dir); else Net.send({t:"answer",dir});
+    };
+    $("b-plus").onclick=()=>pick("plus"); $("b-moins").onclick=()=>pick("moins");
+  }
+  function setWait(r){ const s=$("ws"); if(s&&answered)s.textContent=r>0?`✓ Réponse envoyée — encore ${r}…`:"Résultat…"; }
+  function sReveal(d,isHost){
+    screen(`<div class="center">
+      <div class="eyebrow">Résultat</div>
+      <h2 class="big" style="font-size:1.1rem;">${UI.esc(d.next.name)} : ${d.next.val}</h2>
+      <p class="sub">C'était <b>${d.correct==="plus"?"plus haut ⬆️":"plus bas ⬇️"}</b> que ${UI.esc(d.cur.name)} (${d.cur.val}).</p>
+      <div class="reveal-list" style="width:100%;max-width:340px;margin:10px auto;">${d.rows.map(r=>`<div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--panel);border:1px solid ${r.ok?"var(--ok)":"rgba(225,90,76,.5)"};margin-bottom:6px;"><span>${UI.esc(r.name)}</span><span style="font-style:italic;color:var(--text);">${r.ans?(r.ans==="plus"?"⬆️ Plus":"⬇️ Moins"):"(rien)"}</span><span>${r.ok?"✅":"❌"}</span></div>`).join("")}</div>
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="nx">${d.last?"Résultat final ➜":"Duel suivant ➜"}</button></div>`:`<div class="status">L'hôte continue…</div>`}</div>`);
+    if(isHost)$("nx").onclick=hostNext;
+  }
+  function sFinal(d,isHost){
+    const s=d.scores.slice().sort((a,b)=>b.score-a.score), top=s[0].score, w=s.filter(x=>x.score===top).map(x=>x.name);
+    screen(`<div class="center"><div class="eyebrow">Fin de la partie</div>
+      <h2 class="big">${w.length>1?"Égalité !":"🏆 "+UI.esc(w[0])+" gagne !"}</h2>
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="rn">Rejouer (même thème)</button><button class="btn ghost" id="rt">Changer de thème</button></div>`:`<div class="status">L'hôte peut relancer.</div>`}
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+    if(isHost){ $("rn").onclick=hostStart; $("rt").onclick=L.themeHost; }
+  }
+
+  /* ─ SOLO ─ */
+  function soloPlayers(){
+    solo={names:[],scores:{},chain:null,idx:0};
+    screen(`<div class="center">${Duo.stepper(2,4)}<div class="eyebrow">1 téléphone</div><h2 class="big">Qui joue ?</h2>
+      <p class="sub">Au moins 2 prénoms. Chacun répond à son tour à chaque duel.</p>
+      <input class="field" id="sn" maxlength="14" placeholder="Prénom">
+      <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="sa">+ Ajouter</button></div>
+      <div class="list" id="sl"></div>
+      <div class="btn-row"><button class="btn ghost" id="sb">Retour</button><button class="btn primary" id="sg" disabled>Choisir le thème ➜</button></div></div>`);
+    const add=()=>{ const n=$("sn").value.trim(); if(n.length<2)return; let name=n,i=2; while(solo.names.includes(name))name=n+" "+(i++); solo.names.push(name); solo.scores[name]=0; $("sn").value=""; $("sl").innerHTML=solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join(""); $("sg").disabled=solo.names.length<2; $("sn").focus(); };
+    $("sa").onclick=add; $("sn").addEventListener("keydown",e=>{if(e.key==="Enter")add();});
+    $("sb").onclick=L.home; $("sg").onclick=()=>soloTheme(th=>{ theme=th; solo.chain=buildChain(theme); solo.idx=0; solo.names.forEach(n=>solo.scores[n]=0); soloDuel(); }, soloPlayers);
+  }
+  function soloDuel(){
+    if(solo.idx>=ROUNDS){ soloFinal(); return; }
+    const cur=solo.chain.seq[solo.idx], nxt=solo.chain.seq[solo.idx+1];
+    screen(`<div class="center"><div class="eyebrow">Duel ${solo.idx+1}/${ROUNDS}</div>
+      <div class="vs-wrap"><div class="vs-card"><div class="name">${UI.esc(cur[0])}</div><div class="val">${cur[1]}</div><div class="unit">${UI.esc(solo.chain.unit)}</div></div>
+      <div class="vs-mid">▼ et ${UI.esc(nxt[0])} ? ▼</div>
+      <div class="vs-card"><div class="name">${UI.esc(nxt[0])}</div><div class="val">?</div></div></div>
+      <p class="sub">Chacun répond à son tour :</p><div class="btn-row"><button class="btn primary" id="go">C'est parti ➜</button></div></div>`);
+    $("go").onclick=()=>soloAsk(0,{});
+  }
+  function soloAsk(pi,res){
+    if(pi>=solo.names.length){ const cur=solo.chain.seq[solo.idx], nxt=solo.chain.seq[solo.idx+1]; const correct=nxt[1]>=cur[1]?"plus":"moins"; solo.names.forEach(n=>{if(res[n]===correct)solo.scores[n]++;}); soloReveal(res,correct); return; }
+    const who=solo.names[pi], cur=solo.chain.seq[solo.idx], nxt=solo.chain.seq[solo.idx+1];
+    screen(`<div class="center"><div class="eyebrow">${UI.esc(who)}, à toi</div>
+      <div class="vs-wrap"><div class="vs-card"><div class="name">${UI.esc(cur[0])}</div><div class="val">${cur[1]}</div></div><div class="vs-mid">▼ et ${UI.esc(nxt[0])} ? ▼</div></div>
+      <div class="btn-row"><button class="btn primary" id="bp">⬆️ Plus</button><button class="btn danger" id="bm">⬇️ Moins</button></div></div>`);
+    $("bp").onclick=()=>{ res[who]="plus"; soloAsk(pi+1,res); };
+    $("bm").onclick=()=>{ res[who]="moins"; soloAsk(pi+1,res); };
+  }
+  function soloReveal(res,correct){
+    const cur=solo.chain.seq[solo.idx], nxt=solo.chain.seq[solo.idx+1];
+    screen(`<div class="center"><div class="eyebrow">Résultat</div>
+      <h2 class="big" style="font-size:1.1rem;">${UI.esc(nxt[0])} : ${nxt[1]}</h2>
+      <p class="sub">C'était <b>${correct==="plus"?"plus haut ⬆️":"plus bas ⬇️"}</b>.</p>
+      <div class="reveal-list" style="width:100%;max-width:340px;margin:10px auto;">${solo.names.map(n=>{const ok=res[n]===correct;return `<div style="display:flex;justify-content:space-between;padding:9px 12px;background:var(--panel);border:1px solid ${ok?"var(--ok)":"rgba(225,90,76,.5)"};margin-bottom:6px;"><span>${UI.esc(n)}</span><span style="color:var(--text);">${res[n]==="plus"?"⬆️":"⬇️"}</span><span>${ok?"✅":"❌"}</span></div>`;}).join("")}</div>
+      <div class="scores">${solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a]).map((n,i)=>`<div class="row${i===0&&solo.scores[n]>0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pts</span></div>`).join("")}</div>
+      <div class="btn-row"><button class="btn primary" id="nx">${solo.idx>=ROUNDS-1?"Résultat final ➜":"Duel suivant ➜"}</button></div></div>`);
+    $("nx").onclick=()=>{ solo.idx++; soloDuel(); };
+  }
+  function soloFinal(){
+    const sorted=solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a]), top=solo.scores[sorted[0]], w=sorted.filter(n=>solo.scores[n]===top);
+    screen(`<div class="center"><div class="eyebrow">Fin</div><h2 class="big">${w.length>1?"Égalité !":"🏆 "+UI.esc(w[0])+" gagne !"}</h2>
+      <div class="scores">${sorted.map((n,i)=>`<div class="row${i===0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pts</span></div>`).join("")}</div>
+      <div class="btn-row"><button class="btn primary" id="rn">Rejouer</button><button class="btn ghost" id="rt">Changer de thème</button></div>
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+    $("rn").onclick=()=>{ solo.chain=buildChain(theme); solo.idx=0; solo.names.forEach(n=>solo.scores[n]=0); soloDuel(); };
+    $("rt").onclick=()=>soloTheme(th=>{theme=th;solo.chain=buildChain(theme);solo.idx=0;solo.names.forEach(n=>solo.scores[n]=0);soloDuel();},soloPlayers);
+  }
+
+  L.home();
+})();
+</script>
+</body>
+</html>
