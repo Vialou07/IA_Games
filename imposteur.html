@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>L'Imposteur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body{--accent:#D65D8C;--accent-dark:#8F3A5D;}
+  .word-card{background:var(--panel);border:1px solid var(--gold);max-width:320px;width:100%;margin:10px auto;
+    padding:26px 18px;text-align:center;cursor:pointer;user-select:none;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
+  .word-card .role{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;}
+  .word-card .role.civil{color:var(--ok);}
+  .word-card .role.imp{color:var(--danger);}
+  .word-card .word{font-family:'Cinzel',serif;font-size:1.5rem;color:var(--ink);word-break:break-word;}
+  .word-card.hidden-word .word, .word-card.hidden-word .role{filter:blur(10px);}
+  .word-card .hint{font-size:.7rem;color:var(--dim);margin-top:12px;}
+  .cat-badge{font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;}
+</style>
+</head>
+<body>
+<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>L'Imposteur</h1><div class="rune"></div></div>
+<div class="wrap">
+
+  <div class="screen active center" id="s-home">
+    <div class="eyebrow">3 joueurs ou plus</div>
+    <h2 class="big">Un mot pour tous… sauf un</h2>
+    <p class="sub">Tout le monde reçoit le même mot, sauf l'imposteur qui en reçoit un très proche. Chacun donne des indices à voix haute sans être trop précis, puis on vote pour démasquer l'imposteur. +1 si tu le trouves, +3 pour lui s'il passe entre les mailles.</p>
+    <div class="btn-col">
+      <button class="btn primary" id="b-create">Créer une partie (multi-téléphones)</button>
+      <button class="btn" id="b-join">Rejoindre avec un code</button>
+      <button class="btn ghost" id="b-solo">Jouer sur 1 seul téléphone</button>
+    </div>
+  </div>
+
+  <div class="screen center" id="s-name">
+    <div class="eyebrow" id="name-eyebrow">Ton prénom</div>
+    <h2 class="big">Comment tu t'appelles ?</h2>
+    <input class="field" id="name-input" maxlength="14" placeholder="Prénom">
+    <input class="field code" id="name-code" maxlength="4" autocapitalize="characters" placeholder="XXXX" style="display:none;">
+    <div class="status warn" id="name-err" style="display:none;"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="b-name-back">Retour</button>
+      <button class="btn primary" id="b-name-go" disabled>Continuer</button>
+    </div>
+  </div>
+
+  <div class="screen center" id="s-lobby">
+    <div class="eyebrow">Salon</div>
+    <div class="code-box" id="lobby-code">····</div>
+    <p class="sub" style="margin-bottom:8px;">Chacun ouvre le même lien → L'Imposteur → « Rejoindre » avec ce code.</p>
+    <div class="list" id="lobby-list"></div>
+    <div class="status" id="lobby-status"></div>
+    <div class="btn-row"><button class="btn primary" id="b-launch" style="display:none;" disabled>Lancer la manche</button></div>
+  </div>
+
+  <div class="screen center" id="s-word">
+    <div class="cat-badge" id="word-cat"></div>
+    <h2 class="big" style="font-size:1.15rem;">Ton mot secret</h2>
+    <div class="word-card hidden-word" id="word-card">
+      <div class="role" id="word-role"></div>
+      <div class="word" id="word-text"></div>
+      <div class="hint">Touche la carte pour révéler / cacher</div>
+    </div>
+    <p class="sub" style="font-size:.82rem;">Chacun donne <b>2 indices à voix haute</b>, à tour de rôle. L'imposteur doit se fondre dans la masse. Ordre de parole : <span id="word-order"></span></p>
+    <div class="status" id="word-status"></div>
+    <div class="btn-row"><button class="btn primary" id="b-tovote" style="display:none;">Passer au vote</button></div>
+  </div>
+
+  <div class="screen center" id="s-vote">
+    <div class="eyebrow">Vote</div>
+    <h2 class="big">Qui est l'imposteur ?</h2>
+    <div class="list" id="vote-list"></div>
+    <div class="status" id="vote-status"></div>
+  </div>
+
+  <div class="screen center" id="s-result">
+    <div class="eyebrow" id="res-eyebrow"></div>
+    <h2 class="big" id="res-title"></h2>
+    <p class="sub" id="res-sub"></p>
+    <div class="scores" id="res-scores"></div>
+    <div class="btn-row">
+      <button class="btn primary" id="b-next" style="display:none;">Nouvelle manche</button>
+      <a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Menu des jeux</a>
+    </div>
+    <div class="status" id="res-wait"></div>
+  </div>
+
+  <!-- solo -->
+  <div class="screen center" id="s-solo-setup">
+    <div class="eyebrow">1 téléphone</div>
+    <h2 class="big">Qui joue ?</h2>
+    <p class="sub" style="margin-bottom:8px;">Ajoute au moins 3 prénoms.</p>
+    <input class="field" id="solo-name" maxlength="14" placeholder="Prénom">
+    <div class="btn-row" style="margin-bottom:10px;"><button class="btn ghost" id="b-solo-add">Ajouter</button></div>
+    <div class="list" id="solo-list"></div>
+    <div class="btn-row"><button class="btn primary" id="b-solo-start" disabled>Lancer la manche</button></div>
+  </div>
+
+  <div class="screen center" id="s-solo-pass">
+    <div class="eyebrow">Passe le téléphone</div>
+    <h2 class="big" id="solo-pass-title"></h2>
+    <p class="sub">Les autres détournent les yeux.</p>
+    <div class="btn-row"><button class="btn primary" id="b-solo-reveal">C'est moi, révéler mon mot</button></div>
+  </div>
+
+</div>
+<footer class="note">Jeu d'ambiance — les indices se donnent à voix haute.</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="net.js"></script>
+<script>
+(function(){
+  const GAME = "imp";
+  const BANK = {
+    "Pokémon": [["Pikachu","Raichu"],["Ectoplasma","Spectrum"],["Ronflex","Goinfrex"],["Évoli","Aquali"],
+      ["Dracaufeu","Dracolosse"],["Magicarpe","Poissirène"],["Miaouss","Persian"],["Rondoudou","Grodoudou"],
+      ["Mewtwo","Mew"],["Onix","Steelix"],["Salamèche","Héricendre"],["Tortank","Carapuce"]],
+    "League of Legends": [["Garen","Darius"],["Yasuo","Yone"],["Ahri","LeBlanc"],["Zed","Talon"],
+      ["Lux","Morgana"],["Jinx","Vi"],["Ezreal","Lucian"],["Blitzcrank","Thresh"],
+      ["Teemo","Kennen"],["Ashe","Varus"],["Leona","Diana"],["Nasus","Renekton"]],
+    "Jeux vidéo": [["Mario","Luigi"],["Minecraft","Terraria"],["Fortnite","PUBG"],["Zelda","Dark Souls"],
+      ["GTA","Cyberpunk"],["Among Us","Fall Guys"],["FIFA","PES"],["Counter-Strike","Valorant"]],
+    "Films & Séries": [["Star Wars","Star Trek"],["Harry Potter","Le Seigneur des Anneaux"],["Titanic","Avatar"],
+      ["Breaking Bad","Narcos"],["Stranger Things","Dark"],["Friends","How I Met Your Mother"],
+      ["Le Roi Lion","Le Livre de la Jungle"],["Inception","Interstellar"]],
+    "Vie courante": [["Café","Thé"],["Croissant","Pain au chocolat"],["Vélo","Trottinette"],["Plage","Piscine"],
+      ["Chien","Chat"],["Pizza","Tacos"],["Ski","Snowboard"],["Métro","Bus"]],
+  };
+  const CATS = Object.keys(BANK);
+  const $ = id => document.getElementById(id);
+
+  // ── état commun ──
+  let players = [];           // [{id,name,score}]  id 'H' pour l'hôte
+  let round = null;           // {cat, pair, impostorId, wordOf:{id:word}, votes:{voterId:targetId}, order:[names]}
+  let usedPairs = new Set();
+  let joinMode = false, myName = "", started = false;
+
+  function pickPair(){
+    const avail = [];
+    CATS.forEach(cat => BANK[cat].forEach((p,i) => { const k = cat+"#"+i; if(!usedPairs.has(k)) avail.push({cat, pair:p, k}); }));
+    if (!avail.length) { usedPairs.clear(); return pickPair(); }
+    const ch = avail[Math.floor(Math.random()*avail.length)];
+    usedPairs.add(ch.k);
+    return ch;
+  }
+  function uniqueName(n){
+    let base = n.trim() || "Joueur", name = base, i = 2;
+    while (players.some(p => p.name === name)) name = base + " " + (i++);
+    return name;
+  }
+  function renderScores(el){
+    const sorted = players.slice().sort((a,b)=>b.score-a.score);
+    el.innerHTML = sorted.map((p,i)=>`<div class="row${i===0&&p.score>0?" top":""}"><span>${UI.esc(p.name)}</span><span class="pts">${p.score} pt${p.score>1?"s":""}</span></div>`).join("");
+  }
+
+  // ══ HÔTE ══
+  function hostAddPlayer(id, name){
+    players.push({ id, name: uniqueName(name), score: 0 });
+    syncLobby();
+  }
+  function syncLobby(){
+    const list = players.map(p => ({ id: p.id, name: p.name, score: p.score }));
+    Net.broadcast({ t: "lobby", players: list, started });
+    renderLobby(list);
+  }
+  function renderLobby(list){
+    $("lobby-list").innerHTML = list.map(p =>
+      `<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span><span class="tag">${p.id==="H"?"hôte":"prêt"}</span></div>`).join("");
+    if (Net.isHost()){
+      $("b-launch").style.display = "";
+      $("b-launch").disabled = list.length < 3;
+      $("lobby-status").textContent = list.length < 3 ? `${list.length}/3 joueurs minimum` : "Prêt à lancer !";
+    } else {
+      $("lobby-status").textContent = "En attente que l'hôte lance la manche…";
+    }
+  }
+
+  function hostLaunchRound(){
+    const { cat, pair } = pickPair();
+    const impostorIdx = Math.floor(Math.random() * players.length);
+    const [wCommon, wImp] = Math.random() < 0.5 ? pair : [pair[1], pair[0]];
+    const order = UI.shuffle(players.map(p=>p.name));
+    round = { cat, pair, wCommon, wImp, impostorId: players[impostorIdx].id, votes: {}, order };
+    players.forEach(p => {
+      const payload = {
+        t: "round", cat, order,
+        role: p.id === round.impostorId ? "imp" : "civil",
+        word: p.id === round.impostorId ? wImp : wCommon,
+      };
+      if (p.id === "H") showWord(payload); else Net.sendTo(p.id, payload);
+    });
+  }
+  function hostToVote(){
+    round.votes = {};
+    const names = players.map(p=>({id:p.id,name:p.name}));
+    Net.broadcast({ t: "vote", players: names });
+    showVote(names);
+  }
+  function hostRegisterVote(voterId, targetId){
+    if (!round || round.votes[voterId] !== undefined) return;
+    round.votes[voterId] = targetId;
+    const remaining = players.length - Object.keys(round.votes).length;
+    Net.broadcast({ t: "votecount", remaining });
+    updateVoteStatus(remaining);
+    if (remaining === 0) hostResolve();
+  }
+  function hostResolve(){
+    const counts = {};
+    players.forEach(p => counts[p.id] = 0);
+    Object.values(round.votes).forEach(tid => counts[tid]++);
+    const max = Math.max(...Object.values(counts));
+    const caught = counts[round.impostorId] === max;
+    players.forEach(p => {
+      if (p.id === round.impostorId) { if (!caught) p.score += 3; }
+      else if (round.votes[p.id] === round.impostorId) p.score += 1;
+    });
+    const impName = players.find(p=>p.id===round.impostorId).name;
+    const payload = {
+      t: "result", caught, impName, wCommon: round.wCommon, wImp: round.wImp, cat: round.cat,
+      scores: players.map(p=>({name:p.name,score:p.score})),
+    };
+    Net.broadcast(payload);
+    showResult(payload);
+  }
+
+  // ══ AFFICHAGE (commun hôte + invités) ══
+  function showWord(d){
+    $("word-cat").textContent = "Catégorie : " + d.cat;
+    $("word-role").textContent = d.role === "imp" ? "IMPOSTEUR — bluffe !" : "Civil — mot commun";
+    $("word-role").className = "role " + (d.role === "imp" ? "imp" : "civil");
+    $("word-text").textContent = d.word;
+    $("word-order").textContent = d.order.join(" → ");
+    $("word-card").classList.add("hidden-word");
+    $("b-tovote").style.display = Net.isHost() ? "" : "none";
+    $("word-status").textContent = Net.isHost() ? "Quand les indices sont donnés, passe au vote." : "L'hôte lancera le vote quand les indices seront donnés.";
+    UI.show("s-word");
+  }
+  $("word-card").onclick = () => $("word-card").classList.toggle("hidden-word");
+
+  function showVote(names){
+    let voted = false;
+    $("vote-list").innerHTML = "";
+    names.forEach(p => {
+      if (p.name === myName) return; // pas de vote pour soi
+      const b = document.createElement("button");
+      b.className = "item"; b.innerHTML = `<span>${UI.esc(p.name)}</span><span class="tag">voter</span>`;
+      b.onclick = () => {
+        if (voted) return;
+        voted = true;
+        $("vote-list").querySelectorAll("button").forEach(x=>x.disabled=true);
+        b.classList.add("sel");
+        if (Net.isHost()) hostRegisterVote("H", p.id); else Net.send({ t: "myvote", target: p.id });
+      };
+      $("vote-list").appendChild(b);
+    });
+    $("vote-status").textContent = "Vote en cours…";
+    UI.show("s-vote");
+  }
+  function updateVoteStatus(remaining){
+    $("vote-status").textContent = remaining > 0 ? `En attente de ${remaining} vote${remaining>1?"s":""}…` : "Dépouillement…";
+  }
+  function showResult(d){
+    $("res-eyebrow").textContent = d.caught ? "Imposteur démasqué" : "L'imposteur s'en sort";
+    $("res-title").textContent = `${d.impName} était l'imposteur !`;
+    $("res-sub").innerHTML = `Catégorie <b>${UI.esc(d.cat)}</b> — mot commun : <b>${UI.esc(d.wCommon)}</b> / mot de l'imposteur : <b>${UI.esc(d.wImp)}</b>` +
+      (d.caught ? "<br>+1 pour ceux qui ont voté juste." : "<br>+3 pour l'imposteur !");
+    $("res-scores").innerHTML = d.scores.slice().sort((a,b)=>b.score-a.score)
+      .map((p,i)=>`<div class="row${i===0&&p.score>0?" top":""}"><span>${UI.esc(p.name)}</span><span class="pts">${p.score} pt${p.score>1?"s":""}</span></div>`).join("");
+    $("b-next").style.display = Net.isHost() ? "" : "none";
+    $("res-wait").textContent = Net.isHost() ? "" : "L'hôte peut relancer une manche.";
+    UI.show("s-result");
+  }
+
+  // ══ RÉSEAU ══
+  function guestData(_, d){
+    if (!d || !d.t) return;
+    if (d.t === "lobby") { players = d.players.map(p=>({...p})); renderLobby(d.players); if(!$("s-lobby").classList.contains("active") && !started) UI.show("s-lobby"); }
+    if (d.t === "round") { started = true; showWord(d); }
+    if (d.t === "vote") showVote(d.players);
+    if (d.t === "votecount") updateVoteStatus(d.remaining);
+    if (d.t === "result") showResult(d);
+    if (d.t === "code") { $("lobby-code").textContent = d.code; }
+  }
+
+  $("b-create").onclick = () => { joinMode = false; openName(); };
+  $("b-join").onclick = () => { joinMode = true; openName(); };
+  function openName(){
+    $("name-code").style.display = joinMode ? "" : "none";
+    $("name-eyebrow").textContent = joinMode ? "Rejoindre un salon" : "Créer un salon";
+    $("name-err").style.display = "none";
+    checkNameForm(); UI.show("s-name");
+  }
+  function checkNameForm(){
+    const okName = $("name-input").value.trim().length >= 2;
+    const okCode = !joinMode || $("name-code").value.length === 4;
+    $("b-name-go").disabled = !(okName && okCode);
+  }
+  $("name-input").addEventListener("input", checkNameForm);
+  $("name-code").addEventListener("input", e => {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);
+    checkNameForm();
+  });
+  $("b-name-back").onclick = () => { Net.destroy(); UI.show("s-home"); };
+  $("b-name-go").onclick = () => {
+    myName = $("name-input").value.trim();
+    $("b-name-go").disabled = true;
+    if (!joinMode) {
+      Net.create(GAME, {
+        onOpen: code => {
+          $("lobby-code").textContent = code;
+          players = [{ id: "H", name: myName, score: 0 }];
+          syncLobby(); UI.show("s-lobby");
+        },
+        onData: (id, d) => {
+          if (d && d.t === "hello") {
+            if (started) { Net.sendTo(id, { t: "late" }); return; }
+            hostAddPlayer(id, d.name);
+            Net.sendTo(id, { t: "code", code: $("lobby-code").textContent });
+          }
+          else if (d && d.t === "myvote") hostRegisterVote(id, d.target);
+        },
+        onLeave: id => {
+          const p = players.find(x=>x.id===id);
+          players = players.filter(x=>x.id!==id);
+          if (p) UI.banner(`${p.name} s'est déconnecté.`, true);
+          if (!started) syncLobby();
+          else if (round && $("s-vote").classList.contains("active")) {
+            // ne pas bloquer le vote sur un absent : on retire ses votes attendus
+            delete round.votes[id];
+            const remaining = players.length - Object.keys(round.votes).length;
+            Net.broadcast({ t: "votecount", remaining });
+            updateVoteStatus(remaining);
+            if (remaining <= 0 && players.length >= 2) hostResolve();
+          }
+        },
+        onError: () => { UI.banner("Erreur de connexion. Recharge la page.", true, 6000); },
+      });
+    } else {
+      Net.join(GAME, $("name-code").value, {
+        onOpen: () => Net.send({ t: "hello", name: myName }),
+        onData: guestData,
+        onLeave: () => UI.banner("L'hôte s'est déconnecté — partie terminée.", true, 6000),
+        onError: () => {
+          $("name-err").textContent = "Impossible de rejoindre. Vérifie le code.";
+          $("name-err").style.display = "block";
+          $("b-name-go").disabled = false;
+        },
+      });
+    }
+  };
+  $("b-launch").onclick = () => { started = true; hostLaunchRound(); };
+  $("b-tovote").onclick = () => hostToVote();
+  $("b-next").onclick = () => hostLaunchRound();
+
+  // ══ MODE 1 TÉLÉPHONE ══
+  let solo = null;
+  $("b-solo").onclick = () => {
+    solo = { names: [], scores: {}, idx: 0, round: null, votes: [] };
+    $("solo-list").innerHTML = ""; $("b-solo-start").disabled = true;
+    UI.show("s-solo-setup");
+  };
+  $("b-solo-add").onclick = () => {
+    const n = $("solo-name").value.trim();
+    if (n.length < 2) return;
+    let name = n, i = 2;
+    while (solo.names.includes(name)) name = n + " " + (i++);
+    solo.names.push(name); solo.scores[name] = 0;
+    $("solo-name").value = "";
+    $("solo-list").innerHTML = solo.names.map(x=>`<div class="item"><span>${UI.esc(x)}</span></div>`).join("");
+    $("b-solo-start").disabled = solo.names.length < 3;
+  };
+  $("b-solo-start").onclick = () => soloRound();
+  function soloRound(){
+    const { cat, pair } = pickPair();
+    const impIdx = Math.floor(Math.random() * solo.names.length);
+    const [wCommon, wImp] = Math.random() < 0.5 ? pair : [pair[1], pair[0]];
+    solo.round = { cat, pair, impIdx, wCommon, wImp, order: UI.shuffle(solo.names.slice()) };
+    solo.idx = 0; solo.votes = [];
+    soloPass();
+  }
+  function soloPass(){
+    if (solo.idx >= solo.names.length) { soloVoteNext(0); return; }
+    $("solo-pass-title").textContent = "Téléphone à " + solo.names[solo.idx];
+    $("b-solo-reveal").onclick = () => {
+      const isImp = solo.idx === solo.round.impIdx;
+      $("word-cat").textContent = "Catégorie : " + solo.round.cat;
+      $("word-role").textContent = isImp ? "IMPOSTEUR — bluffe !" : "Civil — mot commun";
+      $("word-role").className = "role " + (isImp ? "imp" : "civil");
+      $("word-text").textContent = isImp ? solo.round.wImp : solo.round.wCommon;
+      $("word-order").textContent = solo.round.order.join(" → ");
+      $("word-card").classList.add("hidden-word");
+      $("b-tovote").style.display = "";
+      $("b-tovote").textContent = solo.idx === solo.names.length - 1 ? "Tous ont vu — discussion puis vote" : "J'ai vu, joueur suivant";
+      $("word-status").textContent = "";
+      $("b-tovote").onclick = () => { solo.idx++; soloPass(); };
+      UI.show("s-word");
+    };
+    UI.show("s-solo-pass");
+  }
+  function soloVoteNext(i){
+    if (i >= solo.names.length) { soloResolve(); return; }
+    const voter = solo.names[i];
+    $("solo-pass-title").textContent = "Vote secret — téléphone à " + voter;
+    $("b-solo-reveal").textContent = "C'est moi, voter";
+    $("b-solo-reveal").onclick = () => {
+      $("vote-list").innerHTML = "";
+      solo.names.forEach(n => {
+        if (n === voter) return;
+        const b = document.createElement("button");
+        b.className = "item"; b.innerHTML = `<span>${UI.esc(n)}</span><span class="tag">voter</span>`;
+        b.onclick = () => { solo.votes.push(n); $("b-solo-reveal").textContent = "C'est moi, révéler mon mot"; soloVoteNext(i+1); };
+        $("vote-list").appendChild(b);
+      });
+      $("vote-status").textContent = voter + ", vote en secret.";
+      UI.show("s-vote");
+    };
+    UI.show("s-solo-pass");
+  }
+  function soloResolve(){
+    const impName = solo.names[solo.round.impIdx];
+    const counts = {};
+    solo.names.forEach(n=>counts[n]=0);
+    solo.votes.forEach(v=>counts[v]++);
+    const max = Math.max(...Object.values(counts));
+    const caught = counts[impName] === max;
+    solo.names.forEach((n,i) => {
+      if (n === impName) { if (!caught) solo.scores[n] += 3; }
+      else if (solo.votes[i] === impName) solo.scores[n] += 1;
+    });
+    $("res-eyebrow").textContent = caught ? "Imposteur démasqué" : "L'imposteur s'en sort";
+    $("res-title").textContent = `${impName} était l'imposteur !`;
+    $("res-sub").innerHTML = `Catégorie <b>${UI.esc(solo.round.cat)}</b> — mot commun : <b>${UI.esc(solo.round.wCommon)}</b> / mot de l'imposteur : <b>${UI.esc(solo.round.wImp)}</b>`;
+    $("res-scores").innerHTML = solo.names.slice().sort((a,b)=>solo.scores[b]-solo.scores[a])
+      .map((n,i)=>`<div class="row${i===0&&solo.scores[n]>0?" top":""}"><span>${UI.esc(n)}</span><span class="pts">${solo.scores[n]} pt${solo.scores[n]>1?"s":""}</span></div>`).join("");
+    $("b-next").style.display = "";
+    $("b-next").onclick = () => soloRound();
+    $("res-wait").textContent = "";
+    UI.show("s-result");
+  }
+})();
+</script>
+</body>
+</html>
