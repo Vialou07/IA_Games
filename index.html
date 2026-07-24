@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Qui est-ce ? — League of Legends</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0A1428; --panel:#1E2328; --gold:#C8AA6E; --gold-bright:#F0E6D2;
+    --teal:#0AC8B9; --danger:#C8493C; --text:#CDBE91; --text-dim:#7A7C82;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:radial-gradient(ellipse at 50% -10%, #16232D 0%, var(--void) 55%), var(--void);
+    color:var(--gold-bright); font-family:'Inter',sans-serif; min-height:100vh;
+    display:flex; flex-direction:column; overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:'Cinzel',serif;letter-spacing:0.03em;}
+  #app{flex:1;display:flex;flex-direction:column;max-width:640px;width:100%;margin:0 auto;padding:18px 14px 32px;}
+  .topbar{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 0 18px;
+    border-bottom:1px solid rgba(200,170,110,0.18);margin-bottom:18px;}
+  .topbar .rune{width:8px;height:8px;background:var(--teal);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);box-shadow:0 0 8px var(--teal);}
+  .topbar h1{font-size:1rem;text-transform:uppercase;color:var(--gold-bright);margin:0;text-align:center;}
+  .screen{display:none;flex-direction:column;flex:1;animation:fadeIn .35s ease;}
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .center{align-items:center;justify-content:center;text-align:center;flex:1;}
+  .eyebrow{color:var(--teal);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;}
+  .big-title{font-size:1.7rem;color:var(--gold-bright);margin:0 0 6px;}
+  .sub{color:var(--text);font-size:.9rem;line-height:1.5;max-width:440px;margin:0 auto 22px;}
+  .btn{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:.82rem;
+    background:linear-gradient(180deg,#3C4859,#1E2328);color:var(--gold-bright);border:1px solid var(--gold);
+    padding:13px 26px;cursor:pointer;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+  .btn:active{transform:scale(.97);}
+  .btn.primary{background:linear-gradient(180deg,#0AC8B9,#087F76);color:#04211E;border-color:var(--teal);}
+  .btn.danger{background:linear-gradient(180deg,#C8493C,#7A2A22);border-color:#E88A7D;color:#FCE9E5;}
+  .btn:disabled{opacity:.35;cursor:not-allowed;}
+  .btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px;}
+  .player-pill{display:inline-block;font-family:'Cinzel',serif;font-size:.76rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--void);background:var(--gold);padding:5px 14px;margin-bottom:14px;
+    clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);}
+  .code-box{background:var(--panel);border:1px solid var(--teal);padding:14px 22px;margin:12px auto;
+    font-family:'Cinzel',serif;font-size:2rem;letter-spacing:.3em;color:var(--teal);
+    clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);}
+  input.code-input{font-family:'Cinzel',serif;font-size:1.4rem;letter-spacing:.3em;text-align:center;
+    background:var(--panel);border:1px solid var(--gold);color:var(--gold-bright);padding:12px;
+    width:180px;margin:0 auto 6px;display:block;}
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px;padding:4px 2px 20px;}
+  .card{position:relative;background:var(--panel);border:1px solid rgba(200,170,110,0.35);
+    clip-path:polygon(10% 0,90% 0,100% 14%,100% 86%,90% 100%,10% 100%,0 86%,0 14%);
+    padding:5px 5px 8px;text-align:center;cursor:pointer;transition:transform .12s ease,border-color .12s ease;}
+  .card:active{transform:scale(.94);}
+  .card .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:1px;}
+  .card .badge{width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel',serif;font-weight:700;font-size:1.1rem;color:#04211E;border-radius:1px;}
+  .card .cname{font-size:.62rem;margin-top:5px;color:var(--gold-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card.selectable:hover{border-color:var(--teal);}
+  .card.chosen{border-color:var(--teal);box-shadow:0 0 14px rgba(10,200,185,0.55);}
+  .card.chosen::after{content:"✓";position:absolute;top:2px;right:6px;color:var(--teal);font-weight:900;font-size:.9rem;}
+  .card.eliminated .thumb, .card.eliminated .badge{filter:grayscale(1) brightness(.4);}
+  .card.eliminated .cname{color:var(--text-dim);}
+  .card.eliminated::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(115deg,transparent 46%,var(--danger) 48%,var(--danger) 52%,transparent 54%);opacity:.85;pointer-events:none;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(4,8,12,0.82);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .modal{background:var(--panel);border:1px solid var(--gold);max-width:400px;width:100%;padding:20px;text-align:center;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);max-height:85vh;overflow-y:auto;}
+  .result-badge{font-family:'Cinzel',serif;font-size:1.2rem;margin:14px 0;padding:10px;}
+  .result-badge.yes{color:var(--teal);}
+  .result-badge.no{color:#E88A7D;}
+  footer.note{text-align:center;color:var(--text-dim);font-size:.68rem;margin-top:18px;padding-top:14px;border-top:1px solid rgba(200,170,110,0.12);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar"><div class="rune"></div><h1>Qui est-ce ? — LoL Edition</h1><div class="rune"></div></div>
+
+  <div class="screen active center" id="screen-intro">
+    <div class="eyebrow">Chacun son téléphone</div>
+    <h2 class="big-title">Devine le champion secret de ton adversaire</h2>
+    <p class="sub">Chacun ouvre ce même fichier sur son propre téléphone. Choisis ton champion secret : l'appli génère un code à 4 chiffres propre à ce champion, sans jamais l'afficher en clair. Envoyez-vous vos codes par SMS ou WhatsApp au début, puis jouez chacun de votre côté en vous posant des questions à voix haute.</p>
+    <div class="btn-row"><button class="btn primary" id="btn-start">Choisir mon champion secret</button></div>
+  </div>
+
+  <div class="screen" id="screen-select">
+    <div class="center" style="flex:0;padding-bottom:6px;">
+      <p class="sub" style="margin-bottom:6px;">Choisis ton champion secret. Personne d'autre que toi ne doit voir cet écran.</p>
+    </div>
+    <div class="board" id="select-board"></div>
+    <div class="btn-row"><button class="btn primary" id="btn-confirm-secret" disabled>Confirmer ce champion</button></div>
+  </div>
+
+  <div class="screen center" id="screen-code">
+    <div class="eyebrow">Ton code de vérification</div>
+    <div class="code-box" id="my-code">0000</div>
+    <p class="sub">Envoie ce code à ton pote par SMS ou WhatsApp. Il doit faire pareil de son côté et t'envoyer le sien — sans jamais révéler le champion.</p>
+    <input class="code-input" id="opp-code-input" maxlength="4" inputmode="numeric" placeholder="Code de ton pote">
+    <div class="btn-row"><button class="btn primary" id="btn-start-play" disabled>Commencer à jouer</button></div>
+  </div>
+
+  <div class="screen" id="screen-play">
+    <div class="center" style="flex:0;padding-bottom:4px;">
+      <p class="sub" style="margin-bottom:4px;">Élimine les champions au fil de vos questions à voix haute. Appuie sur un champion pour le barrer.</p>
+    </div>
+    <div class="board" id="play-board"></div>
+    <div class="btn-row">
+      <button class="btn danger" id="btn-guess">Vérifier un champion</button>
+      <button class="btn" id="btn-show-code">Revoir mon code</button>
+    </div>
+  </div>
+
+  <footer class="note">Portraits (si disponibles) via l'API publique Data Dragon (Riot Games). Ce site n'est pas affilié à Riot Games.</footer>
+</div>
+<div id="modal-root"></div>
+
+<script>
+(function(){
+  const BOARD_SIZE = 24;
+  const DDRAGON_VERSION = "16.14.1";
+  const imgUrl = (id) => `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/champion/${id}.png`;
+  const PALETTE = ["#C8AA6E","#0AC8B9","#C8493C","#8B7FD1","#5B9BD5","#D98B4A","#6FBF73","#D65D8C"];
+
+  const STATIC_POOL = [
+    "Ahri","Akali","Amumu","Annie","Ashe","Blitzcrank","Braum","Caitlyn","Camille",
+    "Darius","Diana","Draven","Ekko","Elise","Ezreal","Fiora","Fizz","Galio","Garen",
+    "Gragas","Graves","Irelia","Ivern","Janna","Jax","Jayce","Jhin","Jinx","Karma",
+    "Karthus","Katarina","Kayle","Kayn","Kennen","Leona","Lissandra","Lucian","Lulu",
+    "Lux","Malphite","Malzahar","Maokai","Mordekaiser","Morgana","Nami","Nasus",
+    "Nautilus","Neeko","Nidalee","Nocturne","Olaf","Orianna","Pantheon","Poppy","Pyke",
+    "Quinn","Rakan","Rammus","Rengar","Riven","Rumble","Ryze","Samira","Sejuani",
+    "Senna","Seraphine","Shen","Shyvana","Singed","Sion","Sivir","Skarner","Sona",
+    "Soraka","Swain","Sylas","Syndra","Talon","Taric","Teemo","Thresh","Tristana",
+    "Tryndamere","Twitch","Urgot","Varus","Vayne","Veigar","Vi","Viego","Viktor",
+    "Vladimir","Volibear","Xayah","Xerath","XinZhao","Yasuo","Yone","Yorick","Yuumi",
+    "Zac","Zed","Ziggs","Zilean","Zoe","Zyra"
+  ].map(id=>{
+    const name = id === "XinZhao" ? "Xin Zhao" : id;
+    return { id, name, img: imgUrl(id), code: hashCode(id) };
+  });
+
+  function hashCode(str){
+    let h = 0;
+    for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+    return (h % 9973).toString().padStart(4,'0');
+  }
+  function colorFor(id){
+    let h=0; for(let i=0;i<id.length;i++) h=(h*17+id.charCodeAt(i))>>>0;
+    return PALETTE[h % PALETTE.length];
+  }
+  function initialsFor(name){
+    return name.replace("'","").split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  }
+  function shuffle(arr){
+    const a=arr.slice();
+    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+
+  const state = { board:[], secret:null, eliminated:new Set(), oppCode:null };
+
+  const screens={};
+  document.querySelectorAll('.screen').forEach(s=>screens[s.id]=s);
+  function show(id){ Object.values(screens).forEach(s=>s.classList.remove('active')); screens[id].classList.add('active'); }
+
+  function renderBoard(container, {eliminatedSet, highlightId, onCardClick}){
+    container.innerHTML='';
+    state.board.forEach(champ=>{
+      const card=document.createElement('div');
+      card.className='card selectable';
+      if(eliminatedSet && eliminatedSet.has(champ.id)) card.classList.add('eliminated');
+      if(highlightId===champ.id) card.classList.add('chosen');
+      const img = document.createElement('img');
+      img.className='thumb'; img.loading='lazy'; img.alt=champ.name; img.src=champ.img;
+      img.onerror = function(){
+        const badge = document.createElement('div');
+        badge.className='badge';
+        badge.style.background = colorFor(champ.id);
+        badge.textContent = initialsFor(champ.name);
+        img.replaceWith(badge);
+      };
+      const label = document.createElement('div');
+      label.className='cname'; label.textContent = champ.name;
+      card.appendChild(img); card.appendChild(label);
+      card.addEventListener('click', ()=>onCardClick(champ, card));
+      container.appendChild(card);
+    });
+  }
+
+  function startSelect(){
+    state.board = shuffle(STATIC_POOL).slice(0, BOARD_SIZE);
+    let temp=null;
+    const container = document.getElementById('select-board');
+    document.getElementById('btn-confirm-secret').disabled = true;
+    renderBoard(container, {
+      onCardClick:(champ, cardEl)=>{
+        temp = champ;
+        container.querySelectorAll('.card').forEach(c=>c.classList.remove('chosen'));
+        cardEl.classList.add('chosen');
+        document.getElementById('btn-confirm-secret').disabled = false;
+      }
+    });
+    document.getElementById('btn-confirm-secret').onclick = ()=>{
+      if(!temp) return;
+      state.secret = temp;
+      document.getElementById('my-code').textContent = temp.code;
+      show('screen-code');
+    };
+    show('screen-select');
+  }
+
+  document.getElementById('btn-start').addEventListener('click', startSelect);
+
+  document.getElementById('opp-code-input').addEventListener('input', (e)=>{
+    e.target.value = e.target.value.replace(/[^0-9]/g,'').slice(0,4);
+    document.getElementById('btn-start-play').disabled = e.target.value.length !== 4;
+  });
+
+  document.getElementById('btn-start-play').addEventListener('click', ()=>{
+    state.oppCode = document.getElementById('opp-code-input').value;
+    startPlay();
+  });
+
+  function startPlay(){
+    const container = document.getElementById('play-board');
+    renderBoard(container, {
+      eliminatedSet: state.eliminated,
+      onCardClick:(champ, cardEl)=>{
+        if(state.eliminated.has(champ.id)){ state.eliminated.delete(champ.id); cardEl.classList.remove('eliminated'); }
+        else { state.eliminated.add(champ.id); cardEl.classList.add('eliminated'); }
+      }
+    });
+    show('screen-play');
+  }
+
+  document.getElementById('btn-show-code').addEventListener('click', ()=>{
+    alert('Ton code de vérification : ' + state.secret.code);
+  });
+
+  document.getElementById('btn-guess').addEventListener('click', ()=>{
+    const root = document.getElementById('modal-root');
+    const overlay = document.createElement('div');
+    overlay.className='modal-backdrop';
+    let selected=null;
+    overlay.innerHTML = `
+      <div class="modal">
+        <div class="eyebrow" style="margin-bottom:10px;">Vérifier un champion</div>
+        <h3>Quel champion penses-tu être le secret de ton adversaire ?</h3>
+        <div class="board" id="guess-board" style="max-height:280px;overflow-y:auto;margin-top:10px;"></div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn" id="btn-cancel-guess">Annuler</button>
+          <button class="btn danger" id="btn-confirm-guess" disabled>Comparer au code</button>
+        </div>
+      </div>`;
+    root.appendChild(overlay);
+    const gb = overlay.querySelector('#guess-board');
+    renderBoard(gb, {
+      onCardClick:(champ, cardEl)=>{
+        selected = champ;
+        gb.querySelectorAll('.card').forEach(c=>c.classList.remove('chosen'));
+        cardEl.classList.add('chosen');
+        overlay.querySelector('#btn-confirm-guess').disabled = false;
+      }
+    });
+    overlay.querySelector('#btn-cancel-guess').addEventListener('click', ()=>overlay.remove());
+    overlay.querySelector('#btn-confirm-guess').addEventListener('click', ()=>{
+      const match = selected.code === state.oppCode;
+      overlay.querySelector('.modal').innerHTML = `
+        <div class="eyebrow">Résultat</div>
+        <h3>${selected.name}</h3>
+        <div class="result-badge ${match ? 'yes' : 'no'}">${match ? '✓ Le code correspond !' : '✗ Le code ne correspond pas'}</div>
+        <p class="sub">${match ? "Bravo, tu as trouvé le champion secret. Annonce-le à ton pote !" : "Ce n'est pas le bon champion. Continue à poser tes questions."}</p>
+        <div class="btn-row"><button class="btn primary" id="btn-close-result">Fermer</button></div>
+      `;
+      overlay.querySelector('#btn-close-result').addEventListener('click', ()=>overlay.remove());
+    });
+  });
+})();
+</script>
+</body>
+</html>
