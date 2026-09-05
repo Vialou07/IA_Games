@@ -18,6 +18,12 @@
   .answer-row{display:flex;gap:8px;max-width:360px;margin:8px auto;width:100%;}
   .answer-row input{flex:1;margin:0;max-width:none;}
   .answer-row .btn{padding:12px 16px;}
+  .gen-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:380px;margin:0 auto 14px;}
+  .gen-btn{background:var(--panel);border:1px solid rgba(200,170,110,.35);color:var(--text);cursor:pointer;padding:12px 8px;font-size:.8rem;font-family:inherit;text-align:center;}
+  .gen-btn.on{border-color:var(--accent);color:var(--ink);background:var(--panel2);}
+  .gen-btn.on::after{content:" ✓";color:var(--accent);}
+  .spinner{width:36px;height:36px;border:3px solid rgba(200,170,110,.25);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:14px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
   .reveal-list{width:100%;max-width:360px;margin:10px auto;display:flex;flex-direction:column;gap:7px;}
   .reveal-list .r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;
     background:var(--panel);border:1px solid rgba(200,170,110,.25);font-size:.9rem;}
@@ -46,7 +52,29 @@
     <div class="stepper">${Array.from({length:t},(_,i)=>`<div class="dot${i<n?" on":""}"></div>`).join("")}</div>`; }
 
   let players=[], myName="", theme=null, started=false, roomCode="";
-  let round=null, used={}, iAnswered=false;
+  let round=null, used={}, iAnswered=false, gens=[1];
+  function loading(){ screen(`<div class="center"><div class="spinner"></div><p class="sub">Préparation de l'énigme…</p></div>`); }
+  function sGens(onDone, backFn){
+    const sel = new Set(gens);
+    screen(`<div class="center">
+      <div class="eyebrow">Pokémon</div><h2 class="big">Quelles générations ?</h2>
+      <p class="sub">Touche pour cocher / décocher. Au moins une.</p>
+      <div class="gen-grid">${THEMES.pokemonGens.map(g=>`<button class="gen-btn${sel.has(g.id)?" on":""}" data-g="${g.id}">${g.label}</button>`).join("")}</div>
+      <div class="btn-row">
+        <button class="btn ghost" id="g-all">Tout cocher</button>
+        <button class="btn ghost" id="g-back">Retour</button>
+        <button class="btn primary" id="g-go">C'est parti ➜</button>
+      </div></div>`);
+    const refresh=()=>document.querySelectorAll(".gen-btn").forEach(b=>b.classList.toggle("on",sel.has(+b.dataset.g)));
+    document.querySelectorAll(".gen-btn").forEach(b=>b.onclick=()=>{ const g=+b.dataset.g; sel.has(g)?sel.delete(g):sel.add(g); if(!sel.size)sel.add(g); refresh(); });
+    $("g-all").onclick=()=>{ THEMES.pokemonGens.forEach(g=>sel.add(g.id)); refresh(); };
+    $("g-back").onclick=backFn;
+    $("g-go").onclick=()=>{ gens=[...sel]; onDone(); };
+  }
+  async function getEntry(th){
+    if (th==="pokemon") return await PokeQuiz.random(gens);
+    return pickEntry(th);
+  }
 
   function pickEntry(th){
     used[th] = used[th] || new Set();
@@ -187,6 +215,7 @@
       if (l) l.innerHTML = d.players.map(p=>`<div class="item${p.name===myName?" me":""}"><span>${UI.esc(p.name)}</span><span class="tag">${p.score} pts</span></div>`).join("");
     }
     if (d.t==="wait") guestWait();
+    if (d.t==="loading") loading();
     if (d.t==="clue"){ started=true; theme=d.theme; sClue(d,false); }
     if (d.t==="waitcount") setWaitStatus(d.remaining);
     if (d.t==="reveal") sReveal(d,false);
@@ -199,13 +228,15 @@
       <div class="theme-grid">${Object.keys(META).map(k =>
         `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}</div>
       <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="tb">Retour au salon</button></div></div>`);
-    document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>{ theme=b.dataset.th; started=true; hostRound(); });
+    document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>{ theme=b.dataset.th; started=true; if(theme==="pokemon") sGens(hostRound, sThemeHost); else hostRound(); });
     $("tb").onclick = sLobby;
   }
 
   /* ═══ MANCHE — RÉPONSES SIMULTANÉES ═══ */
-  function hostRound(){
-    round = { entry: pickEntry(theme), idx:0, answers:{}, done:false };
+  async function hostRound(){
+    loading(); Net.broadcast({ t:"loading" });
+    const entry = await getEntry(theme);
+    round = { entry, idx:0, answers:{}, done:false };
     pushClue();
   }
   const cluePayload = () => ({ t:"clue", theme, idx: round.idx, clues: round.entry.clues.slice(0, round.idx+1) });
@@ -372,10 +403,10 @@
       <div class="theme-grid">${Object.keys(META).map(k =>
         `<button class="theme-btn" data-th="${k}"><span class="t-emoji">${META[k].emoji}</span>${META[k].label}</button>`).join("")}</div>
       <div class="btn-row" style="margin-top:16px;"><button class="btn ghost" id="stb">Retour</button></div></div>`);
-    document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>{ theme=b.dataset.th; soloRound(); });
+    document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>{ theme=b.dataset.th; if(theme==="pokemon") sGens(soloRound, sSoloTheme); else soloRound(); });
     $("stb").onclick=sSoloPlayers;
   }
-  function soloRound(){ solo.entry=pickEntry(theme); solo.idx=0; soloClue(); }
+  async function soloRound(){ loading(); solo.entry=await getEntry(theme); solo.idx=0; soloClue(); }
   function soloClue(){
     screen(`<div class="center" style="justify-content:flex-start;">
       <div class="eyebrow">Thème : ${META[theme].label} · Indice ${solo.idx+1}/5</div>

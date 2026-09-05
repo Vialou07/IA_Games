@@ -134,3 +134,61 @@ window.Roster = {
     }));
   },
 };
+
+/* Génération automatique d'énigmes Pokémon (toutes générations) depuis PokeAPI.
+   5 indices du plus vague au plus précis, construits à partir des données officielles. */
+window.PokeQuiz = (function(){
+  const TYPES = { normal:"Normal", fire:"Feu", water:"Eau", grass:"Plante", electric:"Électrik", ice:"Glace", fighting:"Combat",
+    poison:"Poison", ground:"Sol", flying:"Vol", psychic:"Psy", bug:"Insecte", rock:"Roche", ghost:"Spectre", dragon:"Dragon",
+    dark:"Ténèbres", steel:"Acier", fairy:"Fée" };
+  const COLORS = { black:"noir", blue:"bleu", brown:"marron", gray:"gris", green:"vert", pink:"rose", purple:"violet", red:"rouge", white:"blanc", yellow:"jaune" };
+  const REGIONS = { "generation-i":["Kanto",1], "generation-ii":["Johto",2], "generation-iii":["Hoenn",3], "generation-iv":["Sinnoh",4],
+    "generation-v":["Unys",5], "generation-vi":["Kalos",6], "generation-vii":["Alola",7], "generation-viii":["Galar",8], "generation-ix":["Paldea",9] };
+  const frName = j => { const n=(j.names||[]).find(x=>x.language&&x.language.name==="fr"); return n?n.name:j.name; };
+  const get = async u => { const r = await fetch(u); if(!r.ok) throw new Error(u); return r.json(); };
+  const cleanTxt = s => s.replace(/[\n\f\r]+/g," ").replace(/\s+/g," ").trim();
+  function maskName(txt, name){
+    const re = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "gi");
+    return txt.replace(re, "ce Pokémon");
+  }
+  async function entry(id){
+    const sp = await get(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+    const pk = await get(`https://pokeapi.co/api/v2/pokemon/${id}`);
+    const name = frName(sp);
+    const gen = REGIONS[sp.generation.name] || ["une région lointaine", "?"];
+    const color = COLORS[sp.color.name] || sp.color.name;
+    const types = pk.types.map(t=>TYPES[t.type.name]||t.type.name);
+    const h = (pk.height/10).toFixed(1).replace(".0",""), w = (pk.weight/10).toFixed(1).replace(".0","");
+    const genus = ((sp.genera||[]).find(g=>g.language.name==="fr")||{}).genus || "Pokémon";
+    let evo = "";
+    if (sp.evolves_from_species){
+      try { const pre = await get(sp.evolves_from_species.url); evo = ` Il évolue de ${frName(pre)}.`; } catch(e){}
+    } else {
+      try {
+        const chain = await get(sp.evolution_chain.url);
+        const hasEvo = chain.chain && chain.chain.species && chain.chain.species.name===sp.name && chain.chain.evolves_to.length>0;
+        evo = hasEvo ? " C'est un Pokémon de base qui peut évoluer." : " Il n'évolue pas et n'a pas de pré-évolution.";
+      } catch(e){}
+    }
+    const flav = (sp.flavor_text_entries||[]).filter(f=>f.language.name==="fr");
+    const lastFlav = flav.length ? cleanTxt(flav[flav.length-1].flavor_text) : `Le Pokémon ${genus.replace("Pokémon ","")}.`;
+    return {
+      name, alt: [],
+      clues: [
+        `Découvert pour la première fois dans la région de ${gen[0]} (génération ${gen[1]}). Sa couleur dominante est le ${color}.`,
+        `Il mesure environ ${h} m pour ${w} kg.`,
+        types.length>1 ? `Type ${types[0]} et ${types[1]}.` : `Type ${types[0]}.`,
+        `C'est le ${genus}.${evo}`,
+        maskName(lastFlav, name),
+      ],
+    };
+  }
+  async function random(gens){
+    const ranges = THEMES.pokemonGens.filter(g => gens.includes(g.id));
+    const r = ranges[Math.floor(Math.random()*ranges.length)];
+    const id = r.from + Math.floor(Math.random()*(r.to-r.from+1));
+    try { return await entry(id); }
+    catch(e){ return await random(gens); }
+  }
+  return { random };
+})();
