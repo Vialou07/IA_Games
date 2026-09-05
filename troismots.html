@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>3 Mots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body{--accent:#0AC8B9;--accent-dark:#087F76;}
+  .letter-box{font-family:'Cinzel',serif;font-size:3rem;color:var(--accent);background:var(--panel);border:1px solid var(--accent);
+    width:96px;height:96px;display:flex;align-items:center;justify-content:center;margin:8px auto;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
+  .secret{background:var(--panel);border:1px solid var(--gold);max-width:320px;width:100%;margin:8px auto;padding:18px;text-align:center;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
+  .secret .lbl{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+  .secret .nm{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--ink);}
+  .words{display:flex;flex-direction:column;gap:8px;max-width:320px;width:100%;margin:8px auto;}
+  .words input{margin:0;max-width:none;}
+  .words input.bad{border-color:var(--danger);}
+  .clue-words{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px auto;}
+  .clue-words span{font-family:'Cinzel',serif;font-size:1.05rem;background:var(--panel);border:1px solid var(--gold);padding:10px 14px;color:var(--ink);}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:380px;margin:0 auto;}
+  .opt{background:var(--panel);border:1px solid rgba(200,170,110,.4);color:var(--ink);cursor:pointer;padding:13px 8px;font-size:.9rem;font-family:inherit;}
+  .opt.sel{border-color:var(--accent);background:var(--panel2);}
+  .spinner{width:36px;height:36px;border:3px solid rgba(200,170,110,.25);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:14px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="topbar"><a class="back" href="index.html">‹</a><div class="rune"></div><h1>3 Mots</h1><div class="rune"></div></div>
+<div class="wrap" id="wrap"></div>
+<footer class="note">Une lettre, trois mots, un personnage à faire deviner.</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="net.js"></script>
+<script src="themes.js"></script>
+<script src="duo.js"></script>
+<script src="lobby.js"></script>
+<script>
+(function(){
+  const META=Duo.META, $=Duo.$, screen=Duo.screen;
+  const ROUNDS=5, OPTIONS=6;
+  const LETTERS="ABCDEFGHIJLMNOPRSTUV";
+  let L, theme=null, game=null, solo=null;
+
+  async function poolFor(th, count){
+    if (th==="pokemon"){ const r=await Roster.pokemon([1,2,3,4,5,6,7,8,9], count); return r.map(x=>x.name); }
+    const c=THEMES.quiestce[th].chars;
+    return UI.shuffle(c.map(x=>Array.isArray(x)?x[0]:x)).slice(0,count);
+  }
+  const norm=s=>UI.normalize(s);
+  const startsWith=(w,l)=>norm(w).charAt(0)===l.toLowerCase();
+  function loading(){ screen(`<div class="center"><div class="spinner"></div><p class="sub">Tirage des personnages…</p></div>`); }
+
+  L=makeLobby({
+    game:"mots", title:"3 Mots", playersLabel:"2 joueurs",
+    subtitle:"Chacun reçoit un personnage secret et une lettre commune. Décris ton personnage en 3 mots qui commencent par cette lettre — l'autre doit deviner qui c'est parmi 6 propositions. Si c'est trouvé, vous marquez tous les deux.",
+    minPlayers:2, themeHint:ROUNDS+" manches.",
+    netHint:"Chacun tape ses 3 mots en secret.",
+    reset:()=>{game=null;},
+    onJoin:(id)=>{ if(L.players.length>2){ L.sendTo(id,{t:"full"}); } },
+    onThemeChosen:()=>{ theme=L.theme; hostStart(); },
+    onHostData:(id,d)=>{ if(d&&d.t==="words")hostWords(id,d.words); if(d&&d.t==="pick")hostPick(id,d.pick); },
+    onLeave:()=>{ UI.banner("Ton adversaire est parti.",true,6000); },
+    onData:d=>guestData(d),
+    soloStart:()=>soloIntro(),
+  });
+
+  /* ─ HÔTE ─ */
+  async function hostStart(){ L.players.forEach(p=>p.score=0); game={idx:0}; await hostRound(); }
+  async function hostRound(){
+    loading();
+    const two=L.players.slice(0,2);
+    const pool=await poolFor(theme, 2+OPTIONS*2);
+    const letter=LETTERS[Math.floor(Math.random()*LETTERS.length)];
+    const secrets={}; two.forEach((p,i)=>secrets[p.id]=pool[i]);
+    const rest=pool.slice(2);
+    game.round={ letter, secrets, words:{}, picks:{}, options:{} };
+    two.forEach((p,i)=>{ const other=two[1-i]; game.round.options[p.id]=UI.shuffle([secrets[other.id], ...rest.slice(i*(OPTIONS-1),(i+1)*(OPTIONS-1))]); });
+    two.forEach(p=>{ const pl={t:"round",theme,idx:game.idx,total:ROUNDS,letter,secret:secrets[p.id]}; p.id==="H"?sWrite(pl,true):L.sendTo(p.id,pl); });
+  }
+  function hostWords(pid,words){ if(!game||game.round.words[pid])return; game.round.words[pid]=words;
+    const two=L.players.slice(0,2);
+    if(two.every(p=>game.round.words[p.id])){
+      two.forEach((p,i)=>{ const other=two[1-i]; const pl={t:"guess",letter:game.round.letter,words:game.round.words[other.id],options:game.round.options[p.id],from:other.name}; p.id==="H"?sGuess(pl,true):L.sendTo(p.id,pl); });
+    } else { const rem=two.filter(p=>!game.round.words[p.id]).length; L.broadcast({t:"waitcount",remaining:rem}); setWait(rem); }
+  }
+  function hostPick(pid,pick){ if(!game||game.round.picks[pid])return; game.round.picks[pid]=pick;
+    const two=L.players.slice(0,2);
+    if(two.every(p=>game.round.picks[p.id])){
+      const rows=two.map((p,i)=>{ const other=two[1-i]; const ok=game.round.picks[p.id]===game.round.secrets[other.id]; if(ok){p.score++;other.score++;} return {guesser:p.name,target:other.name,secret:game.round.secrets[other.id],pick:game.round.picks[p.id],words:game.round.words[other.id],ok}; });
+      const last=game.idx>=ROUNDS-1;
+      const pl={t:"reveal",rows,scores:L.players.map(p=>({name:p.name,score:p.score})),last};
+      L.broadcast(pl); sReveal(pl,true);
+    } else { const rem=two.filter(p=>!game.round.picks[p.id]).length; L.broadcast({t:"waitcount",remaining:rem}); setWait(rem); }
+  }
+  async function hostNext(){ if(game.idx>=ROUNDS-1){ const f={t:"final",scores:L.players.map(p=>({name:p.name,score:p.score}))}; L.broadcast(f); sFinal(f,true);} else { game.idx++; await hostRound(); } }
+  function guestData(d){ if(!d||!d.t)return;
+    if(d.t==="full"){ UI.banner("Ce jeu se joue à 2 — le salon est complet.",true,6000); }
+    if(d.t==="round"){ L.started=true; theme=d.theme; sWrite(d,false); }
+    if(d.t==="waitcount")setWait(d.remaining);
+    if(d.t==="guess")sGuess(d,false);
+    if(d.t==="reveal")sReveal(d,false);
+    if(d.t==="final")sFinal(d,false);
+  }
+
+  /* ─ ÉCRANS ─ */
+  let sent=false;
+  function sWrite(d,isHost){
+    sent=false;
+    screen(`<div class="center">
+      <div class="eyebrow">Thème : ${META[d.theme].label} · Manche ${d.idx+1}/${d.total}</div>
+      <div class="letter-box">${d.letter}</div>
+      <div class="secret"><div class="lbl">Ton personnage secret</div><div class="nm">${UI.esc(d.secret)}</div></div>
+      <p class="sub" style="margin-bottom:8px;">Décris-le avec <b>3 mots commençant par ${d.letter}</b>. Interdit d'utiliser son nom.</p>
+      <div class="words">
+        <input class="field" id="w1" maxlength="20" placeholder="${d.letter}…" autocomplete="off">
+        <input class="field" id="w2" maxlength="20" placeholder="${d.letter}…" autocomplete="off">
+        <input class="field" id="w3" maxlength="20" placeholder="${d.letter}…" autocomplete="off">
+      </div>
+      <div class="status warn" id="werr" style="display:none;"></div>
+      <div class="btn-row"><button class="btn primary" id="wok">Envoyer mes 3 mots</button></div>
+      <div class="status" id="ws"></div></div>`);
+    $("wok").onclick=()=>{
+      if(sent)return;
+      const ws=["w1","w2","w3"].map(i=>$(i).value.trim());
+      let bad=false;
+      ["w1","w2","w3"].forEach((i,k)=>{ const ok=ws[k]&&startsWith(ws[k],d.letter)&&!norm(ws[k]).includes(norm(d.secret).slice(0,4)); $(i).classList.toggle("bad",!ok); if(!ok)bad=true; });
+      if(bad){ $("werr").textContent=`Chaque mot doit commencer par ${d.letter} et ne pas contenir le nom du personnage.`; $("werr").style.display="block"; return; }
+      sent=true; $("werr").style.display="none";
+      ["w1","w2","w3","wok"].forEach(i=>$(i).disabled=true);
+      $("ws").textContent="✓ Envoyé — on attend l'autre…"; $("ws").className="status ok";
+      if(Net.isHost())hostWords("H",ws); else Net.send({t:"words",words:ws});
+    };
+  }
+  function setWait(r){ const s=$("ws"); if(s&&sent)s.textContent=r>0?`✓ Envoyé — on attend l'autre…`:"…"; }
+  function sGuess(d,isHost){
+    sent=false;
+    screen(`<div class="center">
+      <div class="eyebrow">Les 3 mots de ${UI.esc(d.from)} (lettre ${d.letter})</div>
+      <div class="clue-words">${d.words.map(w=>`<span>${UI.esc(w)}</span>`).join("")}</div>
+      <p class="sub" style="margin-bottom:8px;"><b>Quel est son personnage ?</b></p>
+      <div class="opts" id="op"></div>
+      <div class="status" id="ws" style="margin-top:12px;"></div></div>`);
+    d.options.forEach(o=>{ const b=document.createElement("button"); b.className="opt"; b.textContent=o;
+      b.onclick=()=>{ if(sent)return; sent=true; document.querySelectorAll(".opt").forEach(x=>x.disabled=true); b.classList.add("sel"); $("ws").textContent="✓ Choix envoyé — on attend l'autre…"; $("ws").className="status ok"; if(Net.isHost())hostPick("H",o); else Net.send({t:"pick",pick:o}); };
+      $("op").appendChild(b); });
+  }
+  function sReveal(d,isHost){
+    screen(`<div class="center"><div class="eyebrow">Résultat</div>
+      ${d.rows.map(r=>`<div class="secret" style="border-color:${r.ok?"var(--ok)":"rgba(225,90,76,.6)"};">
+        <div class="lbl">${UI.esc(r.target)} décrivait…</div><div class="nm">${UI.esc(r.secret)}</div>
+        <div class="clue-words" style="margin:8px 0;">${r.words.map(w=>`<span style="font-size:.85rem;padding:6px 10px;">${UI.esc(w)}</span>`).join("")}</div>
+        <div style="font-size:.85rem;">${UI.esc(r.guesser)} a dit « ${UI.esc(r.pick)} » ${r.ok?"✅ +1 chacun":"❌"}</div></div>`).join("")}
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="nx">${d.last?"Résultat final ➜":"Manche suivante ➜"}</button></div>`:`<div class="status">L'hôte continue…</div>`}</div>`);
+    if(isHost)$("nx").onclick=hostNext;
+  }
+  function sFinal(d,isHost){
+    screen(`<div class="center"><div class="eyebrow">Fin</div><h2 class="big">${d.scores[0].score===d.scores[1].score?"Vous avez marqué ensemble !":"Partie terminée"}</h2>
+      <div class="scores">${Duo.scoresHtml(d.scores)}</div>
+      ${isHost?`<div class="btn-row"><button class="btn primary" id="rn">Rejouer (même thème)</button><button class="btn ghost" id="rt">Changer de thème</button></div>`:`<div class="status">L'hôte peut relancer.</div>`}
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+    if(isHost){ $("rn").onclick=hostStart; $("rt").onclick=L.themeHost; }
+  }
+
+  /* ─ SOLO (2 joueurs, 1 téléphone) ─ */
+  function soloIntro(){
+    solo={names:["Joueur 1","Joueur 2"],scores:[0,0],idx:0,round:null};
+    screen(`<div class="center">${Duo.stepper(2,4)}<div class="eyebrow">1 téléphone — 2 joueurs</div><h2 class="big">Vos prénoms</h2>
+      <input class="field" id="n1" maxlength="14" placeholder="Joueur 1"><input class="field" id="n2" maxlength="14" placeholder="Joueur 2">
+      <div class="btn-row"><button class="btn ghost" id="sb">Retour</button><button class="btn primary" id="sg">Choisir le thème ➜</button></div></div>`);
+    $("sb").onclick=L.home;
+    $("sg").onclick=()=>{ solo.names=[$("n1").value.trim()||"Joueur 1",$("n2").value.trim()||"Joueur 2"]; if(solo.names[0]===solo.names[1])solo.names[1]+=" 2"; soloTheme(th=>{ theme=th; solo.idx=0; solo.scores=[0,0]; soloRound(); },soloIntro); };
+  }
+  async function soloRound(){
+    loading();
+    const pool=await poolFor(theme,2+OPTIONS*2);
+    const letter=LETTERS[Math.floor(Math.random()*LETTERS.length)];
+    const rest=pool.slice(2);
+    solo.round={ letter, secrets:[pool[0],pool[1]], words:[null,null], picks:[null,null],
+      options:[UI.shuffle([pool[1],...rest.slice(0,OPTIONS-1)]), UI.shuffle([pool[0],...rest.slice(OPTIONS-1,2*(OPTIONS-1))])] };
+    soloPass(0,"voir ton personnage",()=>soloWrite(0));
+  }
+  function soloPass(p,what,next){
+    screen(`<div class="center"><div class="eyebrow">Passe le téléphone</div><h2 class="big">Téléphone à ${UI.esc(solo.names[p])}</h2><p class="sub">L'autre détourne les yeux.</p>
+      <div class="btn-row"><button class="btn primary" id="go">✋ C'est moi — ${what}</button></div></div>`);
+    $("go").onclick=next;
+  }
+  function soloWrite(p){
+    const r=solo.round;
+    screen(`<div class="center"><div class="eyebrow">${UI.esc(solo.names[p])} · Manche ${solo.idx+1}/${ROUNDS}</div>
+      <div class="letter-box">${r.letter}</div>
+      <div class="secret"><div class="lbl">Ton personnage secret</div><div class="nm">${UI.esc(r.secrets[p])}</div></div>
+      <p class="sub" style="margin-bottom:8px;">3 mots commençant par <b>${r.letter}</b>, sans le nom.</p>
+      <div class="words"><input class="field" id="w1" maxlength="20" placeholder="${r.letter}…"><input class="field" id="w2" maxlength="20" placeholder="${r.letter}…"><input class="field" id="w3" maxlength="20" placeholder="${r.letter}…"></div>
+      <div class="status warn" id="werr" style="display:none;"></div>
+      <div class="btn-row"><button class="btn primary" id="wok">Valider</button></div></div>`);
+    $("wok").onclick=()=>{
+      const ws=["w1","w2","w3"].map(i=>$(i).value.trim()); let bad=false;
+      ["w1","w2","w3"].forEach((i,k)=>{ const ok=ws[k]&&startsWith(ws[k],r.letter)&&!norm(ws[k]).includes(norm(r.secrets[p]).slice(0,4)); $(i).classList.toggle("bad",!ok); if(!ok)bad=true; });
+      if(bad){ $("werr").textContent=`Chaque mot doit commencer par ${r.letter} et ne pas contenir le nom.`; $("werr").style.display="block"; return; }
+      r.words[p]=ws;
+      if(p===0) soloPass(1,"voir ton personnage",()=>soloWrite(1));
+      else soloPass(0,"deviner",()=>soloGuess(0));
+    };
+  }
+  function soloGuess(p){
+    const r=solo.round, o=1-p;
+    screen(`<div class="center"><div class="eyebrow">Les 3 mots de ${UI.esc(solo.names[o])} (lettre ${r.letter})</div>
+      <div class="clue-words">${r.words[o].map(w=>`<span>${UI.esc(w)}</span>`).join("")}</div>
+      <p class="sub" style="margin-bottom:8px;"><b>${UI.esc(solo.names[p])}, quel est son personnage ?</b></p>
+      <div class="opts" id="op"></div></div>`);
+    r.options[p].forEach(x=>{ const b=document.createElement("button"); b.className="opt"; b.textContent=x; b.onclick=()=>{ r.picks[p]=x; if(p===0) soloPass(1,"deviner",()=>soloGuess(1)); else soloReveal(); }; $("op").appendChild(b); });
+  }
+  function soloReveal(){
+    const r=solo.round;
+    const rows=[0,1].map(p=>{ const o=1-p; const ok=r.picks[p]===r.secrets[o]; if(ok){solo.scores[0]++;solo.scores[1]++;} return {guesser:solo.names[p],target:solo.names[o],secret:r.secrets[o],pick:r.picks[p],words:r.words[o],ok}; });
+    const last=solo.idx>=ROUNDS-1;
+    screen(`<div class="center"><div class="eyebrow">Résultat</div>
+      ${rows.map(x=>`<div class="secret" style="border-color:${x.ok?"var(--ok)":"rgba(225,90,76,.6)"};"><div class="lbl">${UI.esc(x.target)} décrivait…</div><div class="nm">${UI.esc(x.secret)}</div>
+        <div class="clue-words" style="margin:8px 0;">${x.words.map(w=>`<span style="font-size:.85rem;padding:6px 10px;">${UI.esc(w)}</span>`).join("")}</div>
+        <div style="font-size:.85rem;">${UI.esc(x.guesser)} a dit « ${UI.esc(x.pick)} » ${x.ok?"✅ +1 chacun":"❌"}</div></div>`).join("")}
+      <div class="scores"><div class="row top"><span>Score commun</span><span class="pts">${solo.scores[0]} pt${solo.scores[0]>1?"s":""} / ${ROUNDS*2}</span></div></div>
+      <div class="btn-row"><button class="btn primary" id="nx">${last?"Terminer ➜":"Manche suivante ➜"}</button></div></div>`);
+    $("nx").onclick=()=>{ if(last){ screen(`<div class="center"><div class="eyebrow">Fin</div><h2 class="big">${solo.scores[0]} / ${ROUNDS*2} trouvés ensemble</h2>
+      <div class="btn-row"><button class="btn primary" id="rn">Rejouer</button><button class="btn ghost" id="rt">Changer de thème</button></div>
+      <div class="btn-row"><a class="btn ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;">Autres jeux</a></div></div>`);
+      $("rn").onclick=()=>{ solo.idx=0; solo.scores=[0,0]; soloRound(); }; $("rt").onclick=()=>soloTheme(th=>{theme=th;solo.idx=0;solo.scores=[0,0];soloRound();},soloIntro); }
+      else { solo.idx++; soloRound(); } };
+  }
+
+  L.home();
+})();
+</script>
+</body>
+</html>
