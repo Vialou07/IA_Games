@@ -1,7 +1,8 @@
 name: Stats Worlds 2026
-# Calcule data/stats.json depuis Leaguepedia et le publie sur la branche « stats »
+# Calcule data/stats.json depuis l'API LoL Esports et le publie sur la branche « stats »
 # (un seul commit, réécrit à chaque mise à jour : l'historique de main reste propre).
-# L'appli le lit sur raw.githubusercontent.com/Vialou07/IA_Games/stats/data/stats.json.
+# La mémoire du robot (data/cache.json.gz : parties déjà résumées) est publiée avec.
+# Lancé à la main depuis une autre branche, il publie sur « stats-preprod » : l'appli n'y touche pas.
 on:
   schedule:
     - cron: "7,37 * * * *"
@@ -12,37 +13,40 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: stats-worlds
+  group: stats-${{ github.ref_name }}
   cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    env:
+      OUT_BRANCH: ${{ github.ref_name == 'main' && 'stats' || 'stats-preprod' }}
     steps:
       - uses: actions/checkout@v7
-      - name: Reprend les stats déjà publiées
+      - name: Reprend les stats et la mémoire du robot
         run: |
-          if git fetch -q --depth=1 origin stats && git show FETCH_HEAD:data/stats.json > "$RUNNER_TEMP/prev.json"; then
-            cp "$RUNNER_TEMP/prev.json" data/stats.json
+          mkdir -p "$RUNNER_TEMP/prev"
+          if git fetch -q --depth=1 origin "$OUT_BRANCH"; then
+            for f in stats.json cache.json.gz; do
+              git show "FETCH_HEAD:data/$f" > "$RUNNER_TEMP/prev/$f" 2>/dev/null && cp "$RUNNER_TEMP/prev/$f" "data/$f" || rm -f "$RUNNER_TEMP/prev/$f"
+            done
           else
-            echo "pas encore de stats publiées"; : > "$RUNNER_TEMP/prev.json"
+            echo "rien de publié sur $OUT_BRANCH pour l'instant"
           fi
-      - name: Interroge Leaguepedia
+      - name: Interroge LoL Esports
         env:
-          LP_USER: ${{ secrets.LP_USER }}
-          LP_PASS: ${{ secrets.LP_PASS }}
           STATS_MAX_MIN: "100"
         run: python3 tools/build_stats.py
-      - name: Publie sur la branche stats
+      - name: Publie sur la branche ${{ env.OUT_BRANCH }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if cmp -s data/stats.json "$RUNNER_TEMP/prev.json"; then echo "rien de nouveau"; exit 0; fi
-          cp data/stats.json "$RUNNER_TEMP/stats.json"
+          if cmp -s data/stats.json "$RUNNER_TEMP/prev/stats.json" && cmp -s data/cache.json.gz "$RUNNER_TEMP/prev/cache.json.gz"; then echo "rien de nouveau"; exit 0; fi
+          mkdir -p "$RUNNER_TEMP/pub" && cp data/stats.json data/cache.json.gz "$RUNNER_TEMP/pub/"
           git checkout -q --orphan stats-pub
           git rm -rqf --cached .
-          cp "$RUNNER_TEMP/stats.json" data/stats.json
-          git add -f data/stats.json
+          cp "$RUNNER_TEMP/pub/stats.json" "$RUNNER_TEMP/pub/cache.json.gz" data/
+          git add -f data/stats.json data/cache.json.gz
           git -c user.name="stats-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "Stats Worlds : mise à jour auto"
-          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:stats
-          echo "publié : $(stat -c%s data/stats.json) octets"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:$OUT_BRANCH"
+          echo "publié sur $OUT_BRANCH : stats $(stat -c%s data/stats.json) octets, mémoire $(stat -c%s data/cache.json.gz) octets"

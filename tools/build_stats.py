@@ -1,25 +1,34 @@
 #!/usr/bin/env python3
-"""Construit data/stats.json pour worlds.html à partir de Leaguepedia (Cargo).
-Tourne sur GitHub Actions : une seule machine interroge Leaguepedia, lentement,
-au lieu de chaque téléphone. Les agrégats ont exactement la forme attendue par l'appli.
+"""Construit data/stats.json pour worlds.html depuis l'API officielle LoL Esports.
 
-Leaguepedia limite les requêtes anonymes à environ une par minute. Le script :
-- se connecte si LP_USER et LP_PASS sont fournis (mot de passe de robot, Special:BotPasswords) ;
-- ralentit tout seul à une requête par minute dès le premier refus ;
-- recalcule chaque section selon son âge, dans un budget de temps (STATS_MAX_MIN) ;
-- garde l'ancienne version d'une section qui échoue ou n'a pas eu le temps.
+Plus de Leaguepedia (limité à une requête par minute, bloqué sur les téléphones) :
+- planning de chaque ligue (getSchedule) et détails des matchs terminés (getEventDetails) ;
+- flux de stats de chaque partie (feed.lolesports.com) : début, 15e minute, fin, et détails de fin
+  (part des dégâts, participation aux kills, balises).
+L'API ne dit pas qui a gagné chaque partie : on le déduit de l'état final (seule l'équipe qui a détruit
+un inhibiteur peut finir) sous la contrainte du score de la série (la dernière manche revient au vainqueur).
 
-Usage local : python3 tools/build_stats.py [section ...]   (ex. : tournoi)"""
-import json, time, re, os, sys, unicodedata, urllib.request, urllib.parse, http.cookiejar, datetime, itertools
+Mémoire du robot : data/cache.json.gz, publiée avec stats.json sur la branche stats. Chaque passage ne
+télécharge que les nouvelles parties, de la plus récente à la plus ancienne (2026, puis 2025 et 2024).
+Usage local : python3 tools/build_stats.py   (STATS_MAX_MIN = budget en minutes)"""
+import json, gzip, time, re, os, sys, unicodedata, urllib.request, urllib.parse, urllib.error, datetime, itertools, threading
+import concurrent.futures as cf
 
-API = "https://lol.fandom.com/api.php"
-UA = "IA_Games-Worlds26-stats/1.1 (+https://github.com/Vialou07/IA_Games)"
+GW = "https://esports-api.lolesports.com/persisted/gw/"
+FEED = "https://feed.lolesports.com/livestats/v1/"
+KEY = "0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z"   # clé publique du site lolesports.com
+UA = "IA_Games-Worlds26-stats/2.0 (+https://github.com/Vialou07/IA_Games)"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "data", "stats.json")
-MAX_MIN = float(os.environ.get("STATS_MAX_MIN", "40"))      # budget de temps d'un passage
-MAX_AGE_H = float(os.environ.get("STATS_MAX_AGE_H", "6"))   # âge max des sections lourdes
-FAST, SLOW = 2.5, 65.0                                      # secondes entre deux requêtes
+CACHE = os.path.join(ROOT, "data", "cache.json.gz")
+MAX_MIN = float(os.environ.get("STATS_MAX_MIN", "40"))
 T0 = time.time(); DEADLINE = T0 + MAX_MIN * 60
+SINCE = "2024-01-01"; YEAR = "2026"
+# ligues où jouent (ou ont joué depuis 2024) les 95 titulaires
+SLUGS = ["worlds", "msi", "first_stand", "americas_cup", "lck", "lpl", "lec", "lcs", "cblol-brazil", "lcp",
+         "lta_n", "lta_s", "lta_cross", "pcs", "vcs"]
+INTL = {"worlds": "Season World Championship", "msi": "Mid-Season Invitational", "first_stand": "First Stand", "americas_cup": "Americas Cup"}
+ROLE = {"top": "TOP", "jungle": "JGL", "mid": "MID", "bottom": "BOT", "support": "SUP"}
 LOG = []
 def log(*a):
     s = " ".join(str(x) for x in a); LOG.append(s); print(s, flush=True)
@@ -28,314 +37,393 @@ def norm(s):
     s = str(s or "").lower().replace("ø", "o")
     s = "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
     return re.sub(r"[^a-z0-9]", "", s)
-
-def now_iso(): return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-def age_h(ts):
-    try: return (time.time() - datetime.datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc).timestamp()) / 3600
-    except (TypeError, ValueError): return 1e9
-
+def ts(s): return datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
+def iso10(t): return t.strftime("%Y-%m-%dT%H:%M:") + "%02d.000Z" % (t.second // 10 * 10)
+def lpdt(s): return s[:19].replace("T", " ")   # format de date attendu par l'appli : "2026-10-23 17:00:00"
 class Budget(Exception): pass
 
-OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
-def api(params, post=False):
-    data = urllib.parse.urlencode(params)
-    post = post or len(data) > 6000   # les longues listes IN (...) passent en POST
-    req = urllib.request.Request(API if post else API + "?" + data, data=data.encode() if post else None, headers={"User-Agent": UA})
-    with OPENER.open(req, timeout=90) as r: return json.load(r)
-
-def login():
-    user, pw = os.environ.get("LP_USER"), os.environ.get("LP_PASS")
-    if not (user and pw):
-        log("connexion : aucun compte, requêtes anonymes"); return False
-    try:
-        tok = api({"action": "query", "meta": "tokens", "type": "login", "format": "json"})["query"]["tokens"]["logintoken"]
-        r = api({"action": "login", "lgname": user, "lgpassword": pw, "lgtoken": tok, "format": "json"}, post=True).get("login", {})
-        log("connexion :", "OK" if r.get("result") == "Success" else "échec, " + str(r.get("reason") or r.get("result"))[:160])
-        return r.get("result") == "Success"
-    except Exception as e:
-        log("connexion : erreur", type(e).__name__, e); return False
-
-_last = [0.0]; NQ = [0]; PACE = [FAST]
-def cargo(**p):
-    p = {k: v for k, v in p.items() if v is not None}
-    p.update(action="cargoquery", format="json"); p.setdefault("limit", "500")
-    for attempt in range(6):
-        wait = _last[0] + PACE[0] - time.time()
-        if time.time() + max(0, wait) > DEADLINE: raise Budget()
-        if wait > 0: time.sleep(wait)
-        _last[0] = time.time(); NQ[0] += 1
+NQ = [0]; _lock = threading.Lock()
+def fetch(url, key=False):
+    last = None
+    for a in range(10):
         try:
-            j = api(p)
+            req = urllib.request.Request(url, headers={"User-Agent": UA, **({"x-api-key": KEY} if key else {})})
+            with _lock: NQ[0] += 1
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return None if r.status == 204 else json.load(r)
+        except urllib.error.HTTPError as e:
+            if e.code in (400, 403, 404): return None   # fenêtre hors partie, ou pas de flux pour ce match
+            last = e
         except Exception as e:
-            log("  http", type(e).__name__, e); time.sleep(10 * (attempt + 1)); continue
-        if "error" in j:
-            if j["error"].get("code") == "ratelimited":
-                # chaque refus prolonge la pénalité : on espace de plus en plus
-                PACE[0] = SLOW if PACE[0] < SLOW else min(PACE[0] + 30, 180)
-                log("  limite Leaguepedia, une requête toutes les %d s" % PACE[0]); continue
-            log("  api", j["error"].get("code"), j["error"].get("info", "")[:160]); time.sleep(20 * (attempt + 1)); continue
-        return [x["title"] for x in j.get("cargoquery", [])]
-    raise RuntimeError("cargo failed: " + str(p.get("tables")) + " " + str(p.get("where", ""))[:120])
+            last = e
+        time.sleep(min(4, 0.5 * 2 ** a))
+    raise RuntimeError("%s : %s" % (url[:100], last))
+def gw(path, **p):
+    j = fetch(GW + path + "?" + urllib.parse.urlencode({"hl": "en-US", **p}), key=True)
+    return (j or {}).get("data")
+def feed(path): return fetch(FEED + path)
+def budget():
+    if time.time() > DEADLINE: raise Budget()
 
-def cargo_all(max_rows=20000, **p):
-    out, off = [], 0
-    while off < max_rows:
-        rows = cargo(offset=str(off), **p); out += rows
-        if len(rows) < 500: break
-        off += 500
-    return out
+# ---------- collecte ----------
+def refresh_leagues(C):
+    if C.get("leagues_t", "") >= time.strftime("%Y-%m-%d") and C.get("leagues"): return
+    C["leagues"] = {l["slug"]: l["id"] for l in gw("getLeagues")["leagues"] if l["slug"] in SLUGS}
+    C["leagues_t"] = time.strftime("%Y-%m-%d")
 
-def q(lst): return ",".join('"%s"' % str(x).replace('"', "") for x in dict.fromkeys(lst))
-num = lambda v: float(v) if str(v).replace(".", "", 1).replace("-", "", 1).isdigit() else 0.0
-INTL = re.compile(r"World Championship|Mid-Season|First Stand")
-MS_F = "MatchSchedule.Team1=A,MatchSchedule.Team2=B,MatchSchedule.Winner=W,MatchSchedule.Team1Score=SA,MatchSchedule.Team2Score=SB,MatchSchedule.DateTime_UTC=DT,MatchSchedule.OverviewPage=OP,MatchSchedule.BestOf=BO"
-EXTRA = {"DK": ["DWG KIA", "DAMWON Gaming"], "T1": ["SK Telecom T1"], "MKOI": ["MAD Lions KOI", "MAD Lions"], "TL": ["Team Liquid Honda"],
-         "MVK": ["MGN Vikings Esports", "Vikings Esports"], "LOS": ["Los Grandes"], "TSW": ["Team Whales"], "LYON": ["LYON", "LYON Gaming"],
-         "C9": ["Cloud9 Kia"], "GEN": ["KSV Esports"]}
+def refresh_schedules(C):
+    E, done = C["events"], C.setdefault("sched_done", {})
+    for slug in SLUGS:
+        lid = C["leagues"].get(slug)
+        if not lid: continue
+        tok, page = None, 0
+        while True:
+            budget()
+            try: s = gw("getSchedule", leagueId=lid, **({"pageToken": tok} if tok else {}))["schedule"]; page += 1
+            except Exception as e:   # coupure : on garde ce qu'on a, la suite au prochain passage
+                log("  planning", slug, "page", page + 1, str(e)[-80:]); break
+            for e in s["events"]:
+                m = e.get("match")
+                if e.get("type", "match") != "match" or not m or e["startTime"] < SINCE: continue
+                E[m["id"]] = {"t": e["startTime"], "st": e["state"], "l": slug, "bn": e.get("blockName") or "", "bo": (m.get("strategy") or {}).get("count", 1),
+                              "tm": [[t.get("code"), t.get("name"), (t.get("result") or {}).get("gameWins")] for t in m.get("teams", [])]}
+            tok = s["pages"].get("older")
+            if not tok or (s["events"] and s["events"][0]["startTime"] < SINCE):
+                done[slug] = True; break   # historique complet jusqu'à SINCE
+            # déjà rempli : la page courante et la précédente suffisent pour voir les nouveaux résultats
+            if done.get(slug) and page >= 2: break
 
-class Ctx:
-    """Référentiel partagé par les sections : noms d'équipes (renommages compris) et pages des joueurs."""
-    def __init__(self, teams, names, link):
-        self.teams, self.names, self.link = teams, names, link
-    def allnames(self): return list(itertools.chain(*self.names.values()))
-    def links(self): return list(self.link.values())
-    def oid(self, n):
-        for k, v in self.names.items():
-            if n in v: return k
-        nn = norm(n)
-        for t in self.teams:
-            if nn in t["al"]: return t["id"]
-        return None
+def fetch_details(C, mids):
+    def one(mid):
+        if time.time() > DEADLINE: return mid, None
+        try: ev = (gw("getEventDetails", id=mid) or {}).get("event")
+        except Exception as e: log("  détails", mid, str(e)[-80:]); return mid, None
+        if not ev: return mid, None
+        m = ev["match"]
+        return mid, {"tm": [[t["id"], t.get("code"), t.get("name"), (t.get("result") or {}).get("gameWins")] for t in m["teams"]],
+                     "g": [[g["id"], g["number"], g["state"], next((t["id"] for t in g.get("teams", []) if t.get("side") == "blue"), None)] for g in m["games"]]}
+    with cf.ThreadPoolExecutor(8) as ex:
+        for mid, d in ex.map(one, mids):
+            if d: C["details"][mid] = d
 
-# 1. noms historiques et logos
-def sec_noms(c):
-    names = {t["id"]: [t["lp"]] + EXTRA.get(t["id"], []) for t in c.teams}; img = {}
-    allnames = lambda: list(itertools.chain(*names.values()))
-    owner = lambda n: next((k for k, v in names.items() if n in v), None)
-    for r in cargo(tables="TeamRedirects", fields="TeamRedirects.AllName=A,TeamRedirects.OtherName=O",
-                   where="TeamRedirects.AllName IN (%s) OR TeamRedirects.OtherName IN (%s)" % (q(allnames()), q(allnames()))):
-        k = owner(r.get("A")) or owner(r.get("O"))
-        if k:
-            for n in (r.get("A"), r.get("O")):
-                if n and n not in names[k]: names[k].append(n)
-    for _ in range(2):
-        for r in cargo(tables="Teams", fields="Teams.Name=N,Teams.RenamedTo=R,Teams.Image=I",
-                       where="Teams.RenamedTo IN (%s) OR Teams.Name IN (%s)" % (q(allnames()), q(allnames()))):
-            k = owner(r.get("R")) if r.get("R") else None
-            if k and r.get("N") and r["N"] not in names[k]: names[k].append(r["N"])
-            for t in c.teams:
-                if t["lp"] == r.get("N") and r.get("I"): img[t["id"]] = r["I"]
-    c.names = names
-    return {"names": names, "logos": img}
+def summarize(gid, want_details):
+    w0 = feed("window/" + gid)
+    if not w0 or not w0.get("frames"): return {"x": 1}
+    md = w0["gameMetadata"]
+    fr = [f for f in w0["frames"] if f["blueTeam"]["totalGold"] > 0] or w0["frames"]
+    start = ts(fr[0]["rfc460Timestamp"])
+    we = feed("window/" + gid + "?startingTime=" + iso10(start + datetime.timedelta(hours=6)))
+    if not we or not we.get("frames"): return {"x": 1}
+    fe = we["frames"][-1]; end = ts(fe["rfc460Timestamp"])
+    w15 = feed("window/" + gid + "?startingTime=" + iso10(start + datetime.timedelta(minutes=15))) if (end - start).total_seconds() > 16 * 60 else None
+    f15 = w15["frames"][0] if w15 and w15.get("frames") else None
+    det = feed("details/" + gid + "?startingTime=" + iso10(start + datetime.timedelta(hours=6))) if want_details else None
+    dp = {p["participantId"]: p for p in (det["frames"][-1]["participants"] if det and det.get("frames") else [])}
+    p15 = {p["participantId"]: p for p in ([*f15["blueTeam"]["participants"], *f15["redTeam"]["participants"]] if f15 else [])}
+    def team(t, mt):
+        return [mt["esportsTeamId"], t["totalKills"], t["totalGold"], t["towers"], t["inhibitors"], t["barons"], len(t["dragons"])]
+    P = []
+    for side in ("blue", "red"):
+        mt, ft = md[side + "TeamMetadata"], fe[side + "Team"]
+        for pm, pp in zip(mt["participantMetadata"], ft["participants"]):
+            i = pm["participantId"]; d = dp.get(i, {}); q = p15.get(i)
+            P.append([pm.get("esportsPlayerId"), pm.get("summonerName"), ROLE.get(pm.get("role"), pm.get("role")), pm.get("championId"),
+                      pp["kills"], pp["deaths"], pp["assists"], pp["creepScore"], pp["totalGold"],
+                      q["totalGold"] if q else None, q["creepScore"] if q else None,
+                      round(d["championDamageShare"], 4) if "championDamageShare" in d else None, d.get("wardsPlaced"), d.get("wardsDestroyed")])
+    return {"s": iso10(start)[:19], "fin": fe["gameState"] == "finished", "min": round((end - start).total_seconds() / 60, 2),
+            "b": team(fe["blueTeam"], md["blueTeamMetadata"]), "r": team(fe["redTeam"], md["redTeamMetadata"]), "p": P}
 
-# 2. joueurs : page Leaguepedia exacte (gère les homonymes), plus photo, vrai nom, pays pour l'appli
-def sec_joueurs(c):
-    ids = [p["id"] for t in c.teams for p in t["players"]]
-    rows = cargo(tables="Players", fields="Players.ID=PID,Players.Team=Tm,Players.OverviewPage=OP,Players.Image=Img,Players.Name=RN,Players.NativeName=NN,Players.Country=Ctry,Players.Birthdate=BD",
-                 where="Players.ID IN (%s)" % q(ids))
-    link, prows = {}, []
-    for t in c.teams:
-        for p in t["players"]:
-            cand = [r for r in rows if norm(r.get("PID")) == norm(p["id"])]
-            r = next((r for r in cand if norm(r.get("Tm")) in t["al"]), None) or (cand[0] if len(cand) == 1 else None)
-            link[p["key"]] = (r or {}).get("OP") or p["id"]
-            prows += [{k: v for k, v in x.items() if v} for x in cand]
-    c.link = link
-    return {"links": link, "prows": prows}
+def fetch_games(C, todo, ours):
+    def one(item):
+        gid, year, teams = item
+        if time.time() > DEADLINE: return gid, None
+        try: return gid, summarize(gid, year >= YEAR and bool(teams & ours))
+        except Exception as e:
+            log("  partie", gid, str(e)[:120]); return gid, None
+    n = 0
+    with cf.ThreadPoolExecutor(8) as ex:
+        for gid, s in ex.map(one, todo):
+            if s is None: continue
+            if "x" in s: s["x"] = C["games"].get(gid, {}).get("x", 0) + 1; s["at"] = time.strftime("%Y-%m-%d")
+            C["games"][gid] = s; n += 1
+            if n % 250 == 0: log("  %d parties résumées (%d requêtes, %d s)" % (n, NQ[0], time.time() - T0))
+    return n
 
-# 3. confrontations entre équipes de ces Worlds (toutes années)
-def sec_h2h(c):
-    AN = q(c.allnames()); h2h = {}
-    rows = cargo_all(tables="MatchSchedule", fields=MS_F, order_by="MatchSchedule.DateTime_UTC DESC",
-                     where='MatchSchedule.Team1 IN (%s) AND MatchSchedule.Team2 IN (%s) AND MatchSchedule.Winner IN ("1","2")' % (AN, AN))
-    for r in rows:
-        a, b = c.oid(r.get("A")), c.oid(r.get("B"))
-        if not a or not b or a == b: continue
-        x, y = sorted([a, b]); H = h2h.setdefault(x + "|" + y, {"aw": 0, "bw": 0, "list": [], "since": None, "intl": {"aw": 0, "bw": 0}})
-        xside = 1 if a == x else 2; xwon = str(r.get("W")) == str(xside)
-        H["aw" if xwon else "bw"] += 1
-        if INTL.search(r.get("OP") or ""): H["intl"]["aw" if xwon else "bw"] += 1
-        if len(H["list"]) < 5:
-            H["list"].append({"dt": r.get("DT"), "op": r.get("OP"), "as": num(r.get("SA") if xside == 1 else r.get("SB")), "bs": num(r.get("SB") if xside == 1 else r.get("SA")), "aWon": xwon, "bo": num(r.get("BO"))})
-        H["since"] = r.get("DT")
-    return {"h2h": h2h}
+# ---------- vainqueur de chaque partie ----------
+def lean(s):
+    """> 0 si le bleu a gagné, d'après l'état final. Sans inhibiteur détruit, pas de nexus possible."""
+    b, r = s["b"], s["r"]
+    v = (3 if b[4] > 0 else -3) if (b[4] > 0) != (r[4] > 0) else 0
+    return v + 0.3 * (b[3] - r[3]) + (b[2] - r[2]) / 5000
 
-# 4. saison 2026 de chaque équipe
-def sec_saisons(c):
-    AN = q(c.allnames()); out = {}
-    ms = cargo_all(tables="MatchSchedule", fields=MS_F, order_by="MatchSchedule.DateTime_UTC DESC",
-                   where='(MatchSchedule.Team1 IN (%s) OR MatchSchedule.Team2 IN (%s)) AND MatchSchedule.DateTime_UTC >= "2026-01-01" AND MatchSchedule.Winner IN ("1","2")' % (AN, AN))
-    sg = cargo_all(tables="ScoreboardGames", fields="ScoreboardGames.Team1=A,ScoreboardGames.Team2=B,ScoreboardGames.WinTeam=WT,ScoreboardGames.Gamelength_Number=GL,ScoreboardGames.Team1Kills=KA,ScoreboardGames.Team2Kills=KB,ScoreboardGames.Team1Dragons=DA,ScoreboardGames.Team2Dragons=DB,ScoreboardGames.Team1Barons=BA,ScoreboardGames.Team2Barons=BB,ScoreboardGames.Team1Towers=TA,ScoreboardGames.Team2Towers=TB,ScoreboardGames.Team1Gold=GA,ScoreboardGames.Team2Gold=GB",
-                   where='(ScoreboardGames.Team1 IN (%s) OR ScoreboardGames.Team2 IN (%s)) AND ScoreboardGames.DateTime_UTC >= "2026-01-01"' % (AN, AN))
-    for t in c.teams:
-        tid = t["id"]; mine = lambda n: n in c.names[tid]
-        S = {"sw": 0, "sl": 0, "last": [], "vs": {}, "g": 0, "gw": 0, "bn": 0, "bw": 0, "rn": 0, "rw": 0, "gl": 0, "k": 0, "d": 0, "dr": 0, "ba": 0, "to": 0, "gd": 0}
-        for r in ms:
-            side = 1 if mine(r.get("A")) else 2 if mine(r.get("B")) else 0
-            if not side: continue
-            won = str(r.get("W")) == str(side); opp = r.get("B") if side == 1 else r.get("A"); o = c.oid(opp)
-            S["sw" if won else "sl"] += 1
-            if len(S["last"]) < 10:
-                S["last"].append({"opp": opp, "oid": o, "won": won, "s": num(r.get("SA") if side == 1 else r.get("SB")), "o": num(r.get("SB") if side == 1 else r.get("SA")), "dt": r.get("DT"), "op": r.get("OP")})
-            if o and o != tid:
-                v = S["vs"].setdefault(o, {"w": 0, "l": 0}); v["w" if won else "l"] += 1
-        for r in sg:
-            side = 1 if mine(r.get("A")) else 2 if mine(r.get("B")) else 0
-            if not side: continue
-            won = mine(r.get("WT")) or (r.get("WT") == "1" and side == 1) or (r.get("WT") == "2" and side == 2)
-            S["g"] += 1; S["gw"] += 1 if won else 0
-            if side == 1: S["bn"] += 1; S["bw"] += 1 if won else 0
-            else: S["rn"] += 1; S["rw"] += 1 if won else 0
-            f = ["KA", "KB", "DA", "BA", "TA", "GA", "GB"] if side == 1 else ["KB", "KA", "DB", "BB", "TB", "GB", "GA"]
-            S["gl"] += num(r.get("GL")); S["k"] += num(r.get(f[0])); S["d"] += num(r.get(f[1])); S["dr"] += num(r.get(f[2]))
-            S["ba"] += num(r.get(f[3])); S["to"] += num(r.get(f[4])); S["gd"] += num(r.get(f[5])) - num(r.get(f[6]))
-        if S["g"]:
-            for k in ("gl", "k", "d", "dr", "ba", "to", "gd"): S[k] = round(S[k] / S["g"], 3)
-        out[tid] = S
-    return {"teams": out}
+def winners(C, mid):
+    d = C["details"][mid]; wins = {t[0]: t[3] or 0 for t in d["tm"]}; ids = list(wins)
+    total = sum(wins.values())
+    games = sorted([g for g in d["g"] if g[2] == "completed"], key=lambda g: g[1])[:total]
+    if len(ids) != 2 or not games: return {}
+    sw = max(ids, key=lambda t: wins[t])
+    lean_of = []
+    for g in games:
+        s = C["games"].get(g[0])
+        blue = s["b"][0] if s and "b" in s else g[3]
+        lean_of.append((blue, lean(s) if s and "b" in s else 0.0))
+    best, bscore = None, None
+    for combo in itertools.product(ids, repeat=len(games)):
+        if any(combo.count(t) != wins[t] for t in ids) or combo[-1] != sw: continue
+        sc = sum((l if w == blue else -l) for w, (blue, l) in zip(combo, lean_of))
+        if bscore is None or sc > bscore: best, bscore = combo, sc
+    if best is None:   # score de série incohérent avec les parties : l'état final seul
+        best = [blue if l >= 0 else next(t for t in ids if t != blue) for blue, l in lean_of]
+    return {g[0]: w for g, w in zip(games, best)}
 
-# 5. duels de lane entre les 95 titulaires (depuis 2019)
-def sec_duels(c):
-    L = q(c.links()); duels = {}
-    rows = cargo_all(40000, tables="ScoreboardPlayers=SP1,ScoreboardPlayers=SP2", join_on="SP1.GameRoleIdVs=SP2.GameRoleId",
-                     fields="SP1.Link=PA,SP2.Link=PB,SP1.PlayerWin=W,SP1.Kills=KA,SP1.Deaths=DA,SP1.Assists=AA,SP2.Kills=KB,SP2.Deaths=DB,SP2.Assists=AB,SP1.Champion=CA,SP2.Champion=CB,SP1.DateTime_UTC=DT,SP1.OverviewPage=OP",
-                     where='SP1.Link IN (%s) AND SP2.Link IN (%s) AND SP1.DateTime_UTC >= "2019-01-01"' % (L, L), order_by="SP1.DateTime_UTC DESC")
-    for r in rows:
-        k = norm(r.get("PA")) + "|" + norm(r.get("PB"))
-        x = duels.setdefault(k, {"g": 0, "w": 0, "ka": 0, "da": 0, "aa": 0, "kb": 0, "db": 0, "ab": 0, "last": None})
-        x["g"] += 1; x["w"] += 1 if r.get("W") == "Yes" else 0
-        for a, b in (("ka", "KA"), ("da", "DA"), ("aa", "AA"), ("kb", "KB"), ("db", "DB"), ("ab", "AB")): x[a] += num(r.get(b))
-        if not x["last"]: x["last"] = {"dt": r.get("DT"), "ca": r.get("CA"), "cb": r.get("CB"), "w": r.get("W") == "Yes", "op": r.get("OP")}
-    return {"duels": duels}
-
-# 6. stats joueurs : saison 2026 et carrière aux Worlds
+# ---------- agrégats ----------
 def agg(rows):
-    A = {"g": 0, "w": 0, "k": 0, "d": 0, "a": 0, "cs": 0, "gold": 0, "dmg": 0, "tk": 0, "vs": 0, "min": 0}; ch = {}
+    A = {"g": 0, "w": 0, "k": 0, "d": 0, "a": 0, "cs": 0, "gold": 0, "min": 0, "tk": 0, "dmg": 0, "vs": 0,
+         "dsn": 0, "ds": 0, "wp": 0, "wk": 0, "wn": 0, "n15": 0, "gd15": 0, "csd15": 0}
+    ch = {}
     for r in rows:
-        w = r.get("W") == "Yes"; A["g"] += 1; A["w"] += 1 if w else 0
-        for a, b in (("k", "K"), ("d", "D"), ("a", "A"), ("cs", "CS"), ("gold", "G"), ("dmg", "DMG"), ("tk", "TK"), ("vs", "VS"), ("min", "GL")): A[a] += num(r.get(b))
-        c = ch.setdefault(r.get("C"), {"g": 0, "w": 0, "k": 0, "d": 0, "a": 0}); c["g"] += 1; c["w"] += 1 if w else 0
-        c["k"] += num(r.get("K")); c["d"] += num(r.get("D")); c["a"] += num(r.get("A"))
-    A["champs"] = [dict(c=c, **v) for c, v in sorted(ch.items(), key=lambda kv: (-kv[1]["g"], -kv[1]["w"]))[:6]]
+        A["g"] += 1; A["w"] += r["W"]
+        for a in ("k", "d", "a", "cs", "gold", "min", "tk"): A[a] += r[a]
+        if r["ds"] is not None: A["dsn"] += 1; A["ds"] += r["ds"]
+        if r["wp"] is not None: A["wn"] += 1; A["wp"] += r["wp"]; A["wk"] += r["wk"] or 0
+        if r["gd15"] is not None: A["n15"] += 1; A["gd15"] += r["gd15"]; A["csd15"] += r["csd15"]
+        c = ch.setdefault(r["C"], {"g": 0, "w": 0, "k": 0, "d": 0, "a": 0}); c["g"] += 1; c["w"] += r["W"]
+        c["k"] += r["k"]; c["d"] += r["d"]; c["a"] += r["a"]
+    for k in ("min", "ds"): A[k] = round(A[k], 3)
+    A["champs"] = [dict(c=c, **v) for c, v in sorted(ch.items(), key=lambda kv: (-kv[1]["g"], -kv[1]["w"]))[:8]]
+    A["pool"] = len(ch)
     return A
 
-def sec_joueurs_stats(c):
-    L = q(c.links()); players = {}
-    se = cargo_all(30000, tables="ScoreboardPlayers=SP,ScoreboardGames=SG", join_on="SP.GameId=SG.GameId",
-                   fields="SP.Link=L,SP.Champion=C,SP.Kills=K,SP.Deaths=D,SP.Assists=A,SP.CS=CS,SP.Gold=G,SP.DamageToChampions=DMG,SP.TeamKills=TK,SP.PlayerWin=W,SP.VisionScore=VS,SG.Gamelength_Number=GL",
-                   where='SP.Link IN (%s) AND SP.DateTime_UTC >= "2026-01-01"' % L)
-    wo = cargo_all(20000, tables="ScoreboardPlayers", fields="ScoreboardPlayers.Link=L,ScoreboardPlayers.Champion=C,ScoreboardPlayers.Kills=K,ScoreboardPlayers.Deaths=D,ScoreboardPlayers.Assists=A,ScoreboardPlayers.PlayerWin=W,ScoreboardPlayers.OverviewPage=OP",
-                   where='ScoreboardPlayers.Link IN (%s) AND ScoreboardPlayers.OverviewPage LIKE "%%Season World Championship%%"' % L)
-    for pk, ln in c.link.items():
-        mine_se = [r for r in se if norm(r.get("L")) == norm(ln)]; mine_wo = [r for r in wo if norm(r.get("L")) == norm(ln)]
-        years = sorted({m.group(1) for r in mine_wo for m in [re.search(r"(\d{4}) Season World", r.get("OP") or "")] if m})
-        players[pk] = {"S": agg(mine_se), "W": agg(mine_wo), "years": years, "now": agg([r for r in mine_wo if (r.get("OP") or "").startswith("2026 Season World Championship")])}
-    return {"players": players}
+def opname(slug, league_names, t):
+    y = t[:4]
+    return "%s %s" % (y, INTL[slug]) if slug in INTL else "%s %s" % (league_names.get(slug, slug.upper()), y)
 
-# 7. champions (taux de victoire pro 2026) et maîtrise joueur-champion (depuis 2025)
-def sec_champions(c):
-    champs, mastery = {}, {}
-    base = dict(tables="ScoreboardPlayers", group_by="ScoreboardPlayers.Champion", fields="ScoreboardPlayers.Champion=C,COUNT(*)=N")
-    for r in cargo_all(**base, where='ScoreboardPlayers.DateTime_UTC >= "2026-01-01"'): champs.setdefault(norm(r.get("C")), {"n": 0, "w": 0})["n"] = num(r.get("N"))
-    for r in cargo_all(**base, where='ScoreboardPlayers.DateTime_UTC >= "2026-01-01" AND ScoreboardPlayers.PlayerWin="Yes"'): champs.setdefault(norm(r.get("C")), {"n": 0, "w": 0})["w"] = num(r.get("N"))
-    mb = dict(tables="ScoreboardPlayers", group_by="ScoreboardPlayers.Link,ScoreboardPlayers.Champion", fields="ScoreboardPlayers.Link=L,ScoreboardPlayers.Champion=C,COUNT(*)=N")
-    mw = 'ScoreboardPlayers.Link IN (%s) AND ScoreboardPlayers.DateTime_UTC >= "2025-01-01"' % q(c.links())
-    for r in cargo_all(**mb, where=mw): mastery.setdefault(norm(r.get("L")) + "|" + norm(r.get("C")), {"n": 0, "w": 0})["n"] = num(r.get("N"))
-    for r in cargo_all(**mb, where=mw + ' AND ScoreboardPlayers.PlayerWin="Yes"'): mastery.setdefault(norm(r.get("L")) + "|" + norm(r.get("C")), {"n": 0, "w": 0})["w"] = num(r.get("N"))
-    return {"champs": champs, "mastery": mastery}
+def ensure_roster(C, teams):
+    """Identifiants LoL Esports de nos 19 équipes et 95 joueurs, logos, vrais noms et photos (getTeams, une fois par jour)."""
+    if C.get("roster_t", "") >= time.strftime("%Y-%m-%d") and C.get("roster"): return
+    al = {t["id"]: set(t["al"]) | {norm(t["id"]), norm(t["name"]), norm(t["lp"])} for t in teams}
+    LT = gw("getTeams")["teams"]; R = {"teams": {}, "players": {}, "logos": {}, "pinfo": {}}
+    for t in teams:
+        # homonymes (LYON / Lyon Academy / Lynch Esports « LY ») : équipe active de la bonne ligue d'abord
+        cands = [x for x in LT if norm(x.get("code")) in al[t["id"]] or norm(x.get("name")) in al[t["id"]]]
+        cands.sort(key=lambda x: (x.get("status") != "active", norm((x.get("homeLeague") or {}).get("name")) != norm(t["league"]), not x.get("players")))
+        if not cands: log("  équipe introuvable chez LoL Esports :", t["id"]); continue
+        x = cands[0]; R["teams"][x["id"]] = t["id"]; R["logos"][t["id"]] = x.get("image")
+        for p in t["players"]:
+            q = next((q for q in x.get("players", []) if norm(q.get("summonerName")) == norm(p["id"])), None)
+            if not q: log("  joueur introuvable chez LoL Esports :", p["key"]); continue
+            R["players"][q["id"]] = p["key"]
+            R["pinfo"][p["key"]] = {"rn": " ".join(filter(None, [(q.get("firstName") or "").strip(), (q.get("lastName") or "").strip()])), "img": q.get("image")}
+    C["roster"], C["roster_t"] = R, time.strftime("%Y-%m-%d")
 
-# 8. stats du tournoi
-def sec_tournoi(c):
-    rows = cargo_all(5000, tables="ScoreboardPlayers=SP,ScoreboardGames=SG", join_on="SP.GameId=SG.GameId",
-                     fields="SP.Link=L,SP.Team=TM,SP.Champion=C,SP.Kills=K,SP.Deaths=D,SP.Assists=A,SP.CS=CS,SP.DamageToChampions=DMG,SP.TeamKills=TK,SP.PlayerWin=W,SP.GameId=G,SG.Gamelength_Number=GL,SG.Team1=B1,SG.Team2=B2,SG.WinTeam=WT,SG.Team1Kills=K1,SG.Team2Kills=K2",
-                     where='SP.OverviewPage LIKE "2026 Season World Championship%"')
-    bans = cargo_all(2000, tables="PicksAndBansS7", fields=",".join("PicksAndBansS7.Team%dBan%d=%s%d" % (t, i, "ab"[t - 1], i) for t in (1, 2) for i in range(1, 6)),
-                     where='PicksAndBansS7.OverviewPage LIKE "2026 Season World Championship%"')
-    pl, ch, games = {}, {}, {}
-    for r in rows:
-        w = r.get("W") == "Yes"
-        p = pl.setdefault(r.get("L"), {"L": r.get("L"), "tm": r.get("TM"), "g": 0, "w": 0, "k": 0, "d": 0, "a": 0, "cs": 0, "dmg": 0, "tk": 0, "min": 0})
-        p["g"] += 1; p["w"] += 1 if w else 0
-        for a, b in (("k", "K"), ("d", "D"), ("a", "A"), ("cs", "CS"), ("dmg", "DMG"), ("tk", "TK"), ("min", "GL")): p[a] += num(r.get(b))
-        c_ = ch.setdefault(r.get("C"), {"p": 0, "w": 0, "b": 0}); c_["p"] += 1; c_["w"] += 1 if w else 0
-        games.setdefault(r.get("G"), {"gl": num(r.get("GL")), "b1": r.get("B1"), "b2": r.get("B2"), "wt": r.get("WT"), "kills": num(r.get("K1")) + num(r.get("K2"))})
-    for r in bans:
-        for k in ("a1", "a2", "a3", "a4", "a5", "b1", "b2", "b3", "b4", "b5"):
-            v = r.get(k)
-            if v and v != "None": ch.setdefault(v, {"p": 0, "w": 0, "b": 0})["b"] += 1
-    G = list(games.values()); n = len(G); blue = sum(1 for g in G if g["wt"] == g["b1"] or g["wt"] == "1")
-    P = list(pl.values())
-    def top(f, mn=3):
-        return sorted([dict(p, v=f(p)) for p in P if p["g"] >= mn], key=lambda x: -x["v"])[:5]
-    byLen = sorted(G, key=lambda g: -g["gl"]); byK = sorted(G, key=lambda g: -g["kills"])
-    return {"tourney": {"n": n, "blue": blue, "red": n - blue, "avg": (sum(g["gl"] for g in G) / n) if n else 0,
-        "longest": byLen[0] if G else None, "shortest": byLen[-1] if G else None, "bloodiest": byK[0] if G else None,
-        "lead": {"kda": top(lambda p: (p["k"] + p["a"]) / max(1, p["d"])), "kills": top(lambda p: p["k"], 1), "csm": top(lambda p: p["cs"] / max(1, p["min"])),
-                 "dpm": top(lambda p: p["dmg"] / max(1, p["min"])), "kp": top(lambda p: (p["k"] + p["a"]) / max(1, p["tk"]) * 100)},
-        "champs": sorted([dict(c=k, pr=((v["p"] + v["b"]) / n * 100) if n else 0, **v) for k, v in ch.items()], key=lambda x: -x["pr"])[:15]}}
+def build(C, teams):
+    E, D, G = C["events"], C["details"], C["games"]
+    R = C["roster"]; our_team = R["teams"]; our_pl = R["players"]
+    key_of = {p["key"]: p for t in teams for p in t["players"]}
+    team_of_key = {p["key"]: t["id"] for t in teams for p in t["players"]}
+    LN = {"lck": "LCK", "lpl": "LPL", "lec": "LEC", "lcs": "LCS", "cblol-brazil": "CBLOL", "lcp": "LCP", "lta_n": "LTA North", "lta_s": "LTA South", "lta_cross": "LTA", "pcs": "PCS", "vcs": "VCS"}
+    # noms des champions (Data Dragon)
+    try:
+        v = fetch("https://ddragon.leagueoflegends.com/api/versions.json")[0]
+        CN = {c["id"]: c["name"] for c in fetch("https://ddragon.leagueoflegends.com/cdn/%s/data/en_US/champion.json" % v)["data"].values()}
+    except Exception: CN = {}
+    cname = lambda c: CN.get(c, c)
 
-# nom (préfixe des messages d'erreur lus par l'appli), fonction, âge max en heures (0 = à chaque passage), clés produites
-SECTIONS = [("noms", sec_noms, 24, ["names", "logos"]), ("joueurs", sec_joueurs, 24, ["links", "prows"]), ("tournoi", sec_tournoi, 0, ["tourney"]),
-            ("saisons", sec_saisons, MAX_AGE_H, ["teams"]), ("h2h", sec_h2h, MAX_AGE_H, ["h2h"]), ("joueurs stats", sec_joueurs_stats, MAX_AGE_H, ["players"]),
-            ("duels", sec_duels, MAX_AGE_H, ["duels"]), ("champions", sec_champions, 24, ["champs", "mastery"])]
-EMPTY = {"names": {}, "logos": {}, "links": {}, "prows": [], "teams": {}, "h2h": {}, "duels": {}, "players": {}, "tourney": None, "champs": {}, "mastery": {}}
+    # matchs terminés, du plus récent au plus ancien
+    matches = sorted([(E[m]["t"], m) for m in D if m in E and E[m]["st"] == "completed"], reverse=True)
+    W = {}
+    for _, mid in matches: W.update(winners(C, mid))
 
-def main(only):
+    # lignes par joueur (nos 95), par partie
+    prow = {}   # clé joueur -> [lignes]
+    duels, champs, mastery, tour = {}, {}, {}, {"games": [], "rows": []}
+    tg = {t["id"]: [] for t in teams}   # parties 2026 par équipe
+    cover = {}
+    for t_, mid in matches:
+        e, d = E[mid], D[mid]; op = opname(e["l"], LN, t_)
+        for g in d["g"]:
+            s = G.get(g[0]); wid = W.get(g[0])
+            if not s or "p" not in s or not wid: continue
+            year = t_[:4]; cover[year] = cover.get(year, 0) + 1
+            if not s["fin"]: continue   # flux coupé avant la fin : chiffres incomplets
+            sides = {"b": s["b"], "r": s["r"]}; P = s["p"]
+            rows = {}
+            for i, pp in enumerate(P):
+                sd = "b" if i < 5 else "r"; me, opp = sides[sd], sides["r" if sd == "b" else "b"]
+                foe = next((q for q in (P[5:] if sd == "b" else P[:5]) if q[2] == pp[2]), None)
+                r = {"C": cname(pp[3]), "W": 1 if me[0] == wid else 0, "k": pp[4], "d": pp[5], "a": pp[6], "cs": pp[7], "gold": pp[8],
+                     "min": s["min"], "tk": me[1], "ds": pp[11], "wp": pp[12], "wk": pp[13],
+                     "gd15": pp[9] - foe[9] if foe and pp[9] is not None and foe[9] is not None else None,
+                     "csd15": pp[10] - foe[10] if foe and pp[10] is not None and foe[10] is not None else None,
+                     "dt": lpdt(t_), "op": op, "team": me[0], "role": pp[2]}
+                rows[i] = r
+                if year == YEAR:
+                    ck = norm(r["C"]); c = champs.setdefault(ck, {"n": 0, "w": 0}); c["n"] += 1; c["w"] += r["W"]
+                k = our_pl.get(pp[0])
+                if k:
+                    prow.setdefault(k, []).append(r)
+                    if year >= "2025":
+                        mk = norm(key_of[k]["id"]) + "|" + norm(r["C"]); m = mastery.setdefault(mk, {"n": 0, "w": 0}); m["n"] += 1; m["w"] += r["W"]
+            # duels de lane entre nos joueurs
+            for i in range(5):
+                a, b = P[i], next((q for q in P[5:] if q[2] == P[i][2]), None)
+                if not b: continue
+                ka, kb = our_pl.get(a[0]), our_pl.get(b[0])
+                if not (ka and kb): continue
+                ra, rb = rows[i], rows[P.index(b)]
+                for (x, rx, y, ry) in ((ka, ra, kb, rb), (kb, rb, ka, ra)):
+                    dk = norm(key_of[x]["id"]) + "|" + norm(key_of[y]["id"])
+                    z = duels.setdefault(dk, {"g": 0, "w": 0, "ka": 0, "da": 0, "aa": 0, "kb": 0, "db": 0, "ab": 0, "gd15": 0, "n15": 0, "last": None})
+                    z["g"] += 1; z["w"] += rx["W"]
+                    z["ka"] += rx["k"]; z["da"] += rx["d"]; z["aa"] += rx["a"]; z["kb"] += ry["k"]; z["db"] += ry["d"]; z["ab"] += ry["a"]
+                    if rx["gd15"] is not None: z["n15"] += 1; z["gd15"] += rx["gd15"]
+                    if not z["last"]: z["last"] = {"dt": rx["dt"], "ca": rx["C"], "cb": ry["C"], "w": bool(rx["W"]), "op": op}
+            # parties 2026 des équipes, et parties des Worlds 2026
+            if year == YEAR:
+                for sd in ("b", "r"):
+                    tid = our_team.get(sides[sd][0])
+                    if tid: tg[tid].append((sd, sides, wid, s["min"]))
+            if e["l"] == "worlds" and year == YEAR:
+                tour["games"].append({"gl": s["min"], "b1": our_team.get(s["b"][0], s["b"][0]), "b2": our_team.get(s["r"][0], s["r"][0]),
+                                      "wt": our_team.get(wid, wid), "kills": s["b"][1] + s["r"][1]})
+                for i, r in rows.items():
+                    k = our_pl.get(P[i][0])
+                    tour["rows"].append(dict(r, L=key_of[k]["id"] if k else re.sub(r"^\S+\s+", "", P[i][1] or "?"), tm=our_team.get(r["team"], "")))
+
+    # joueurs
+    players = {}
+    for t in teams:
+        for p in t["players"]:
+            rs = prow.get(p["key"], [])
+            wr = [r for r in rs if r["op"].endswith(INTL["worlds"])]
+            players[p["key"]] = {"S": agg([r for r in rs if r["dt"][:4] == YEAR]), "W": agg(wr), "years": sorted({r["dt"][:4] for r in wr}),
+                                 "now": agg([r for r in wr if r["dt"][:4] == YEAR]), "since": SINCE[:4]}
+
+    # séries : saison 2026 des équipes, face-à-face (depuis 2024)
+    teams_out, h2h = {}, {}
+    for t in teams:
+        teams_out[t["id"]] = {"sw": 0, "sl": 0, "last": [], "vs": {}, "g": 0, "gw": 0, "bn": 0, "bw": 0, "rn": 0, "rw": 0, "gl": 0, "k": 0, "d": 0, "dr": 0, "ba": 0, "to": 0, "gd": 0}
+    for t_, mid in matches:
+        d = D[mid]; e = E[mid]
+        if len(d["tm"]) != 2: continue
+        (ia, ca, na, wa), (ib, cb, nb, wb) = d["tm"]
+        if wa == wb or wa is None: continue
+        op = opname(e["l"], LN, t_); A, B = our_team.get(ia), our_team.get(ib)
+        for me, opp, onm, s1, s2 in ((A, B, nb, wa, wb), (B, A, na, wb, wa)):
+            if not me or t_[:4] != YEAR: continue
+            S = teams_out[me]; won = s1 > s2
+            S["sw" if won else "sl"] += 1
+            if len(S["last"]) < 10: S["last"].append({"opp": onm, "oid": opp, "won": won, "s": s1, "o": s2, "dt": lpdt(t_), "op": op})
+            if opp: v = S["vs"].setdefault(opp, {"w": 0, "l": 0}); v["w" if won else "l"] += 1
+        if A and B and A != B:
+            x, y = sorted([A, B]); xa = (A == x)
+            H = h2h.setdefault(x + "|" + y, {"aw": 0, "bw": 0, "list": [], "since": None, "intl": {"aw": 0, "bw": 0}})
+            sx, sy = (wa, wb) if xa else (wb, wa); xw = sx > sy
+            H["aw" if xw else "bw"] += 1
+            if e["l"] in INTL: H["intl"]["aw" if xw else "bw"] += 1
+            if len(H["list"]) < 5: H["list"].append({"dt": lpdt(t_), "op": op, "as": sx, "bs": sy, "aWon": xw, "bo": e["bo"]})
+            H["since"] = lpdt(t_)
+    for tid, gl in tg.items():
+        S = teams_out[tid]
+        for sd, sides, wid, mins in gl:
+            me, op_ = sides[sd], sides["r" if sd == "b" else "b"]; won = me[0] == wid
+            S["g"] += 1; S["gw"] += won
+            if sd == "b": S["bn"] += 1; S["bw"] += won
+            else: S["rn"] += 1; S["rw"] += won
+            S["gl"] += mins; S["k"] += me[1]; S["d"] += op_[1]; S["dr"] += me[6]; S["ba"] += me[5]; S["to"] += me[3]; S["gd"] += me[2] - op_[2]
+        if S["g"]:
+            for k in ("gl", "k", "d", "dr", "ba", "to", "gd"): S[k] = round(S[k] / S["g"], 3)
+
+    # tournoi (Worlds 2026)
+    TG = tour["games"]; n = len(TG); pl, chs = {}, {}
+    for r in tour["rows"]:
+        q = pl.setdefault(r["L"], {"L": r["L"], "tm": r["tm"], "g": 0, "w": 0, "k": 0, "d": 0, "a": 0, "cs": 0, "dmg": 0, "tk": 0, "min": 0, "ds": 0, "dsn": 0})
+        q["g"] += 1; q["w"] += r["W"]
+        for a in ("k", "d", "a", "cs", "tk", "min"): q[a] += r[a]
+        if r["ds"] is not None: q["ds"] += r["ds"]; q["dsn"] += 1
+        c = chs.setdefault(r["C"], {"p": 0, "w": 0, "b": 0}); c["p"] += 1; c["w"] += r["W"]
+    P_ = list(pl.values())
+    top = lambda f, mn=3: sorted([dict(q, v=f(q)) for q in P_ if q["g"] >= mn], key=lambda x: -x["v"])[:5]
+    byLen = sorted(TG, key=lambda g: -g["gl"]); byK = sorted(TG, key=lambda g: -g["kills"])
+    tourney = {"n": n, "blue": sum(1 for g in TG if g["wt"] == g["b1"]), "avg": sum(g["gl"] for g in TG) / n if n else 0,
+               "longest": byLen[0] if TG else None, "shortest": byLen[-1] if TG else None, "bloodiest": byK[0] if TG else None, "nobans": True,
+               "lead": {"kda": top(lambda q: (q["k"] + q["a"]) / max(1, q["d"])), "kills": top(lambda q: q["k"], 1), "csm": top(lambda q: q["cs"] / max(1, q["min"])),
+                        "dmg": top(lambda q: q["ds"] / max(1, q["dsn"]) * 100), "kp": top(lambda q: (q["k"] + q["a"]) / max(1, q["tk"]) * 100)},
+               "champs": sorted([dict(c=c, pr=(v["p"] / n * 100) if n else 0, **v) for c, v in chs.items()], key=lambda x: -x["pr"])[:15]}
+    tourney["red"] = n - tourney["blue"]
+
+    names = {t["id"]: sorted({t["lp"], t["name"], t["id"]} | {x[c] for mid in D for x in D[mid]["tm"] if our_team.get(x[0]) == t["id"] for c in (1, 2) if x[c]}) for t in teams}
+    return {"v": 2, "src": "lolesports", "since": SINCE, "teams": teams_out, "h2h": h2h, "duels": duels, "players": players, "tourney": tourney,
+            "champs": champs, "mastery": mastery, "names": names, "logos": R["logos"], "pinfo": R["pinfo"],
+            "cover": cover, "errors": [], "stale": {}}
+
+# ---------- passage ----------
+def main():
     teams = json.load(open(os.path.join(ROOT, "data", "teams.json"), encoding="utf-8"))
+    C = {}
+    if os.path.exists(CACHE):
+        try: C = json.load(gzip.open(CACHE, "rt", encoding="utf-8"))
+        except Exception as e: log("cache illisible, on repart de zéro :", e)
+    for k in ("events", "details", "games"): C.setdefault(k, {})
+    log("cache : %d matchs, %d détails, %d parties | budget %d min" % (len(C["events"]), len(C["details"]), len(C["games"]), MAX_MIN))
+    complete = True
+    try:
+        refresh_leagues(C)
+        refresh_schedules(C)
+        E, D = C["events"], C["details"]
+        # matchs terminés sans détails (ou détaillés avant la fin), du plus récent au plus ancien
+        todo = [m for t, m in sorted(((E[m]["t"], m) for m in E if E[m]["st"] == "completed"), reverse=True)
+                if m not in D or any(g[2] not in ("completed", "unneeded") for g in D[m]["g"])]
+        log("planning : %d matchs connus, %d à détailler" % (len(E), len(todo)))
+        fetch_details(C, todo)
+        budget()
+        ensure_roster(C, teams); ours = set(C["roster"]["teams"])
+        today = time.strftime("%Y-%m-%d")
+        todo = []
+        for t, m in sorted(((E[m]["t"], m) for m in D if m in E), reverse=True):
+            d = D[m]; total = sum((x[3] or 0) for x in d["tm"])
+            for g in sorted(d["g"], key=lambda g: g[1])[:total]:
+                if g[2] != "completed": continue
+                s = C["games"].get(g[0])
+                # flux absent : 3 essais, un par jour
+                if s and ("p" in s or s.get("x", 0) >= 3 or s.get("at") == today): continue
+                todo.append((g[0], t[:4], {x[0] for x in d["tm"]}))
+        log("parties à résumer : %d" % len(todo))
+        fetch_games(C, todo, ours)
+        if time.time() > DEADLINE: complete = False
+    except Budget:
+        complete = False
+    except Exception as e:   # API injoignable : on publie avec ce qu'on a déjà
+        log("erreur :", type(e).__name__, str(e)[-200:]); complete = False
+    if not complete: log("passage incomplet, la suite au prochain")
+    try: ensure_roster(C, teams)
+    except Exception as e: log("équipes LoL Esports injoignables :", str(e)[-120:])
+    # mtime=0 : même contenu, même fichier (pas de publication inutile)
+    with gzip.GzipFile(CACHE, "wb", mtime=0) as f: f.write(json.dumps(C, separators=(",", ":")).encode("utf-8"))
+    if not C.get("roster"):
+        log("pas encore d'identifiants d'équipes, stats inchangées"); return 0
+
+    out = build(C, teams)
+    left = sum(1 for m in C["details"].values() for g in m["g"] if g[2] == "completed" and g[0] not in C["games"])
+    out["meta"] = {"queries": NQ[0], "seconds": round(time.time() - T0), "games": len(C["games"]), "left": left, "cover": out["cover"],
+                   "players": sum(1 for p in out["players"].values() if p["S"]["g"]), "duels": len(out["duels"]), "h2h": len(out["h2h"]), "tourney": out["tourney"]["n"]}
+    if left: out["stale"] = {"historique": "%d parties restent à charger" % left}
     old = None
     if os.path.exists(OUT):
         try: old = json.load(open(OUT, encoding="utf-8"))
         except Exception: old = None
-    old = old or {}
-    out = {k: old.get(k, v) for k, v in EMPTY.items()}
-    fresh = dict(old.get("fresh") or {})
-    names = out["names"] or {t["id"]: [t["lp"]] + EXTRA.get(t["id"], []) for t in teams}
-    link = out["links"] or {p["key"]: p["id"] for t in teams for p in t["players"]}
-    ctx = Ctx(teams, names, link)
-    login()
-
-    due = [s for s in SECTIONS if (s[0] in only if only else not s[2] or age_h(fresh.get(s[0])) >= s[2])]
-    # sections lourdes : la plus ancienne d'abord
-    due.sort(key=lambda s: (SECTIONS.index(s) if SECTIONS.index(s) < 3 else 3, -age_h(fresh.get(s[0]))))
-    errors, stale = [], {}
-    has_data = lambda keys: any(out.get(k) for k in keys)
-    log("à faire :", ", ".join(s[0] for s in due) or "rien", "| budget %d min" % MAX_MIN)
-    for i, (name, fn, max_age, keys) in enumerate(due):
-        log("%s (%d requêtes jusqu'ici, %d s)" % (name, NQ[0], time.time() - T0))
-        try:
-            res = fn(ctx)
-            if all(not v or (k == "tourney" and not v.get("n")) for k, v in res.items()) and has_data(keys):
-                raise RuntimeError("réponse vide")
-            changed = any(out.get(k) != v for k, v in res.items())
-            out.update(res)
-            # le tournoi tourne à chaque passage : sa date ne bouge que si les données changent
-            if max_age or changed or not fresh.get(name): fresh[name] = now_iso()
-        except Budget:
-            for s in due[i:]: stale[s[0]] = "pas eu le temps"
-            log("  budget de temps écoulé"); break
-        except Exception as e:
-            if has_data(keys): stale[name] = str(e)[:200]   # l'ancienne version reste servie
-            else: errors.append("%s: %s" % (name, e))
-            log("  échec", name, str(e)[:200])
-    # une section sans aucune donnée reste en erreur : l'appli sait qu'elle doit s'en passer
-    for name, _, _, keys in SECTIONS:
-        if not has_data(keys) and not any(e.startswith(name + ":") for e in errors): errors.append("%s: pas encore calculé" % name)
-
-    out["fresh"] = fresh; out["stale"] = stale; out["errors"] = errors
-    out["meta"] = {"queries": NQ[0], "seconds": round(time.time() - T0), "pace": PACE[0], "h2h": len(out["h2h"]), "duels": len(out["duels"]),
-                   "players": len(out["players"]), "teams": len(out["teams"]), "mastery": len(out["mastery"]), "tourney": (out["tourney"] or {}).get("n", 0)}
-    # n'écrit le fichier que si quelque chose a changé (sinon le robot ne publie rien)
-    strip = lambda d: {k: v for k, v in d.items() if k not in ("built", "meta")}
+    strip = lambda d: {k: v for k, v in (d or {}).items() if k not in ("built", "meta")}
     if old and strip(old) == strip(out):
         log("aucun changement", out["meta"]); return 0
-    out["built"] = now_iso()
+    out["built"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(OUT, "w", encoding="utf-8") as f: json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
-    log("écrit", OUT, os.path.getsize(OUT) // 1024, "ko", out["meta"], "| à jour :", ", ".join(sorted(fresh)), "| en retard :", stale or "rien", "| erreurs :", errors or "aucune")
+    log("écrit", OUT, os.path.getsize(OUT) // 1024, "ko", out["meta"])
     return 0
 
 if __name__ == "__main__":
     rc = 1
-    try: rc = main(set(sys.argv[1:]))
+    try: rc = main()
     finally:
         with open(os.path.join(ROOT, "data", "stats_log.txt"), "w", encoding="utf-8") as f: f.write("\n".join(LOG) + "\n")
     sys.exit(rc)
