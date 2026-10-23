@@ -437,6 +437,75 @@ h2:first-child{margin-top:4px}
 .field{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;font-size:17px}
 .field.code{font-family:var(--disp);font-size:28px;letter-spacing:8px;text-align:center;text-transform:uppercase}
 
+/* ===== navigation des fiches ===== */
+[hidden]{display:none!important}
+body.lock{overflow:hidden}
+.sheet{overscroll-behavior:contain;will-change:transform}
+.sheet .grab{display:none}
+.shead{position:sticky;top:0;z-index:6;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 10px 10px;background:linear-gradient(#0B1830 70%,rgba(11,24,48,0))}
+.shead .grip{width:44px;height:4px;border-radius:2px;background:rgba(240,230,210,.35)}
+.sback{justify-self:start;font-weight:700;font-size:14px;color:var(--gold2);padding:9px 12px;border-radius:12px;background:rgba(5,11,24,.75);border:1px solid var(--line)}
+.sheet .x{position:static;justify-self:end;width:42px;height:42px;font-size:24px;background:rgba(5,11,24,.75)}
+.sheet .wrap{padding-top:0}
+#sheetBody.swap{animation:viewIn .28s ease both}
+details.manual{margin-top:18px;padding:10px 12px;border:1px dashed rgba(200,170,110,.3);border-radius:10px}
+details.manual summary{cursor:pointer;font-size:13.5px;color:var(--muted);font-weight:600}
+.pickbtn.small2{font-size:16px;padding:10px}
+/* ===== direct ===== */
+.livebox{padding:12px}
+.lvhd{display:flex;align-items:center;gap:10px}.lvhd b{font-family:var(--disp);font-size:22px}
+.lvsc{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin:10px 0 8px}
+.lvt{display:flex;flex-direction:column;align-items:center;gap:4px}.lvt b{font-family:var(--disp);font-size:20px}
+.side.b,.side.r{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:6px}.side.b{background:#2F7CF6;color:#fff}.side.r{background:#E84057;color:#fff}
+.lvk{display:flex;align-items:center;gap:12px;font-family:var(--disp);font-weight:800}.lvk b{font-size:50px;line-height:1;color:var(--gold2)}.lvk i{font-style:normal;font-size:12px;color:var(--muted)}
+.wpbar{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;background:var(--panel2)}.wpbar.big{height:14px}
+.wpbar i{display:block;height:100%;transition:width .8s cubic-bezier(.2,.9,.3,1)}
+.wpl{display:flex;justify-content:space-between;margin:4px 0 0}.wpl b{color:var(--gold2);font-family:var(--disp);font-size:17px}
+.lvobj{display:grid;gap:4px;margin:12px 0 6px}
+.lvobj div{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 8px;background:rgba(5,11,24,.5);border-radius:8px}
+.lvobj span{font-family:var(--disp);font-weight:700;font-size:17px;display:flex;align-items:center;gap:3px}.lvobj span:last-child{justify-content:flex-end}
+.lvobj em{font-style:normal;font-size:11.5px;color:var(--muted);text-align:center;min-width:80px}
+.drg{width:9px;height:9px;border-radius:50%;display:inline-block}
+.gchart{width:100%;height:80px;display:block;margin-top:8px}
+.gl{display:flex;justify-content:space-between;margin:2px 0 0;font-size:11px}
+.lvp{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.lpr,.drw{display:flex;align-items:center;gap:6px;padding:5px 6px;margin-bottom:4px;background:rgba(5,11,24,.5);border-radius:8px;min-width:0}
+.lpr.r{flex-direction:row-reverse;text-align:right}
+.lpn{display:flex;flex-direction:column;min-width:0;flex:1}.lpn b{font-family:var(--disp);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lpn small{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lps{display:flex;flex-direction:column;align-items:flex-end}.lpr.r .lps{align-items:flex-start}.lps b{font-family:var(--disp);font-size:14px}.lps small{font-size:10px;color:var(--muted)}
+.drw{flex-wrap:wrap}.dst{display:flex;flex-direction:column;width:100%;font-size:10.5px;color:var(--muted)}
+.dadv{display:flex;justify-content:center;margin-bottom:6px}.dadv span{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-size:20px;color:var(--gold2)}
+#herolive{margin-top:12px}
+.hlive{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;color:#fff}
+.hlive span{display:flex;align-items:center;gap:6px}.hlive b{font-family:var(--disp);font-weight:800;font-size:30px}
+.hlive em{font-style:normal;text-align:center;font-size:12px;opacity:.9}
+#herolive .wpbar{margin-top:6px}#herolive .wpl{color:#fff}
+/* ===== ligue ===== */
+.lghd{display:flex;align-items:baseline;justify-content:space-between}.lghd b{font-family:var(--title);font-size:18px;color:var(--gold2)}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:8px;margin:14px 0 4px}
+.pod{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px 30px;border-radius:12px 12px 4px 4px;text-align:center;min-width:0}
+.pod b{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.pod span{font-family:var(--disp);font-size:18px;font-weight:800;color:var(--gold2)}
+.pod i{position:absolute;bottom:4px;font-style:normal;font-family:var(--title);font-weight:900;font-size:20px}
+.pod.p1{background:linear-gradient(180deg,rgba(240,230,210,.22),rgba(200,170,110,.08));border:1px solid rgba(240,230,210,.5);padding-bottom:44px;box-shadow:0 0 22px rgba(200,170,110,.25)}
+.pod.p1 i{color:var(--gold2)}.pod.p2{background:rgba(190,200,215,.1);border:1px solid rgba(190,200,215,.3)}.pod.p3{background:rgba(180,120,70,.1);border:1px solid rgba(180,120,70,.35)}
+.pod.empty{visibility:hidden}.pod.me b{color:var(--gold2)}
+.lboard{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.lbr{display:grid;grid-template-columns:auto auto 1fr auto auto;align-items:center;gap:9px;padding:7px 9px;background:rgba(5,11,24,.55);border:1px solid rgba(200,170,110,.1);border-radius:10px}
+.lbr.me{border-color:rgba(240,230,210,.45);box-shadow:inset 3px 0 0 var(--gold)}
+.lrk{font-family:var(--disp);font-weight:800;font-size:18px;color:var(--muted);min-width:16px;text-align:center}
+.lnm{display:flex;flex-direction:column;min-width:0}.lnm b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lnm b small{color:var(--muted);font-weight:500}.lnm>small{font-size:11px;color:var(--muted)}
+.lbr em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:22px;color:var(--gold2);min-width:26px;text-align:right}.lbr em.ko{color:var(--muted)}
+.lpk{display:flex;align-items:center;gap:5px;font-size:13px}.lpk b{font-family:var(--disp);font-size:16px}.lpk small{color:var(--muted)}
+.fdots{display:flex;gap:3px}.fdots i{width:7px;height:7px;border-radius:50%}.fdots i.w{background:var(--teal)}.fdots i.l{background:var(--red);opacity:.7}
+.dav{border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-weight:800;flex:none;color:#1A1205}
+.awards{margin-top:10px;display:grid;gap:4px}.awards p{margin:0;font-size:13px;padding:6px 10px;background:rgba(200,170,110,.08);border-radius:8px}
+.lup{display:block;width:100%;text-align:left;padding:8px 9px;margin-top:5px;background:rgba(5,11,24,.55);border:1px solid rgba(200,170,110,.1)}
+.lup .dm small{margin-left:auto;color:var(--muted);font-family:var(--body);font-size:11.5px}
+.lbets{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.lb{position:relative;display:inline-flex}.lb.no{opacity:.3}
+.lb i{position:absolute;right:-5px;bottom:-4px;width:17px;height:17px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-style:normal;font-size:10px;box-shadow:0 0 0 1px var(--line)}
+.lb i.ok{color:var(--teal);font-weight:900}
+
 @media (min-width:700px){.facts{grid-template-columns:repeat(4,1fr)}.fact.wide{grid-column:span 2}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}#intro{display:none}.arc{stroke-dashoffset:0}}
 </style>
@@ -484,7 +553,7 @@ h2:first-child{margin-top:4px}
 </div></nav>
 
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><button class="x" id="sheetX" aria-label="Fermer">×</button><div class="wrap" id="sheetBody"></div></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="shead"><button class="sback" id="sheetBack" hidden>‹ Retour</button><span class="grip"></span><button class="x" id="sheetX" aria-label="Fermer">×</button></div><div class="wrap" id="sheetBody"></div></div>
 <div class="toast" id="toast" role="status"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 <script>
@@ -820,7 +889,8 @@ function heroBlock(m,big){
       </div>
       ${live?`<div class="cd-big">Match en cours</div>`:wait?`<div class="cd-big">En attente du résultat</div>`:`<div class="cd" id="cd">${cdHTML(st-Date.now())}</div>`}
       <div class="cd-date">${fmtDay(st)}, ${fmtTime(st)} (${tzLabel})</div>
-      <div class="acts"><button class="btn gold" data-m="${esc(m.id)}">Voir le face-à-face</button><a class="btn" href="https://www.twitch.tv/otplol_" target="_blank" rel="noopener">Regarder en VF</a><a class="btn" href="https://lolesports.com/fr-FR/" target="_blank" rel="noopener">LoL Esports</a></div>
+      ${live?`<div id="herolive" data-k="${esc(m.key)}">${heroLiveHTML(m)}</div>`:""}
+      <div class="acts"><button class="btn gold" data-m="${esc(m.id)}">${live?"Suivre en direct":"Voir le face-à-face"}</button><a class="btn" href="https://www.twitch.tv/otplol_" target="_blank" rel="noopener">Regarder en VF</a><a class="btn" href="https://lolesports.com/fr-FR/" target="_blank" rel="noopener">LoL Esports</a></div>
     </div></div></div></div>`;
 }
 function renderHome(){
@@ -857,6 +927,7 @@ function renderHome(){
   <p class="small" style="margin-top:14px">Données ${SOURCE==="embarquées"?"embarquées du 23/10/2026 (sources en direct injoignables)":"synchronisées via "+esc(SOURCE)}${lastSync?" à "+fmtTime(lastSync):""}. Horaires en ${tzLabel}.</p>`;
   $("#v-home").innerHTML=h;
   if(m) requestAnimationFrame(()=>{startBeam();applyTilt()});
+  if(m&&m.state==="live"&&!sheetState)watchLive(m);
   requestAnimationFrame(()=>{const r=$("#ringP");if(r)r.style.strokeDashoffset=r.dataset.off});
   if(!ui.counted){ui.counted=true;countUp($("#facts"))}
 }
@@ -936,7 +1007,7 @@ function renderPlayers(){
   document.querySelectorAll("#worldmap [data-nat]").forEach(el=>el.classList.toggle("sel",el.dataset.nat===ui.nat));
 }
 function renderAll(){renderLive();renderPlayers()}
-function renderLive(){renderHome();renderMatchs();renderSwiss();renderTeams();if(statsOpen)renderStats();if(sheetState&&sheetState.k==="m")refreshSheet(true);celebrate()}
+function renderLive(){renderHome();renderMatchs();renderSwiss();renderTeams();if(statsOpen)renderStats();if(sheetState&&sheetState.k==="m")refreshSheet(true);celebrate();if(lg)checkRank()}
 
 /* ===================== carte du monde ===================== */
 const GEO={kr:[127.8,36.4],cn:[104,34],vn:[106,15.5],tw:[121,23.7],us:[-100,40],ca:[-106,56],br:[-51,-10],ar:[-64,-34],fr:[2.4,46.6],de:[10.4,51.1],dk:[9.5,56],gr:[22,39.3],es:[-3.7,40.2],se:[15.5,62],pl:[19.3,52],mx:[-102,23.5],jp:[138,36],gb:[-2,53.5],nl:[5.3,52.2],be:[4.5,50.6],tr:[35,39],it:[12.5,42.8],pt:[-8,39.6],cz:[15.4,49.8],ru:[60,58],au:[134,-25],ph:[122,12],hk:[114.2,22.3],cl:[-71,-35],pe:[-75,-9.5],co:[-74,4.5],uy:[-56,-33]};
@@ -967,10 +1038,56 @@ async function renderMap(){
 
 /* ===================== fiches ===================== */
 let sheetState=null;
-function openSheet(html){$("#sheetBody").innerHTML=html;$("#sheet").classList.add("on");$("#scrim").classList.add("on");$("#sheet").scrollTop=0;document.body.style.overflow="hidden"}
-function closeSheet(){$("#sheet").classList.remove("on");$("#scrim").classList.remove("on");sheetState=null;document.body.style.overflow="";applyTilt()}
+/* navigation : historique du navigateur (bouton retour Android), pile de fiches, glisser vers le bas pour fermer */
+let curTab="home",SH=[];const scrollMem={};
+function showTab(v,fromPop){
+  if(v===curTab){if(!fromPop)window.scrollTo({top:0,behavior:RM?"auto":"smooth"});return}
+  if(!fromPop){
+    if(curTab==="home")history.pushState({v},"");
+    else if(v!=="home")history.replaceState({v},"");
+    else{history.back();return}
+  }
+  scrollMem[curTab]=scrollY;curTab=v;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
+  document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
+  $("#ind").style.transform=`translateX(${TABS.indexOf(v)*100}%)`;
+  window.scrollTo(0,scrollMem[v]||0);vib(8);
+  if(v==="players")renderMap(); if(v==="home")startBeam(); if(v==="stats"){statsOpen=true;renderStats()}
+}
+function openSheet(html,mode){
+  const sh=$("#sheet"),body=$("#sheetBody"),was=sh.classList.contains("on");
+  if(mode!=="back"){SH.push({...sheetState});history.pushState({v:curTab,sheet:SH.length},"")}
+  body.innerHTML=html;
+  if(was){body.classList.remove("swap");void body.offsetWidth;body.classList.add("swap")}
+  sh.scrollTop=0;sh.classList.add("on");$("#scrim").classList.add("on");document.body.classList.add("lock");
+  $("#sheetBack").hidden=SH.length<2;
+}
+function hideSheet(){
+  $("#sheet").classList.remove("on");$("#scrim").classList.remove("on");document.body.classList.remove("lock");
+  sheetState=null;SH=[];stopLiveGame();applyTilt();
+  const m=nextMatch();if(m&&m.state==="live"&&curTab==="home")watchLive(m);
+}
+function closeSheet(){const n=SH.length;if(n&&history.state&&history.state.sheet)history.go(-n);else hideSheet()}
+function sheetBack(){if(SH.length>1)history.back();else closeSheet()}
+function renderSheetDesc(d){sheetState=d;if(d.k==="m")matchSheet(d.id,"back");else if(d.k==="t")teamSheet(d.id,"back");else if(d.k==="p")playerSheet(d.id,"back");else if(d.k==="d")duelSheet(d.id,d.pre,"back")}
+addEventListener("popstate",e=>{
+  const s=e.state||{},n=s.sheet||0;
+  if(SH.length>n){SH=SH.slice(0,n);if(n)renderSheetDesc(SH[n-1]);else hideSheet()}
+  else if(n>SH.length&&!SH.length)history.replaceState({v:s.v||"home"},"");
+  const v=s.v||"home";if(v!==curTab)showTab(v,true);
+});
+(function swipeToClose(){
+  const sh=$("#sheet"),sc=$("#scrim");let y0=null,dy=0,t0=0,drag=false;
+  sh.addEventListener("touchstart",e=>{if(sh.scrollTop>2||e.touches.length>1){y0=null;return}y0=e.touches[0].clientY;dy=0;t0=performance.now();drag=false},{passive:true});
+  sh.addEventListener("touchmove",e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;
+    if(!drag&&dy>12&&sh.scrollTop<=0){drag=true;sh.style.transition="none"}
+    if(drag){sh.style.transform=`translateY(${Math.max(0,dy)}px)`;sc.style.opacity=String(Math.max(.15,1-dy/450))}},{passive:true});
+  const end=()=>{if(!drag){y0=null;return}const v=dy/Math.max(1,performance.now()-t0);sh.style.transition="";sc.style.opacity="";
+    if(dy>110||v>.7){sh.style.transform="translateY(102%)";setTimeout(()=>{sh.style.transform=""},450);closeSheet()}else sh.style.transform="";y0=null;drag=false};
+  sh.addEventListener("touchend",end);sh.addEventListener("touchcancel",end);
+})();
 function refreshSheet(quiet){if(!sheetState)return;const s=sheetState,f={m:matchSheet,t:teamSheet,p:playerSheet}[s.k];if(f)f(s.id,quiet)}
-function setSheet(html,quiet){if(quiet){const b=$("#sheetBody"),y=$("#sheet").scrollTop;b.innerHTML=html.replace(/class="slam /,'class="slam noanim ');b.querySelectorAll(".slam,.duel,.hscroll .pcard,.bigcard,.tban .logo").forEach(e=>e.style.animation="none");b.querySelectorAll(".slam *,.ak i,.tape i").forEach(e=>e.style.animation="none");$("#sheet").scrollTop=y}else openSheet(html)}
+function setSheet(html,quiet){if(quiet===true){const b=$("#sheetBody"),y=$("#sheet").scrollTop;b.innerHTML=html.replace(/class="slam /,'class="slam noanim ');b.querySelectorAll(".slam,.duel,.hscroll .pcard,.bigcard,.tban .logo").forEach(e=>e.style.animation="none");b.querySelectorAll(".slam *,.ak i,.tape i").forEach(e=>e.style.animation="none");$("#sheet").scrollTop=y}else openSheet(html,quiet)}
 function age(bd){if(!bd)return null;const b=new Date(bd);if(isNaN(b))return null;const n=new Date();let a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a}
 function matchSheet(id,quiet){
   const m=MATCHES.find(x=>x.id===id);if(!m)return;sheetState={k:"m",id};
@@ -982,11 +1099,13 @@ function matchSheet(id,quiet){
     <div class="mid"><span class="${sc==="VS"?"v":"score"}" style="${sc==="VS"?"font-size:30px":"font-size:40px"}">${sc}</span></div>
     <button class="side sR" data-t="${m.t2||""}">${m.t2?logo(m.t2,62):""}<span class="code">${esc(tname(m,"t2"))}</span></button></div>
     <div class="cd-date">${fmtDay(st)}, ${fmtTime(st)}<br>${esc(VENUES[m.stage])}</div></div></div>`;
+  if(m.state==="live"&&m.t1&&m.t2)h+=`<h2>En direct</h2><div id="livebox" class="livebox frame hx" data-k="${esc(m.key)}">${liveBoxHTML(m)}</div>`;
   if(m.t1&&m.t2){
     if(m.state==="soon") h+=`<h2>Ton prono</h2><div class="picks">${[m.t1,m.t2].map(t=>`<button class="pickbtn hx" data-pick="${t}" data-mk="${esc(m.key)}" aria-pressed="${picks[m.key]===t}">${logo(t,28)}${esc(T[t].id)}</button>`).join("")}</div>`;
+    else if(!picks[m.key])h+=`<div class="note">Paris fermés : le match a commencé.</div>`;
     else if(picks[m.key]){const ok=m.winner?picks[m.key]===m.winner:null;h+=`<div class="note">Ton prono : <b>${esc(T[picks[m.key]].name)}${scores[m.key]?" "+esc(scores[m.key]):""}</b>${ok===null?"":ok?`, gagné (+${pts(picks[m.key],scores[m.key],m)}).`:", perdu."}</div>`}
     h+=duelMatchHTML(m);
-    if((!m.winner&&m.state!=="soon")||m.manual) h+=`<h2>Résultat</h2><p class="sub">Si la synchro tarde, indique le vainqueur. La donnée officielle reprend la main dès qu’elle arrive.</p><div class="picks">${[m.t1,m.t2].map(t=>`<button class="pickbtn hx" data-win="${t}" data-mk="${esc(m.key)}" aria-pressed="${manual[m.key]===t}">${esc(T[t].id)} gagne</button>`).join("")}</div>`;
+    if((!m.winner&&m.state==="wait")||m.manual) h+=`<details class="manual"${m.manual?" open":""}><summary>Le résultat tarde à arriver ?</summary><p class="sub" style="margin-top:8px">Indique le vainqueur officiel du match (ce n’est pas un pari). La donnée officielle reprend la main dès qu’elle arrive.</p><div class="picks">${[m.t1,m.t2].map(t=>`<button class="pickbtn hx small2" data-win="${t}" data-mk="${esc(m.key)}" aria-pressed="${manual[m.key]===t}">${esc(T[t].id)} a gagné</button>`).join("")}</div></details>`;
     h+=`<h2>Face-à-face</h2><div class="duels">${ROLE_ORDER.map((r,i)=>{const a=p1[i],b=p2[i];
       const side=(p,rev)=>p?`<button class="p${rev?" r":""}" data-p="${p.key}">${photo(p,"ava",42)}<span style="min-width:0"><b>${esc(p.id)}${p.titles.length?" 🏆":""}</b><small>${flag(p.cc)}${esc(cname(p.cc))}</small></span></button>`:"<span></span>";
       return `<div class="duel hx" style="--i:${i};--c1:${col(m.t1)};--c2:${col(m.t2)}">${side(a,false)}<span class="rl">${ROLES[r]}</span>${side(b,true)}</div>`}).join("")}</div>`;
@@ -999,6 +1118,7 @@ function matchSheet(id,quiet){
     if(prev.length)h+=`<h2>Déjà croisés à ces Worlds</h2><div class="list">${prev.map(matchRow).join("")}</div>`;
   } else h+=`<div class="note">Affiche pas encore connue, elle dépend du tirage.</div>`;
   setSheet(h,quiet);
+  if(quiet!==true){if(m.state==="live")watchLive(m);else stopLiveGame()}
 }
 function teamSheet(id,quiet){
   const t=T[id];if(!t)return;sheetState={k:"t",id};const R=records(),st=status(id,R),ms=MATCHES.filter(m=>m.t1===id||m.t2===id);
@@ -1049,10 +1169,9 @@ const TABS=["home","matchs","swiss","stats","teams","players"];let statsOpen=fal
 document.addEventListener("click",e=>{
   askGyro();
   const tab=e.target.closest("nav.tabs button");
-  if(tab){const v=tab.dataset.v;document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b===tab));
-    document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
-    $("#ind").style.transform=`translateX(${TABS.indexOf(v)*100}%)`;window.scrollTo({top:0});vib(8);
-    if(v==="players")renderMap(); if(v==="home")startBeam(); if(v==="stats"){statsOpen=true;renderStats()} return}
+  if(tab){showTab(tab.dataset.v);return}
+  if(e.target.closest("#sheetBack")){sheetBack();return}
+  if(e.target.closest("#sheetX")){closeSheet();return}
   if(e.target.closest("#share")){sharePicks();return}
   const rt=e.target.closest("[data-retry]");if(rt){const k=rt.dataset.retry;if(AK[k]){document.querySelectorAll(`[data-ak="${CSS.escape(k)}"]`).forEach(el=>el.innerHTML=skel());runAk(k)}return}
   if(e.target.closest("#reloadPh")){PHOTO_LOG.lp=PHOTO_LOG.le=PHOTO_LOG.wk="en cours…";renderPlayers();loadPhotos(true);return}
@@ -1074,7 +1193,7 @@ document.addEventListener("click",e=>{
   const t=e.target.closest("[data-t]");if(t&&t.dataset.t){vib(10);teamSheet(t.dataset.t);return}
 });
 let qT=0;$("#q").addEventListener("input",e=>{ui.q=e.target.value;clearTimeout(qT);qT=setTimeout(renderPlayers,140)});
-$("#scrim").addEventListener("click",closeSheet);$("#sheetX").addEventListener("click",closeSheet);
+$("#scrim").addEventListener("click",closeSheet);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
 $("#sync").addEventListener("click",()=>sync(true));
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&lastSync&&Date.now()-lastSync>60e3)sync(false)});
@@ -1159,13 +1278,13 @@ function loadTeamNames(){
 const idOfName=n=>{if(TN)for(const k in TN)if(TN[k].includes(n))return k;return resolveTeam(n)};
 
 /* ---- icônes de champions (Data Dragon) ---- */
-let CH=LS.get("champs",null),CHp=null;
+let CH=LS.get("champs2",null),CHp=null;
 function champMap(){
   if(CH&&Date.now()-CH.t<7*864e5)return Promise.resolve(CH); if(CHp)return CHp;
   CHp=(async()=>{try{const v=(await (await fetch("https://ddragon.leagueoflegends.com/api/versions.json")).json())[0];
     const j=await (await fetch(`https://ddragon.leagueoflegends.com/cdn/${v}/data/en_US/champion.json`)).json();
-    const map={};Object.values(j.data).forEach(c=>{map[norm(c.name)]=c.id;map[norm(c.id)]=c.id});
-    CH={t:Date.now(),v,map};LS.set("champs",CH)}catch(e){}return CH})();
+    const map={},nm={};Object.values(j.data).forEach(c=>{map[norm(c.name)]=c.id;map[norm(c.id)]=c.id;nm[c.id]=c.name});
+    CH={t:Date.now(),v,map,nm};LS.set("champs2",CH)}catch(e){}return CH})();
   return CHp;
 }
 const champImg=n=>{const id=CH&&CH.map&&CH.map[norm(n)];return id?`https://ddragon.leagueoflegends.com/cdn/${CH.v}/img/champion/${id}.png`:null};
@@ -1355,158 +1474,335 @@ function matchStatsHTML(m){
 }
 const TSC={};
 function teamSeasonC(id){const c=LS.get("ak_ts_"+id,null);if(c&&Date.now()-c.t<3*3600e3)return Promise.resolve(c.d);if(!TSC[id])TSC[id]=teamSeason(id).then(d=>{LS.set("ak_ts_"+id,{t:Date.now(),d});return d}).finally(()=>setTimeout(()=>delete TSC[id],1000));return TSC[id]}
-/* ===================== DUEL 1v1 entre potes =====================
-   Deux téléphones, un code. Identifiants PeerJS fixes (code + A/B) : chacun peut
-   se reconnecter quand il veut, les paris se synchronisent dès que les deux appli
-   sont ouvertes en même temps. Un lien de partage sert aussi de secours hors ligne. */
+/* ===================== LIGUE DE PARIS entre potes =====================
+   Un code, autant de joueurs que vous voulez. Chacun publie ses paris sur un relais HTTPS
+   (ntfy.sh) : ça marche en 4G/5G comme en Wi-Fi, sans compte. Chaque téléphone garde en
+   mémoire les derniers paris connus de chacun. */
 let scores=LS.get("scores",{});
-let duel=LS.get("duel",null);
-const DU={peer:null,conn:null,on:false,retry:null,loading:null};
+const rid=()=>Math.random().toString(36).slice(2,10);
+let lg=LS.get("league",null);
+(function migrate(){const old=LS.get("duel",null);if(old&&!lg&&old.code){lg={code:old.code,me:{id:rid(),name:old.me||"Moi"},owner:old.role==="A",gage:old.gage||"",players:{}};LS.set("league",lg)}if(old)LS.set("duel",null)})();
+const saveLg=()=>LS.set("league",lg);
+const NTFY="https://ntfy.sh/",topicOf=c=>"iagames-worlds26-ligue-"+c;
+const DU={es:null,open:false,seen:new Set(),pubT:0,pollT:0,errs:0,t0:Math.floor(Date.now()/1000),hello:false,lastId:null,pollOk:false,pubErr:false};
 const CODE_CH="ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-const saveDuel=()=>LS.set("duel",duel);
-function loadPeer(){if(window.Peer)return Promise.resolve();if(!DU.loading)DU.loading=loadScript("https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js");return DU.loading}
-const pid=(code,role)=>`iagames-worlds26-${code}-${role}`;
-function myPicksPayload(){const o={};Object.keys(picks).forEach(k=>o[k]={w:picks[k],sc:scores[k]||null});return o}
-function duelSend(obj){try{if(DU.conn&&DU.conn.open)DU.conn.send(obj)}catch(e){}}
-function duelState(){duelSend({t:"state",name:duel.me,role:duel.role,picks:myPicksPayload(),gage:duel.role==="A"?duel.gage:undefined})}
-function setOn(v){if(DU.on===v)return;DU.on=v;renderHome();if(v)toast(`${duel.rival?.name||"Ton pote"} est connecté`)}
-async function duelConnect(){
-  if(!duel)return; try{await loadPeer()}catch(e){return}
-  if(DU.peer&&!DU.peer.destroyed)return;
-  const other=duel.role==="A"?"B":"A";
-  DU.peer=new Peer(pid(duel.code,duel.role),{debug:0});
-  const attach=c=>{
-    c.on("open",()=>{DU.conn=c;setOn(true);duelState()});
-    c.on("data",onDuelData);
-    c.on("close",()=>{if(DU.conn===c){DU.conn=null;setOn(false);schedule()}});
-    c.on("error",()=>{});
-  };
-  const tryC=()=>{if(!DU.peer||DU.peer.destroyed||DU.peer.disconnected||(DU.conn&&DU.conn.open))return;attach(DU.peer.connect(pid(duel.code,other),{reliable:true}))};
-  const schedule=(ms=15000)=>{clearTimeout(DU.retry);DU.retry=setTimeout(tryC,ms)};
-  DU.peer.on("open",tryC);
-  DU.peer.on("connection",attach);
-  DU.peer.on("disconnected",()=>{try{DU.peer.reconnect()}catch(e){}});
-  DU.peer.on("error",e=>{
-    if(e.type==="peer-unavailable")schedule(15000);
-    else if(e.type==="unavailable-id"){duelStop();setTimeout(duelConnect,8000)}
-    else schedule(20000);
-  });
-  DU.tryC=tryC;
-}
-function duelStop(){clearTimeout(DU.retry);try{DU.peer&&DU.peer.destroy()}catch(e){}DU.peer=null;DU.conn=null;DU.on=false}
-function onDuelData(d){
-  if(!d||!duel)return;
-  if(d.name&&(!duel.rival||duel.rival.name!==d.name))duel.rival={name:String(d.name).slice(0,16)};
-  if(d.t==="state"){duel.rp=d.picks||{};if(d.gage!=null&&duel.role==="B")duel.gage=String(d.gage).slice(0,60)}
-  if(d.t==="pick"){const had=duel.rp[d.k];if(d.w)duel.rp[d.k]={w:d.w,sc:d.sc||null};else delete duel.rp[d.k];
-    if(d.w&&!had){const m=MATCHES.find(x=>x.key===d.k);toast(`${duel.rival.name} a placé son pari${m&&m.t1&&m.t2?` pour ${T[m.t1].id} vs ${T[m.t2].id}`:""}`);vib(25)}}
-  saveDuel();renderHome();if(sheetState&&sheetState.k==="m")refreshSheet(true);
-}
-function duelPickChanged(k){if(duel)duelSend({t:"pick",k,w:picks[k]||null,sc:scores[k]||null,name:duel.me})}
+const PCOL=["#C8AA6E","#0AC8B9","#E84057","#8E5CF6","#F59E0B","#3B82F6","#22C55E","#EC4899","#14B8A6","#F97316"];
+const pcol=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return PCOL[h%PCOL.length]};
 
-/* points : 1 pour le bon vainqueur, +1 pour le score exact en Bo3 et Bo5 */
+/* ---- paris : encodage compact ---- */
+function encPicks(){return Object.keys(picks).map(k=>`${k}~${picks[k]}~${scores[k]||""}`).join(".")}
+function decPicks(s){const o={};String(s||"").split(".").forEach(x=>{const [k,w,sc]=x.split("~");if(k&&w&&T[w])o[k]={w,sc:sc||null}});return o}
+const myBets=()=>{const o={};Object.keys(picks).forEach(k=>o[k]={w:picks[k],sc:scores[k]||null});return o};
+
+/* ---- transport ---- */
+function payload(hello){return JSON.stringify({v:3,id:lg.me.id,name:lg.me.name,p:encPicks(),ts:Date.now(),hello:!!hello,owner:!!lg.owner,gage:lg.owner?lg.gage:null})}
+async function publish(hello){
+  if(!lg)return;
+  try{const r=await fetch(NTFY+topicOf(lg.code),{method:"POST",body:payload(hello)});if(!r.ok)throw new Error(r.status);DU.pubErr=false}
+  catch(e){DU.pubErr=true;clearTimeout(DU.retryPub);DU.retryPub=setTimeout(()=>publish(hello),8000)}
+  renderDuelOnly();
+}
+function duelState(){clearTimeout(DU.pubT);DU.pubT=setTimeout(()=>publish(false),600)}
+function handleMsg(m){
+  if(!lg||!m||(m.event&&m.event!=="message")||!m.id||DU.seen.has(m.id))return;
+  DU.seen.add(m.id);DU.lastId=m.id;
+  let d;try{d=JSON.parse(m.message)}catch(e){return}
+  if(!d||!d.id||d.id===lg.me.id||!d.name)return;
+  onLeagueData(d,m.time||0);
+}
+function duelConnect(){
+  if(!lg)return;duelStop();
+  if(typeof EventSource==="undefined"){startPoll();return}
+  const es=DU.es=new EventSource(NTFY+topicOf(lg.code)+"/sse?since=all");
+  es.onopen=()=>{DU.open=true;DU.errs=0;stopPoll();renderDuelOnly();if(!DU.hello){DU.hello=true;publish(true)}};
+  es.onmessage=ev=>{try{handleMsg(JSON.parse(ev.data))}catch(e){}};
+  es.onerror=()=>{DU.open=false;DU.errs++;renderDuelOnly();if(DU.errs>=2)startPoll()};
+}
+async function pollOnce(){
+  if(!lg)return;
+  try{const r=await fetch(NTFY+topicOf(lg.code)+"/json?poll=1&since="+(DU.lastId||"all"));const t=await r.text();
+    t.split("\n").forEach(l=>{if(l.trim())try{handleMsg(JSON.parse(l))}catch(e){}});
+    DU.pollOk=true;if(!DU.hello){DU.hello=true;publish(true)}}catch(e){DU.pollOk=false}
+  renderDuelOnly();
+}
+function startPoll(){if(DU.pollT)return;pollOnce();DU.pollT=setInterval(()=>{if(!document.hidden)pollOnce()},12000)}
+function stopPoll(){clearInterval(DU.pollT);DU.pollT=0}
+function duelStop(){try{DU.es&&DU.es.close()}catch(e){}DU.es=null;DU.open=false;stopPoll();DU.hello=false}
+function duelWake(){if(!lg)return;if(!DU.es||DU.es.readyState===2)duelConnect();else pollOnce()}
+let rdT=0;const renderSoon=()=>{clearTimeout(rdT);rdT=setTimeout(()=>{renderHome();if(sheetState&&sheetState.k==="m")refreshSheet(true)},120)};
+function onLeagueData(d,time){
+  const fresh=time>=DU.t0-120,old=lg.players[d.id],isNew=!old;
+  if(d.owner&&d.gage!=null&&!lg.owner)lg.gage=String(d.gage).slice(0,60);
+  if(old&&d.ts<=old.ts&&!d.hello)return;
+  const prev=old?old.p:{},next=decPicks(d.p);
+  if(!old||d.ts>old.ts)lg.players[d.id]={name:String(d.name).slice(0,16),p:next,ts:d.ts};
+  else lg.players[d.id].name=String(d.name).slice(0,16);
+  saveLg();
+  if(fresh){
+    const added=Object.keys(next).filter(k=>!prev[k]);
+    if(isNew)toast(`${d.name} a rejoint la ligue`);
+    else if(added.length){const m=MATCHES.find(x=>x.key===added[added.length-1]);toast(`${d.name} a placé son pari${m&&m.t1&&m.t2?` pour ${T[m.t1].id} vs ${T[m.t2].id}`:""}`)}
+    if(isNew||added.length)vib(25);
+    if(d.hello)setTimeout(()=>publish(false),300+Math.random()*2500);
+  }
+  renderSoon();
+}
+function duelPickChanged(){if(lg)duelState()}
+
+/* ---- points et classement ---- */
 function pts(w,sc,m){
   if(!w||!m.winner||w!==m.winner)return 0;let p=1;
   if(m.bo>1&&sc&&m.s1!=null&&m.s2!=null){const ws=m.winner===m.t1?m.s1:m.s2,ls=m.winner===m.t1?m.s2:m.s1;if(sc===`${ws}-${ls}`)p++}
   return p;
 }
-function duelTotals(){
-  let me=0,ri=0;MATCHES.forEach(m=>{if(!m.winner)return;me+=pts(picks[m.key],scores[m.key],m);const r=duel&&duel.rp[m.key];if(r)ri+=pts(r.w,r.sc,m)});
-  return {me,ri};
-}
 const scoreOpts=bo=>bo===3?["2-0","2-1"]:bo===5?["3-0","3-1","3-2"]:[];
+function members(){return [{id:lg.me.id,name:lg.me.name,p:myBets(),me:true},...Object.entries(lg.players).map(([id,x])=>({id,name:x.name,p:x.p,ts:x.ts}))]}
+function standings(){
+  const all=members(),done=MATCHES.filter(m=>m.winner&&m.t1&&m.t2);
+  all.forEach(u=>{u.pts=0;u.ex=0;u.ok=0;u.n=0;u.form=[];u.streak=0;u.bold=0;
+    done.forEach(m=>{const b=u.p[m.key];if(!b)return;u.n++;const s=pts(b.w,b.sc,m);u.pts+=s;if(s)u.ok++;if(s>1)u.ex++;u.form.push(s>0)});
+    for(let k=u.form.length-1;k>=0&&u.form[k];k--)u.streak++});
+  done.forEach(m=>{const bt=all.filter(u=>u.p[m.key]);if(bt.length<3)return;const good=bt.filter(u=>u.p[m.key].w===m.winner);if(good.length&&good.length<=bt.length/3)good.forEach(u=>u.bold++)});
+  all.sort((a,b)=>b.pts-a.pts||b.ex-a.ex||b.ok-a.ok||a.name.localeCompare(b.name));
+  let r=0;all.forEach((u,i)=>{if(i===0||u.pts!==all[i-1].pts||u.ex!==all[i-1].ex)r=i+1;u.rank=r});
+  return all;
+}
+function checkRank(){
+  if(!lg||!Object.keys(lg.players).length)return;
+  const st=standings(),me=st.find(u=>u.me),prev=LS.get("lgRank",null);
+  if(prev&&me.rank<prev&&me.pts>0){toast(me.rank===1?"Tu prends la tête de la ligue !":`Tu passes ${me.rank}e !`);if(me.rank===1)confetti(innerWidth/2,innerHeight*.3,["#C8AA6E","#F0E6D2","#0AC8B9"],110);vib([30,40,30])}
+  LS.set("lgRank",me.rank);
+}
 
-/* liens */
-function encPicks(){return Object.keys(picks).map(k=>`${k}~${picks[k]}~${scores[k]||""}`).join(".")}
-function decPicks(s){const o={};String(s||"").split(".").forEach(x=>{const [k,w,sc]=x.split("~");if(k&&w&&T[w])o[k]={w,sc:sc||null}});return o}
+/* ---- liens ---- */
 function duelLink(){
   const u=new URL(location.href.split("?")[0].split("#")[0]);
-  u.searchParams.set("duel",duel.code);u.searchParams.set("r",duel.role);u.searchParams.set("n",duel.me);
-  if(duel.gage)u.searchParams.set("g",duel.gage);
-  const p=encPicks();if(p)u.searchParams.set("p",p);
+  u.searchParams.set("ligue",lg.code);if(lg.gage)u.searchParams.set("g",lg.gage);u.searchParams.set("n",lg.me.name);
   return u.toString();
 }
 async function shareDuel(){
-  const url=duelLink(),text=`${duel.me} te défie aux Worlds 2026 ! Code ${duel.code}${duel.gage?`. Gage du perdant : ${duel.gage}`:""}`;
-  try{if(navigator.share){await navigator.share({title:"Duel Worlds 2026",text,url});return}}catch(e){return}
-  try{await navigator.clipboard.writeText(text+"\n"+url);toast("Lien copié")}catch(e){toast("Code : "+duel.code)}
+  const url=duelLink(),text=`${lg.me.name} t’invite dans sa ligue de paris Worlds 2026 ! Code ${lg.code}${lg.gage?`. Gage du dernier : ${lg.gage}`:""}`;
+  try{if(navigator.share){await navigator.share({title:"Ligue de paris Worlds 2026",text,url});return}}catch(e){return}
+  try{await navigator.clipboard.writeText(text+"\n"+url);toast("Lien copié")}catch(e){toast("Code : "+lg.code)}
 }
 function readDuelParams(){
-  const q=new URLSearchParams(location.search),code=(q.get("duel")||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  const q=new URLSearchParams(location.search),code=(q.get("ligue")||q.get("duel")||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
   if(code.length!==4)return;
-  const role=q.get("r"),n=(q.get("n")||"").slice(0,16),rp=decPicks(q.get("p")),g=(q.get("g")||"").slice(0,60);
-  history.replaceState(null,"",location.pathname+location.hash);
-  if(duel&&duel.code===code){
-    if(role&&role!==duel.role){Object.assign(duel.rp,rp);if(n)duel.rival={name:n};if(g&&duel.role==="B")duel.gage=g;saveDuel();toast(`Paris de ${n||"ton pote"} importés`)}
-    return;
-  }
-  setTimeout(()=>duelSheet("join",{code,n,rp,g,role}),duel?0:2700);
+  const n=(q.get("n")||"").slice(0,16),g=(q.get("g")||"").slice(0,60);
+  history.replaceState(history.state,"",location.pathname+location.hash);
+  if(lg&&lg.code===code)return;
+  setTimeout(()=>duelSheet("join",{code,n,g}),lg?0:2700);
 }
 
 /* ---- rendu ---- */
-const avatar=(name,cls)=>`<span class="dav ${cls}">${esc((name||"?").trim().charAt(0).toUpperCase())}</span>`;
+const avatar=(u,size=34)=>`<span class="dav" style="width:${size}px;height:${size}px;font-size:${size*.48}px;background:linear-gradient(180deg,#fff8,transparent),${pcol(u.id)}">${esc((u.name||"?").trim().charAt(0).toUpperCase())}</span>`;
+const fdots=f=>`<span class="fdots">${f.slice(-5).map(x=>`<i class="${x?"w":"l"}"></i>`).join("")}</span>`;
 function duelHome(){
-  if(!duel)return `<div class="duelbox frame hx"><div class="dcta"><b>Paris 1v1</b><p>Défie un pote sur tous les matchs. 1 point par bon vainqueur, 1 point bonus pour le score exact en Bo3 et Bo5.</p>
-    <div class="drow2"><button class="btn gold" data-duel="create">Créer un duel</button><button class="btn" data-duel="join">J’ai un code</button></div></div></div>`;
-  const {me,ri}=duelTotals(),lead=me===ri?0:me>ri?1:2;
-  const up=MATCHES.filter(m=>m.t1&&m.t2&&(m.state==="soon"||m.state==="live"||m.state==="wait")).slice(0,4);
-  const done=MATCHES.filter(m=>m.t1&&m.t2&&m.winner&&(picks[m.key]||duel.rp[m.key])).slice(-3).reverse();
-  const cell=(w,sc,hidden,m)=>{if(hidden)return `<span class="dp lock" title="Révélé au début du match">🔒</span>`;if(!w)return `<span class="dp none">–</span>`;
-    const p=m.winner?pts(w,sc,m):null;return `<span class="dp${p===null?"":p?" ok":" ko"}">${logo(w,20)}${sc?`<small>${sc}</small>`:""}${p?`<em>+${p}</em>`:""}</span>`};
-  const row=m=>{const r=duel.rp[m.key],hide=m.state==="soon";
-    return `<button class="drow hx" data-m="${esc(m.id)}"><span class="dm">${logo(m.t1,20)}<b>${esc(T[m.t1].id)}</b><i>vs</i><b>${esc(T[m.t2].id)}</b>${logo(m.t2,20)}</span>${cell(picks[m.key],scores[m.key],false,m)}${cell(r&&r.w,r&&r.sc,hide&&r,m)}</button>`};
+  if(!lg)return `<div class="duelbox frame hx"><div class="dcta"><b>Ligue de paris</b><p>Crée une ligue, envoie le code à tes potes, et pariez sur tous les matchs. 1 point par bon vainqueur, 1 point bonus pour le score exact en Bo3 et Bo5. Classement en direct.</p>
+    <div class="drow2"><button class="btn gold" data-duel="create">Créer une ligue</button><button class="btn" data-duel="join">J’ai un code</button></div></div></div>`;
+  const st=standings(),solo=st.length<2;
+  const podium=st.length>=2?`<div class="podium">${[st[1],st[0],st[2]].map((u,i)=>u?`<div class="pod p${[2,1,3][i]}${u.me?" me":""}">${avatar(u,[44,56,40][i])}<b>${esc(u.name)}</b><span>${u.pts} pt${u.pts>1?"s":""}</span><i>${u.rank}</i></div>`:`<div class="pod empty"></div>`).join("")}</div>`:"";
+  const list=`<div class="lboard">${st.map(u=>`<div class="lbr${u.me?" me":""}"><span class="lrk">${u.rank}</span>${avatar(u,30)}<span class="lnm"><b>${esc(u.name)}${u.me?" <small>(toi)</small>":""}</b><small>${u.ok}/${u.n} bons${u.ex?`, ${u.ex} 🎯`:""}${u.streak>=3?`, 🔥 ${u.streak}`:""}</small></span>${fdots(u.form)}<em>${u.pts}</em></div>`).join("")}</div>`;
+  const aw=[];if(!solo){const by=(f)=>[...st].sort((a,b)=>f(b)-f(a))[0];
+    const a1=by(u=>u.ex),a2=by(u=>u.streak),a3=by(u=>u.bold);
+    if(a1&&a1.ex)aw.push(`🎯 <b>${esc(a1.name)}</b> le devin, ${a1.ex} score${a1.ex>1?"s":""} exact${a1.ex>1?"s":""}`);
+    if(a2&&a2.streak>=2)aw.push(`🔥 <b>${esc(a2.name)}</b> en feu, ${a2.streak} d’affilée`);
+    if(a3&&a3.bold)aw.push(`🦊 <b>${esc(a3.name)}</b> l’audacieux, ${a3.bold} pari${a3.bold>1?"s":""} gagné${a3.bold>1?"s":""} contre la majorité`)}
+  const up=MATCHES.filter(m=>m.t1&&m.t2&&m.state!=="done").slice(0,3);
+  const upHTML=up.map(m=>{const hide=m.state==="soon";
+    return `<button class="lup hx" data-m="${esc(m.id)}"><span class="dm">${logo(m.t1,20)}<b>${esc(T[m.t1].id)}</b><i>vs</i><b>${esc(T[m.t2].id)}</b>${logo(m.t2,20)}<small>${fmtTime(new Date(m.start))}</small></span>
+      <span class="lbets">${st.map(u=>{const b=u.p[m.key];return `<span class="lb${b?"":" no"}" title="${esc(u.name)}">${avatar(u,22)}${!b?"":hide&&!u.me?`<i class="ok">✓</i>`:`<i>${logo(b.w,14)}</i>`}</span>`}).join("")}</span></button>`}).join("");
   return `<div class="duelbox frame hx">
-    <div class="dhead"><div class="dside${lead===1?" lead":""}">${avatar(duel.me,"me")}<span>${esc(duel.me)}</span></div>
-      <div class="dscore"><b>${me}</b><i>-</i><b>${ri}</b></div>
-      <div class="dside r${lead===2?" lead":""}">${avatar(duel.rival?.name,"ri")}<span>${esc(duel.rival?.name||"En attente")}</span></div></div>
-    <p class="dstat"><span class="cdot${DU.on?" on":""}"></span>${DU.on?"Connecté en direct":duel.rival?"Hors ligne, synchro dès que vous êtes ouverts tous les deux":"Envoie le lien à ton pote pour lancer le duel"} <span class="small">Code ${esc(duel.code)}</span></p>
-    ${duel.gage?`<p class="dgage">Gage du perdant : <b>${esc(duel.gage)}</b></p>`:""}
-    ${up.length?`<div class="dlh"><span>Prochains matchs</span><span>${esc(duel.me)}</span><span>${esc(duel.rival?.name||"Pote")}</span></div>${up.map(row).join("")}`:""}
-    ${done.length?`<div class="dlh"><span>Derniers résultats</span><span></span><span></span></div>${done.map(row).join("")}`:""}
-    <div class="drow2"><button class="btn gold" data-duel="share">Envoyer le lien</button><button class="btn" data-duel="quit">Quitter</button></div></div>`;
+    <div class="lghd"><b>Ligue ${esc(lg.code)}</b><span class="small">${st.length} joueur${st.length>1?"s":""}</span></div>
+    ${lg.gage?`<p class="dgage">Gage du dernier : <b>${esc(lg.gage)}</b></p>`:""}
+    <p class="dstat"><span class="cdot${DU.open||DU.pollOk?" on":""}"></span>${DU.open||DU.pollOk?"Synchro active":DU.pubErr?"Pas de connexion, nouvel essai en cours":"Connexion…"}</p>
+    ${solo?`<div class="note" style="margin:10px 0 0">Personne d’autre pour l’instant. Tes potes ouvrent le lien, ou tapent le code <b style="color:var(--gold2)">${esc(lg.code)}</b> dans « J’ai un code ».</div>`:podium}
+    ${list}
+    ${aw.length?`<div class="awards">${aw.map(a=>`<p>${a}</p>`).join("")}</div>`:""}
+    ${up.length?`<div class="dlh"><span>Prochains matchs</span><span>✓ = a parié, révélé au coup d’envoi</span></div>${upHTML}`:""}
+    <div class="drow2"><button class="btn gold" data-duel="share">Inviter</button><button class="btn" data-duel="sync">Synchroniser</button><button class="btn" data-duel="quit">Quitter</button></div></div>`;
 }
-function duelSheet(mode,pre={}){
-  sheetState={k:"d",id:mode};
+function renderDuelOnly(){const b=document.querySelector("#v-home .duelbox");if(b)b.outerHTML=duelHome()}
+function duelSheet(mode,pre={},md){
+  sheetState={k:"d",id:mode,pre};
   const nm=LS.get("myname","");
-  let h=`<div class="dsheet"><h2>${mode==="create"?"Créer un duel":"Rejoindre un duel"}</h2>`;
-  if(mode==="join"&&pre.n)h+=`<div class="note"><b>${esc(pre.n)}</b> te défie${pre.g?`. Gage du perdant : <b>${esc(pre.g)}</b>`:""}.</div>`;
-  h+=`<label class="lbl">Ton prénom</label><input class="field" id="dName" maxlength="14" placeholder="Prénom" value="${esc(nm)}">`;
-  if(mode==="join"&&!pre.code)h+=`<label class="lbl">Code du duel</label><input class="field code" id="dCode" maxlength="4" autocapitalize="characters" placeholder="XXXX">`;
-  if(mode==="create")h+=`<label class="lbl">Gage du perdant (facultatif)</label><input class="field" id="dGage" maxlength="60" placeholder="Le perdant paie les pizzas">`;
-  h+=`<p class="sub" style="margin-top:12px">Les paris de chacun restent cachés jusqu’au début du match. 1 point par bon vainqueur, +1 pour le score exact en Bo3 et Bo5.</p>
-    <button class="btn gold" style="width:100%;margin-top:6px;padding:14px" data-duel="${mode==="create"?"go-create":"go-join"}">${mode==="create"?"Créer et envoyer le lien":"Rejoindre le duel"}</button></div>`;
-  openSheet(h);DU.pre=pre;
-  setTimeout(()=>{const f=$("#dName");if(f&&!f.value)f.focus()},350);
+  let h=`<div class="dsheet"><h2>${mode==="create"?"Créer une ligue":"Rejoindre une ligue"}</h2>`;
+  if(mode==="join"&&pre.n)h+=`<div class="note"><b>${esc(pre.n)}</b> t’invite dans sa ligue${pre.g?`. Gage du dernier : <b>${esc(pre.g)}</b>`:""}.</div>`;
+  h+=`<label class="lbl" for="dName">Ton prénom</label><input class="field" id="dName" maxlength="14" placeholder="Prénom" value="${esc(nm)}" autocomplete="given-name">`;
+  if(mode==="join"&&!pre.code)h+=`<label class="lbl" for="dCode">Code de la ligue</label><input class="field code" id="dCode" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="XXXX">`;
+  if(mode==="create")h+=`<label class="lbl" for="dGage">Gage du dernier (facultatif)</label><input class="field" id="dGage" maxlength="60" placeholder="Le dernier paie les pizzas">`;
+  h+=`<p class="sub" style="margin-top:12px">Les paris restent cachés jusqu’au coup d’envoi. 1 point par bon vainqueur, +1 pour le score exact en Bo3 et Bo5. Tes paris déjà faits comptent.</p>
+    <button class="btn gold" style="width:100%;margin-top:6px;padding:14px" data-duel="${mode==="create"?"go-create":"go-join"}">${mode==="create"?"Créer et inviter":"Rejoindre la ligue"}</button></div>`;
+  openSheet(h,md==="back"?"back":undefined);DU.pre=pre;
 }
 function duelAction(a){
   if(a==="create"||a==="join"){duelSheet(a);return}
   if(a==="share"){shareDuel();return}
-  if(a==="quit"){if(confirm("Quitter le duel ? Les points du duel seront effacés sur ce téléphone.")){duelStop();duel=null;LS.set("duel",null);renderHome()}return}
+  if(a==="sync"){toast("Synchro…");duelWake();publish(false);return}
+  if(a==="quit"){if(confirm("Quitter la ligue ? Le classement sera effacé sur ce téléphone (tes pronos restent).")){duelStop();lg=null;LS.set("league",null);LS.set("lgRank",null);renderHome()}return}
   const name=($("#dName")?.value||"").trim().slice(0,14);
-  if(name.length<2){toast("Ton prénom (2 lettres min.)");return}
+  if(name.length<2){toast("Ton prénom (2 lettres min.)");$("#dName")?.focus();return}
   LS.set("myname",name);
   if(a==="go-create"){
     let code="";for(let i=0;i<4;i++)code+=CODE_CH[Math.floor(Math.random()*CODE_CH.length)];
-    duel={code,role:"A",me:name,rival:null,rp:{},gage:($("#dGage")?.value||"").trim().slice(0,60)};saveDuel();
-    closeSheet();renderHome();duelConnect();setTimeout(shareDuel,300);
+    lg={code,me:{id:rid(),name},owner:true,gage:($("#dGage")?.value||"").trim().slice(0,60),players:{}};saveLg();
+    closeSheet();renderHome();duelConnect();setTimeout(shareDuel,450);
     confetti(innerWidth/2,innerHeight*.3,["#C8AA6E","#F0E6D2","#0AC8B9"],60);return;
   }
   if(a==="go-join"){
     const pre=DU.pre||{},code=(pre.code||($("#dCode")?.value||"")).toUpperCase().replace(/[^A-Z0-9]/g,"");
-    if(code.length!==4){toast("Code à 4 caractères");return}
+    if(code.length!==4){toast("Le code fait 4 caractères");return}
     duelStop();
-    duel={code,role:pre.role==="B"?"A":"B",me:name,rival:pre.n?{name:pre.n}:null,rp:pre.rp||{},gage:pre.g||""};saveDuel();
+    lg={code,me:{id:rid(),name},owner:false,gage:pre.g||"",players:{}};saveLg();
     closeSheet();renderHome();duelConnect();
-    confetti(innerWidth/2,innerHeight*.3,["#C8AA6E","#F0E6D2","#0AC8B9"],60);toast("Duel rejoint");
+    confetti(innerWidth/2,innerHeight*.3,["#C8AA6E","#F0E6D2","#0AC8B9"],60);toast("Tu es dans la ligue "+code);
   }
 }
 function duelMatchHTML(m){
   if(!m.t1||!m.t2)return"";
   let h="";
-  if(m.state==="soon"&&picks[m.key]&&m.bo>1)h+=`<p class="sub" style="margin:12px 0 6px">Score exact pour le point bonus ${duel?"du duel":""} (facultatif)</p><div class="chips">${scoreOpts(m.bo).map(s=>`<button class="chip" data-score="${s}" data-mk="${esc(m.key)}" aria-pressed="${scores[m.key]===s}">${esc(T[picks[m.key]].id)} ${s}</button>`).join("")}</div>`;
-  if(duel&&duel.rival){const r=duel.rp[m.key];
-    h+=`<div class="note">Pari de <b>${esc(duel.rival.name)}</b> : ${!r?"pas encore parié":m.state==="soon"?"🔒 caché jusqu’au début du match":`${esc(T[r.w].name)}${r.sc?" "+esc(r.sc):""}${m.winner?(pts(r.w,r.sc,m)?` (+${pts(r.w,r.sc,m)})`:" (raté)"):""}`}</div>`}
+  if(m.state==="soon"&&picks[m.key]&&m.bo>1)h+=`<p class="sub" style="margin:12px 0 6px">Score exact pour le point bonus (facultatif)</p><div class="chips">${scoreOpts(m.bo).map(s=>`<button class="chip" data-score="${s}" data-mk="${esc(m.key)}" aria-pressed="${scores[m.key]===s}">${esc(T[picks[m.key]].id)} ${s}</button>`).join("")}</div>`;
+  if(lg&&Object.keys(lg.players).length){
+    const all=members(),hide=m.state==="soon",bt=all.filter(u=>u.p[m.key]),n1=bt.filter(u=>u.p[m.key].w===m.t1).length,n2=bt.length-n1;
+    h+=`<h2>Les paris de la ligue</h2>`;
+    if(!hide&&bt.length)h+=`<div class="tapehd"><span>${logo(m.t1,22)}${n1}</span><span>${n2}${logo(m.t2,22)}</span></div><div class="split"><i style="width:${n1/bt.length*100}%;background:${col(m.t1)}"></i><i style="width:${n2/bt.length*100}%;background:${col(m.t2)}"></i></div>`;
+    h+=`<div class="lboard" style="margin-top:8px">${all.map(u=>{const b=u.p[m.key],p=b&&m.winner?pts(b.w,b.sc,m):null;
+      return `<div class="lbr${u.me?" me":""}">${avatar(u,28)}<span class="lnm"><b>${esc(u.name)}</b></span><span class="lpk">${!b?`<small>pas encore parié</small>`:hide&&!u.me?`<small>🔒 a parié</small>`:`${logo(b.w,20)}<b>${esc(T[b.w].id)}${b.sc?" "+esc(b.sc):""}</b>`}</span>${p===null?"":`<em class="${p?"":"ko"}">${p?"+"+p:"0"}</em>`}</div>`}).join("")}</div>`;
+    if(hide)h+=`<p class="small" style="margin-top:6px">Les choix des autres s’affichent au coup d’envoi.</p>`;
+  }
   return h;
+}
+/* ===================== DIRECT : stats en temps réel (flux officiel LoL Esports) ===================== */
+const FEED="https://feed.lolesports.com/livestats/v1/";
+const LV={live:[],liveT:0,games:{},timer:0,watch:null};
+const tsISO=ms=>new Date(Math.floor(ms/10000)*10000).toISOString().replace(/\.\d{3}Z$/,".000Z");
+async function feedWin(gid,start){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),8000);
+  try{const r=await fetch(FEED+"window/"+gid+(start?"?startingTime="+tsISO(start):""),{signal:ctl.signal});if(r.status===204)return null;if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(to)}
+}
+async function refreshLiveList(){
+  if(Date.now()-LV.liveT<30000)return;LV.liveT=Date.now();
+  try{const j=await leFetch("getLive?hl=fr-FR");
+    LV.live=(j?.data?.schedule?.events||[]).filter(e=>e.match&&e.match.teams).map(e=>{const [a,b]=e.match.teams;return {mid:e.match.id||e.id,t1:resolveTeam(a.code,a.name),t2:resolveTeam(b.code,b.name)}}).filter(x=>x.t1&&x.t2)}catch(e){}
+}
+const liveFor=m=>LV.live.find(l=>(l.t1===m.t1&&l.t2===m.t2)||(l.t1===m.t2&&l.t2===m.t1));
+function playerFromSummoner(sn,team){
+  const parts=String(sn||"").trim().split(/\s+/),cands=[norm(parts.slice(1).join(" ")),norm(parts.join(" ")),norm(parts[parts.length-1])].filter(Boolean);
+  for(const tok of cands){const p=PLAYERS.find(p=>p.team===team&&norm(p.id)===tok)||PLAYERS.find(p=>norm(p.id)===tok);if(p)return p}
+  return null;
+}
+function pushSample(L,f){if(!L.first)return;const t=(Date.parse(f.rfc460Timestamp)-L.first)/60000;if(t<0)return;const gd=f.blueTeam.totalGold-f.redTeam.totalGold;const last=L.samples[L.samples.length-1];if(!last||t-last.t>=.15)L.samples.push({t,gd})}
+async function liveTick(m){
+  const L=LV.games[m.key]||(LV.games[m.key]={samples:[]});
+  if(!L.mid){await refreshLiveList();const lv=liveFor(m);L.mid=lv?lv.mid:(String(m.id).startsWith("le")?String(m.id).slice(2):null)}
+  if(!L.mid){L.status="nolive";return}
+  if(!L.games||Date.now()-L.gt>45000){
+    const j=await leFetch("getEventDetails?hl=fr-FR&id="+L.mid),ev=j?.data?.event;
+    L.teams=(ev?.match?.teams||[]).map(t=>({id:t.id,our:resolveTeam(t.code,t.name),w:t.result?.gameWins}));L.games=ev?.match?.games||[];L.gt=Date.now();
+  }
+  const g=L.games.find(x=>x.state==="inProgress");
+  if(!g){L.status=L.games.some(x=>x.state==="completed")?"between":"waiting";return}
+  if(L.gid!==g.id){Object.assign(L,{gid:g.id,num:g.number,first:null,samples:[],meta:null,frame:null,draft:null,draftP:null})}
+  const bt=(g.teams||[]).find(t=>t.side==="blue"),rt=(g.teams||[]).find(t=>t.side==="red");
+  L.blue=(L.teams.find(t=>t.id===bt?.id)||{}).our||m.t1;L.red=(L.teams.find(t=>t.id===rt?.id)||{}).our||(L.blue===m.t1?m.t2:m.t1);
+  if(!L.first){const w=await feedWin(g.id);if(w&&w.frames&&w.frames.length){L.first=Date.parse(w.frames[0].rfc460Timestamp);L.meta=w.gameMetadata;w.frames.forEach(f=>pushSample(L,f))}}
+  const w=await feedWin(g.id,Date.now()-50000);
+  if(w&&w.frames&&w.frames.length){L.meta=L.meta||w.gameMetadata;L.frame=w.frames[w.frames.length-1];pushSample(L,L.frame);L.status=L.frame.gameState==="finished"?"ended":"live"}
+  else L.status=L.frame?"live":"starting";
+  if(L.meta&&!L.draftP)L.draftP=computeDraft(L).then(d=>{L.draft=d;paintLive(m)}).catch(()=>{L.draft={err:1};paintLive(m)});
+}
+function watchLive(m){
+  if(!m||LV.watch===m.id)return;stopLiveGame();LV.watch=m.id;
+  const run=async()=>{if(LV.watch!==m.id)return;try{await liveTick(m);LV.err=null}catch(e){LV.err=String(e.message||e)}paintLive(m);if(LV.watch===m.id)LV.timer=setTimeout(run,document.hidden?30000:10000)};
+  run();
+}
+function stopLiveGame(){LV.watch=null;clearTimeout(LV.timer)}
+function paintLive(m){
+  const b=$("#livebox");if(b&&b.dataset.k===m.key)b.innerHTML=liveBoxHTML(m);
+  const h=$("#herolive");if(h&&h.dataset.k===m.key)h.innerHTML=heroLiveHTML(m);
+}
+/* probabilité de victoire : modèle maison sur l'or, les tours, les inhibiteurs, les barons et les dragons */
+function winProb(f,mins){
+  const b=f.blueTeam,r=f.redTeam,db=(b.dragons||[]).length,dr=(r.dragons||[]).length;
+  const tf=Math.pow(20/Math.max(20,mins),.35);
+  const z=.34*((b.totalGold-r.totalGold)/1000)*tf+.10*(b.towers-r.towers)+.55*(b.inhibitors-r.inhibitors)+.45*(b.barons-r.barons)+.14*(db-dr)+.02*(b.totalKills-r.totalKills)+(db>=4?.7:0)-(dr>=4?.7:0);
+  return 1/(1+Math.exp(-z));
+}
+const gtime=L=>{if(!L.frame||!L.first)return"";const s=Math.max(0,(Date.parse(L.frame.rfc460Timestamp)-L.first)/1000);return Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0")};
+const DRAG={ocean:"#3BA3D9",infernal:"#E8603C",mountain:"#B08A5A",cloud:"#BFD6E6",hextech:"#3BC7C0",chemtech:"#9BD13B",elder:"#F0E6D2"};
+function goldChart(L){
+  const S=L.samples;if(S.length<2)return"";
+  const W=320,H=80,tm=Math.max(10,S[S.length-1].t),mx=Math.max(2000,...S.map(s=>Math.abs(s.gd)));
+  const X=t=>t/tm*W,Y=g=>H/2-g/mx*(H/2-4);
+  const pts=S.map(s=>`${X(s.t).toFixed(1)},${Y(s.gd).toFixed(1)}`).join(" ");
+  return `<svg class="gchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs>
+    <linearGradient id="gcb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col(L.blue)}" stop-opacity=".55"/><stop offset=".5" stop-color="${col(L.blue)}" stop-opacity="0"/><stop offset=".5" stop-color="${col(L.red)}" stop-opacity="0"/><stop offset="1" stop-color="${col(L.red)}" stop-opacity=".55"/></linearGradient></defs>
+    <line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="rgba(240,230,210,.25)" stroke-dasharray="3 3"/>
+    <polygon points="0,${H/2} ${pts} ${X(S[S.length-1].t).toFixed(1)},${H/2}" fill="url(#gcb)"/><polyline points="${pts}" fill="none" stroke="#F0E6D2" stroke-width="1.6"/></svg>
+    <p class="small gl"><span>${esc(T[L.blue]?.id||"")} devant</span><span>écart d’or, max ${fx1(mx/1000)} k</span><span>${esc(T[L.red]?.id||"")} devant</span></p>`;
+}
+function heroLiveHTML(m){
+  const L=LV.games[m.key];
+  if(!L||!L.frame)return `<p class="small" style="text-align:center;margin:8px 0 0;color:#fff">${L&&L.status==="between"?"Pause entre deux parties":"Stats en direct au lancement de la partie"}</p>`;
+  const f=L.frame,p=winProb(f,(Date.parse(f.rfc460Timestamp)-L.first)/60000),gd=f.blueTeam.totalGold-f.redTeam.totalGold;
+  return `<div class="hlive"><span>${logo(L.blue,20)}<b>${f.blueTeam.totalKills}</b></span><em>Partie ${L.num||""} · ${gtime(L)}<br>${gd>=0?esc(T[L.blue].id):esc(T[L.red].id)} +${fx1(Math.abs(gd)/1000)} k or</em><span><b>${f.redTeam.totalKills}</b>${logo(L.red,20)}</span></div>
+    <div class="wpbar"><i style="width:${p*100}%;background:${col(L.blue)}"></i><i style="width:${(1-p)*100}%;background:${col(L.red)}"></i></div>
+    <p class="small wpl"><span>${Math.round(p*100)} %</span><span>chances de victoire (estimation)</span><span>${Math.round((1-p)*100)} %</span></p>`;
+}
+function liveBoxHTML(m){
+  const L=LV.games[m.key];
+  if(!L)return skel(2);
+  if(L.status==="nolive")return `<p class="small">Flux en direct introuvable pour ce match.</p>`;
+  if(L.status==="waiting"||L.status==="starting")return `<div class="note">La partie n’a pas encore commencé. Le score s’affiche dès le premier sang.</div>`;
+  if(L.status==="between")return `<div class="note">Pause entre deux parties. Série : ${L.teams.map(t=>`${esc(T[t.our]?.id||"")} ${t.w??0}`).join(" - ")}.</div>`;
+  if(!L.frame)return LV.err?`<div class="aerr">Flux LoL Esports injoignable (${esc(LV.err)}). Nouvel essai dans 10 s.</div>`:skel(2);
+  const f=L.frame,B=f.blueTeam,R=f.redTeam,mins=(Date.parse(f.rfc460Timestamp)-L.first)/60000,p=winProb(f,mins);
+  const md=L.meta||{},bp=(md.blueTeamMetadata?.participantMetadata)||[],rp=(md.redTeamMetadata?.participantMetadata)||[];
+  const part=id=>(f.participants||[]).find(x=>x.participantId===id)||{};
+  const drg=d=>(d||[]).map(x=>`<i class="drg" style="background:${DRAG[x]||"#888"}" title="${esc(x)}"></i>`).join("");
+  const prow=(pm,rev)=>{const s=part(pm.participantId),pl=playerFromSummoner(pm.summonerName,rev?L.red:L.blue),cn=CH&&CH.nm?CH.nm[pm.championId]||pm.championId:pm.championId;
+    return `<div class="lpr${rev?" r":""}">${champ(pm.championId,30)}<span class="lpn"><b>${esc(pl?pl.id:String(pm.summonerName||"").split(" ").slice(1).join(" ")||pm.summonerName||"")}</b><small>${esc(cn)}</small></span><span class="lps"><b>${s.kills??0}/${s.deaths??0}/${s.assists??0}</b><small>${s.creepScore??0} cs</small></span></div>`};
+  return `<div class="lvhd"><span class="badge live">Partie ${L.num||""}</span><b>${gtime(L)}</b><span class="small">${L.status==="ended"?"Partie terminée":"≈ 30 s de décalage"}</span></div>
+   <div class="lvsc"><div class="lvt">${logo(L.blue,40)}<b>${esc(T[L.blue]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${B.totalKills}</b><i>kills</i><b>${R.totalKills}</b></div><div class="lvt">${logo(L.red,40)}<b>${esc(T[L.red]?.id||"")}</b><span class="side r">rouge</span></div></div>
+   <div class="wpbar big"><i style="width:${p*100}%;background:${col(L.blue)}"></i><i style="width:${(1-p)*100}%;background:${col(L.red)}"></i></div>
+   <p class="small wpl"><span><b>${Math.round(p*100)} %</b></span><span>chances de victoire</span><span><b>${Math.round((1-p)*100)} %</b></span></p>
+   <div class="lvobj">
+     ${[["Or",fx1(B.totalGold/1000)+" k",fx1(R.totalGold/1000)+" k"],["Tours",B.towers,R.towers],["Dragons",`${(B.dragons||[]).length} ${drg(B.dragons)}`,`${drg(R.dragons)} ${(R.dragons||[]).length}`],["Barons",B.barons,R.barons],["Inhibiteurs",B.inhibitors,R.inhibitors]]
+       .map(([l,a,b])=>`<div><span>${a}</span><em>${l}</em><span>${b}</span></div>`).join("")}</div>
+   ${goldChart(L)}
+   <div class="lvp"><div>${bp.map(x=>prow(x,false)).join("")}</div><div>${rp.map(x=>prow(x,true)).join("")}</div></div>
+   <p class="small" style="margin-top:8px">Chances de victoire : estimation maison à partir de l’écart d’or, des tours, inhibiteurs, barons et dragons (âme comprise), ajustée selon la durée de la partie. Ce n’est pas un chiffre officiel.</p>
+   <h2>Analyse de la draft</h2>${draftHTML(L)}`;
+}
+/* draft : taux de victoire pro 2026 de chaque champion + expérience du joueur dessus */
+async function computeDraft(L){
+  await champMap();const md=L.meta;if(!md)return null;
+  const side=(tm,our)=>(tm?.participantMetadata||[]).map(p=>({id:p.championId,c:CH&&CH.nm?CH.nm[p.championId]||p.championId:p.championId,pl:playerFromSummoner(p.summonerName,our)}));
+  const B=side(md.blueTeamMetadata,L.blue),R=side(md.redTeamMetadata,L.red),all=[...B,...R];
+  const champs=all.map(x=>x.c),links=all.map(x=>x.pl&&linkOf(x.pl)).filter(Boolean);
+  const cw=`ScoreboardPlayers.Champion IN (${qlist(champs)}) AND ScoreboardPlayers.DateTime_UTC >= "2026-01-01"`;
+  const cA=await cq({tables:"ScoreboardPlayers",fields:"ScoreboardPlayers.Champion=C,COUNT(*)=N",group_by:"ScoreboardPlayers.Champion",where:cw});
+  const cW=await cq({tables:"ScoreboardPlayers",fields:"ScoreboardPlayers.Champion=C,COUNT(*)=N",group_by:"ScoreboardPlayers.Champion",where:cw+' AND ScoreboardPlayers.PlayerWin="Yes"'});
+  let mA=[],mW=[];
+  if(links.length){const mw=`ScoreboardPlayers.Link IN (${qlist(links)}) AND ScoreboardPlayers.Champion IN (${qlist(champs)}) AND ScoreboardPlayers.DateTime_UTC >= "2025-01-01"`;
+    mA=await cq({tables:"ScoreboardPlayers",fields:"ScoreboardPlayers.Link=L,ScoreboardPlayers.Champion=C,COUNT(*)=N",group_by:"ScoreboardPlayers.Link,ScoreboardPlayers.Champion",where:mw});
+    mW=await cq({tables:"ScoreboardPlayers",fields:"ScoreboardPlayers.Link=L,ScoreboardPlayers.Champion=C,COUNT(*)=N",group_by:"ScoreboardPlayers.Link,ScoreboardPlayers.Champion",where:mw+' AND ScoreboardPlayers.PlayerWin="Yes"'})}
+  const cs={};cA.forEach(r=>cs[norm(r.C)]={n:num(r.N),w:0});cW.forEach(r=>{(cs[norm(r.C)]=cs[norm(r.C)]||{n:0,w:0}).w=num(r.N)});
+  const ms={};mA.forEach(r=>ms[norm(r.L)+"|"+norm(r.C)]={n:num(r.N),w:0});mW.forEach(r=>{const k=norm(r.L)+"|"+norm(r.C);(ms[k]=ms[k]||{n:0,w:0}).w=num(r.N)});
+  const sc=x=>{const c=cs[norm(x.c)]||{n:0,w:0},m=(x.pl&&ms[norm(linkOf(x.pl))+"|"+norm(x.c)])||{n:0,w:0};
+    const cwr=(c.w+10)/(c.n+20),mwr=(m.w+3)/(m.n+6),comfort=Math.min(m.n,20)/20;
+    return {...x,cn:c.n,cw:c.w,mn:m.n,mw:m.w,s:cwr+.06*comfort+.08*(mwr-.5)*comfort}};
+  const b=B.map(sc),r=R.map(sc),avg=a=>a.reduce((s,x)=>s+x.s,0)/Math.max(1,a.length);
+  return {b,r,sb:avg(b),sr:avg(r)};
+}
+function draftHTML(L){
+  const D=L.draft;if(!D)return skel(2);if(D.err)return `<p class="small">Analyse de draft indisponible (Leaguepedia ne répond pas).</p>`;
+  const diff=(D.sb-D.sr)*100,lead=diff>=0?L.blue:L.red;
+  const row=x=>`<div class="drw">${champ(x.id,28)}<span class="lpn"><b>${esc(x.c)}</b><small>${esc(x.pl?x.pl.id:"")}</small></span><span class="dst"><small>${x.cn?`${pct(x.cw,x.cn)} % en pro (${x.cn} p.)`:"peu joué en pro"}</small><small>${x.mn?`${x.mn} p. dessus, ${pct(x.mw,x.mn)} %`:"jamais joué en officiel"}</small></span></div>`;
+  return `<div class="dadv"><span>${logo(lead,26)}<b>${Math.abs(diff)<.5?"Drafts équilibrées":`Avantage ${esc(T[lead]?.id||"")} +${fx1(Math.abs(diff))} pts`}</b></span></div>
+   <div class="wpbar"><i style="width:${D.sb/(D.sb+D.sr)*100}%;background:${col(L.blue)}"></i><i style="width:${D.sr/(D.sb+D.sr)*100}%;background:${col(L.red)}"></i></div>
+   <div class="lvp" style="margin-top:10px"><div>${D.b.map(row).join("")}</div><div>${D.r.map(row).join("")}</div></div>
+   <p class="small" style="margin-top:6px">Calcul maison : taux de victoire de chaque champion en pro depuis janvier 2026, plus l’expérience du joueur sur son champion depuis 2025.</p>`;
 }
 /* ===================== sources en direct ===================== */
 const LE_KEY="0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z", WORLDS_LEAGUE="98767975604431411";
@@ -1650,6 +1946,7 @@ function scheduleNext(){
 }
 
 
+history.replaceState({v:"home"},"");
 MATCHES=finalize(EMBED.map(m=>({...m})));
 intro();
 readDuelParams();
@@ -1657,8 +1954,8 @@ renderAll();
 sync(false);
 champMap();
 loadTeamNames().then(()=>renderAll()).catch(()=>{});
-if(duel)duelConnect();
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&duel){if(!DU.peer||DU.peer.destroyed)duelConnect();else if(DU.tryC)DU.tryC()}});
+if(lg)duelConnect();
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&lg)duelWake()});
 </script>
 </body>
 </html>
