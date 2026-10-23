@@ -111,22 +111,28 @@ def summarize(gid, want_details):
     if not w0 or not w0.get("frames"): return {"x": 1}
     md = w0["gameMetadata"]
     fr = [f for f in w0["frames"] if f["blueTeam"]["totalGold"] > 0] or w0["frames"]
-    start = ts(fr[0]["rfc460Timestamp"])
-    we = feed("window/" + gid + "?startingTime=" + iso10(start + datetime.timedelta(hours=6)))
-    if not we or not we.get("frames"): return {"x": 1}
+    start = ts(fr[0]["rfc460Timestamp"]); now = datetime.datetime.now(datetime.timezone.utc)
+    recent = now - start < datetime.timedelta(hours=6)
+    # image finale : début + 6 h, mais jamais dans le futur (le flux refuse une fenêtre qui finit il y a moins de 20 s)
+    t_end = min(start + datetime.timedelta(hours=6), now - datetime.timedelta(seconds=60))
+    we = feed("window/" + gid + "?startingTime=" + iso10(t_end))
+    if not we or not we.get("frames"): return None if recent else {"x": 1}
     fe = we["frames"][-1]; end = ts(fe["rfc460Timestamp"])
+    if fe["gameState"] != "finished" and recent: return None   # partie à peine finie : on réessaiera au prochain passage
     w15 = feed("window/" + gid + "?startingTime=" + iso10(start + datetime.timedelta(minutes=15))) if (end - start).total_seconds() > 16 * 60 else None
     f15 = w15["frames"][0] if w15 and w15.get("frames") else None
-    det = feed("details/" + gid + "?startingTime=" + iso10(start + datetime.timedelta(hours=6))) if want_details else None
+    det = feed("details/" + gid + "?startingTime=" + iso10(t_end)) if want_details else None
     dp = {p["participantId"]: p for p in (det["frames"][-1]["participants"] if det and det.get("frames") else [])}
     p15 = {p["participantId"]: p for p in ([*f15["blueTeam"]["participants"], *f15["redTeam"]["participants"]] if f15 else [])}
     def team(t, mt):
         return [mt["esportsTeamId"], t["totalKills"], t["totalGold"], t["towers"], t["inhibitors"], t["barons"], len(t["dragons"])]
     P = []
     for side in ("blue", "red"):
-        mt, ft = md[side + "TeamMetadata"], fe[side + "Team"]
-        for pm, pp in zip(mt["participantMetadata"], ft["participants"]):
-            i = pm["participantId"]; d = dp.get(i, {}); q = p15.get(i)
+        mt = md[side + "TeamMetadata"]; fp = {p["participantId"]: p for p in fe[side + "Team"]["participants"]}
+        for pm in mt["participantMetadata"]:
+            i = pm["participantId"]; pp = fp.get(i)
+            if not pp: return {"x": 1}   # flux incomplet : on n'invente rien
+            d = dp.get(i, {}); q = p15.get(i)
             P.append([pm.get("esportsPlayerId"), pm.get("summonerName"), ROLE.get(pm.get("role"), pm.get("role")), pm.get("championId"),
                       pp["kills"], pp["deaths"], pp["assists"], pp["creepScore"], pp["totalGold"],
                       q["totalGold"] if q else None, q["creepScore"] if q else None,
@@ -380,14 +386,16 @@ def main():
         budget()
         ensure_roster(C, teams); ours = set(C["roster"]["teams"])
         today = time.strftime("%Y-%m-%d")
+        two_days = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
         todo = []
         for t, m in sorted(((E[m]["t"], m) for m in D if m in E), reverse=True):
             d = D[m]; total = sum((x[3] or 0) for x in d["tm"])
             for g in sorted(d["g"], key=lambda g: g[1])[:total]:
                 if g[2] != "completed": continue
                 s = C["games"].get(g[0])
-                # flux absent : 3 essais, un par jour
-                if s and ("p" in s or s.get("x", 0) >= 3 or s.get("at") == today): continue
+                if s and "p" in s: continue
+                # flux absent : à chaque passage pendant 2 jours, puis 3 essais, un par jour
+                if s and (s.get("x", 0) >= 40 if t >= two_days else (s.get("x", 0) >= 3 or s.get("at") == today)): continue
                 todo.append((g[0], t[:4], {x[0] for x in d["tm"]}))
         log("parties à résumer : %d" % len(todo))
         fetch_games(C, todo, ours)
@@ -408,7 +416,7 @@ def main():
     left = sum(1 for m in C["details"].values() for g in m["g"] if g[2] == "completed" and g[0] not in C["games"])
     out["meta"] = {"queries": NQ[0], "seconds": round(time.time() - T0), "games": len(C["games"]), "left": left, "cover": out["cover"],
                    "players": sum(1 for p in out["players"].values() if p["S"]["g"]), "duels": len(out["duels"]), "h2h": len(out["h2h"]), "tourney": out["tourney"]["n"]}
-    if left: out["stale"] = {"historique": "%d parties restent à charger" % left}
+    if left: out["stale"] = {"parties": "%d récentes ou manquantes, reprises au prochain passage" % left}
     old = None
     if os.path.exists(OUT):
         try: old = json.load(open(OUT, encoding="utf-8"))
