@@ -506,6 +506,12 @@ details.manual summary{cursor:pointer;font-size:13.5px;color:var(--muted);font-w
 .lb i{position:absolute;right:-5px;bottom:-4px;width:17px;height:17px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-style:normal;font-size:10px;box-shadow:0 0 0 1px var(--line)}
 .lb i.ok{color:var(--teal);font-weight:900}
 
+/* ===== diagnostic ===== */
+.hrow{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 11px;margin-top:5px;background:var(--panel);border:1px solid rgba(200,170,110,.12);border-radius:10px}
+.hrow b{font-size:13.5px}.hrow small{grid-column:1/-1;font-size:11.5px;color:var(--muted);word-break:break-word}
+.hok{color:var(--teal);font-weight:800;font-size:13px}.hko{color:var(--red);font-weight:800;font-size:13px}.hz{color:var(--muted);font-size:12.5px}
+.aerr span{display:flex;flex-direction:column;flex:1;min-width:0}.aerr small{font-size:11px;opacity:.8;word-break:break-word}
+.sync{cursor:pointer}
 @media (min-width:700px){.facts{grid-template-columns:repeat(4,1fr)}.fact.wide{grid-column:span 2}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}#intro{display:none}.arc{stroke-dashoffset:0}}
 </style>
@@ -721,11 +727,20 @@ let lastSync = null;
 let picks = LS.get("picks",{}), manual = LS.get("manual",{}), fav = LS.get("fav",null), celebrated = LS.get("celebrated",{});
 const ui = {stage:"all",league:"all",role:"all",nat:null,q:"",counted:false};
 
-const mkey = m => (m.t1&&m.t2)?[m.t1,m.t2].sort().join("_")+"_"+m.start.slice(0,10):m.id;
+/* clé de match stable : en suisse et en phase finale deux équipes ne se croisent qu'une fois */
+const mkey = m => {if(!(m.t1&&m.t2))return m.id;const t=[m.t1,m.t2].sort().join("_");return m.stage==="pi"?t+"_"+m.start.slice(0,10):t+"_"+m.stage};
+function migrateKey(m){
+  if(!m.t1||!m.t2||m.stage==="pi")return false;const old=[m.t1,m.t2].sort().join("_")+"_"+m.start.slice(0,10);if(old===m.key)return false;let ch=false;
+  const mv=o=>{if(o&&o[old]!=null){if(o[m.key]==null)o[m.key]=o[old];delete o[old];ch=true}};
+  mv(picks);if(typeof scores!=="undefined")mv(scores);mv(manual);mv(celebrated);
+  if(typeof lg!=="undefined"&&lg)Object.values(lg.players).forEach(p=>mv(p.p));
+  return ch;
+}
 function stageOf(iso){const d=iso.slice(0,10);if(d<"2026-10-20")return"pi";if(d<"2026-11-02")return"sw";if(d<"2026-11-07")return"qf";if(d<"2026-11-10")return"sf";return"f"}
 function finalize(list){
+  let migrated=false;
   list.forEach(m=>{
-    m.key=mkey(m);
+    m.key=mkey(m);if(migrateKey(m))migrated=true;
     const man=manual[m.key];
     if(!m.winner && m.s1!=null && m.s2!=null && (m.s1>m.bo/2||m.s2>m.bo/2)) m.winner=m.s1>m.s2?m.t1:m.t2;
     if(!m.winner && man && (man===m.t1||man===m.t2)){m.winner=man;m.manual=true}
@@ -734,6 +749,7 @@ function finalize(list){
     else if(m.apiLive) m.state="live";
     else m.state=(now>st && now<st+m.bo*55*60e3)?"live":(now>=st+m.bo*55*60e3?"wait":"soon");
   });
+  if(migrated){LS.set("picks",picks);LS.set("manual",manual);LS.set("celebrated",celebrated);if(typeof scores!=="undefined")LS.set("scores",scores);if(typeof lg!=="undefined"&&lg)LS.set("league",lg)}
   list.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
   const played={};
   list.filter(m=>m.stage==="sw").forEach(m=>{
@@ -1069,7 +1085,7 @@ function hideSheet(){
 }
 function closeSheet(){const n=SH.length;if(n&&history.state&&history.state.sheet)history.go(-n);else hideSheet()}
 function sheetBack(){if(SH.length>1)history.back();else closeSheet()}
-function renderSheetDesc(d){sheetState=d;if(d.k==="m")matchSheet(d.id,"back");else if(d.k==="t")teamSheet(d.id,"back");else if(d.k==="p")playerSheet(d.id,"back");else if(d.k==="d")duelSheet(d.id,d.pre,"back")}
+function renderSheetDesc(d){sheetState=d;if(d.k==="m")matchSheet(d.id,"back");else if(d.k==="t")teamSheet(d.id,"back");else if(d.k==="p")playerSheet(d.id,"back");else if(d.k==="d")duelSheet(d.id,d.pre,"back");else if(d.k==="g")diagSheet("back")}
 addEventListener("popstate",e=>{
   const s=e.state||{},n=s.sheet||0;
   if(SH.length>n){SH=SH.slice(0,n);if(n)renderSheetDesc(SH[n-1]);else hideSheet()}
@@ -1180,6 +1196,7 @@ document.addEventListener("click",e=>{
     if(!picks[k])delete scores[k];LS.set("picks",picks);LS.set("scores",scores);duelPickChanged(k);renderLive();return}
   const so=e.target.closest("[data-score]");if(so){const k=so.dataset.mk;if(scores[k]===so.dataset.score)delete scores[k];else scores[k]=so.dataset.score;LS.set("scores",scores);duelPickChanged(k);vib(10);refreshSheet(true);renderHome();return}
   const du=e.target.closest("[data-duel]");if(du){duelAction(du.dataset.duel);return}
+  const dg=e.target.closest("[data-diag]");if(dg){diagAction(dg.dataset.diag);return}
   const wn=e.target.closest("[data-win]");
   if(wn){const k=wn.dataset.mk;if(manual[k]===wn.dataset.win)delete manual[k];else manual[k]=wn.dataset.win;LS.set("manual",manual);MATCHES.forEach(m=>{if(m.key===k&&m.manual){m.winner=null;m.manual=false}});MATCHES=finalize(MATCHES);renderLive();return}
   const fv=e.target.closest("[data-fav]");
@@ -1195,7 +1212,7 @@ document.addEventListener("click",e=>{
 let qT=0;$("#q").addEventListener("input",e=>{ui.q=e.target.value;clearTimeout(qT);qT=setTimeout(renderPlayers,140)});
 $("#scrim").addEventListener("click",closeSheet);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
-$("#sync").addEventListener("click",()=>sync(true));
+$("#sync").addEventListener("click",()=>diagSheet());
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&lastSync&&Date.now()-lastSync>60e3)sync(false)});
 setInterval(()=>{const c=$("#cd"),m=nextMatch();if(!c||!m||m.state!=="soon")return;const ms=new Date(m.start)-Date.now();
   if(ms<0){MATCHES=finalize(MATCHES);renderHome();return}
@@ -1207,8 +1224,13 @@ setInterval(()=>{const c=$("#cd"),m=nextMatch();if(!c||!m||m.state!=="soon")retu
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let cqLast=0;
 async function cq(params){
-  const wait=Math.max(0,cqLast+650-Date.now());cqLast=Date.now()+wait;if(wait)await sleep(wait);
-  try{return await cargo(params)}catch(e){await sleep(2500);cqLast=Date.now();return await cargo(params)}
+  for(let a=0;;a++){
+    const wait=Math.max(0,cqLast+1100-Date.now());cqLast=Date.now()+wait;if(wait)await sleep(wait);
+    try{return await cargo(params)}catch(e){
+      const msg=String(e&&e.message||e),rl=/rate|limit|429|503|ratelimited|exceeded/i.test(msg);
+      if(a>=3)throw e;await sleep(rl?4000*(a+1):1500*(a+1));cqLast=Date.now();
+    }
+  }
 }
 async function cqAll(params,max=1500){let out=[];for(let off=0;off<max;off+=500){const r=await cq({...params,offset:String(off)});out=out.concat(r);if(r.length<500)break}return out}
 const qlist=a=>[...new Set(a)].map(n=>'"'+String(n).replace(/"/g,"")+'"').join(",");
@@ -1233,22 +1255,28 @@ const linkOf=p=>p.page||p.id;
 /* ---- blocs asynchrones : squelette, puis contenu, survivent aux re-rendus ---- */
 const AK={};
 const skel=(n=3)=>`<div class="skel">${Array.from({length:n},()=>"<i></i>").join("")}</div>`;
-const errHTML=k=>`<div class="aerr">Leaguepedia ne répond pas pour l’instant. <button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`;
+const errHTML=k=>{const a=AK[k]||{},m=String(a.emsg||"");const rl=/rate|limit|exceeded/i.test(m);
+  return `<div class="aerr"><span>${rl?"Leaguepedia limite les requêtes en ce moment.":"Leaguepedia ne répond pas pour l’instant."}${m?`<small>${esc(m.slice(0,120))}</small>`:""}</span><button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`};
+let akIO=null;
+function armAk(){
+  if(!akIO&&window.IntersectionObserver)akIO=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;const k=e.target.dataset.ak,a=AK[k];akIO.unobserve(e.target);if(a&&a.st==="load"&&!a.started)runAk(k)}),{rootMargin:"300px"});
+  document.querySelectorAll(".ak[data-ak]").forEach(el=>{const a=AK[el.dataset.ak];if(a&&a.st==="load"&&!a.started){if(akIO)akIO.observe(el);else runAk(el.dataset.ak)}});
+}
 function ablock(key,fn,render,ttlH=6){
   let a=AK[key];
   if(!a){
     a=AK[key]={st:"load",fn,render,ttlH};
     const c=LS.get("ak_"+key,null);
     if(c&&Date.now()-c.t<ttlH*3600e3){a.st="ok";a.data=c.d}
-    else setTimeout(()=>runAk(key),0);
-  } else {a.render=render;a.fn=fn}
+    else setTimeout(armAk,0);
+  } else {a.render=render;a.fn=fn;if(a.st==="load"&&!a.started)setTimeout(armAk,0)}
   const body=a.st==="ok"?safeRender(a):a.st==="err"?errHTML(key):skel();
   return `<div class="ak" data-ak="${esc(key)}">${body}</div>`;
 }
 function safeRender(a){try{return a.render(a.data)}catch(e){console.error(e);return `<p class="small">Données incomplètes pour ce bloc.</p>`}}
 async function runAk(key){
-  const a=AK[key];a.st="load";
-  try{a.data=await a.fn();a.st="ok";LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err"}
+  const a=AK[key];a.st="load";a.started=true;
+  try{a.data=await a.fn();a.st="ok";a.emsg=null;LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err";a.emsg=String(e&&e.message||e)}
   document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>{el.innerHTML=a.st==="ok"?safeRender(a):errHTML(key);el.classList.add("in")});
 }
 
@@ -1284,7 +1312,7 @@ function champMap(){
   CHp=(async()=>{try{const v=(await (await fetch("https://ddragon.leagueoflegends.com/api/versions.json")).json())[0];
     const j=await (await fetch(`https://ddragon.leagueoflegends.com/cdn/${v}/data/en_US/champion.json`)).json();
     const map={},nm={};Object.values(j.data).forEach(c=>{map[norm(c.name)]=c.id;map[norm(c.id)]=c.id;nm[c.id]=c.name});
-    CH={t:Date.now(),v,map,nm};LS.set("champs2",CH)}catch(e){}return CH})();
+    CH={t:Date.now(),v,map,nm};LS.set("champs2",CH);if(window.mark)mark("dd",true,0)}catch(e){if(window.mark)mark("dd",false,0,e.message)}return CH})();
   return CHp;
 }
 const champImg=n=>{const id=CH&&CH.map&&CH.map[norm(n)];return id?`https://ddragon.leagueoflegends.com/cdn/${CH.v}/img/champion/${id}.png`:null};
@@ -1498,8 +1526,8 @@ const myBets=()=>{const o={};Object.keys(picks).forEach(k=>o[k]={w:picks[k],sc:s
 function payload(hello){return JSON.stringify({v:3,id:lg.me.id,name:lg.me.name,p:encPicks(),ts:Date.now(),hello:!!hello,owner:!!lg.owner,gage:lg.owner?lg.gage:null})}
 async function publish(hello){
   if(!lg)return;
-  try{const r=await fetch(NTFY+topicOf(lg.code),{method:"POST",body:payload(hello)});if(!r.ok)throw new Error(r.status);DU.pubErr=false}
-  catch(e){DU.pubErr=true;clearTimeout(DU.retryPub);DU.retryPub=setTimeout(()=>publish(hello),8000)}
+  try{const r=await fetch(NTFY+topicOf(lg.code),{method:"POST",body:payload(hello)});if(!r.ok)throw new Error(r.status);DU.pubErr=false;if(window.mark)mark("relay",true,0)}
+  catch(e){DU.pubErr=true;if(window.mark)mark("relay",false,0,"publication : "+e.message);clearTimeout(DU.retryPub);DU.retryPub=setTimeout(()=>publish(hello),8000)}
   renderDuelOnly();
 }
 function duelState(){clearTimeout(DU.pubT);DU.pubT=setTimeout(()=>publish(false),600)}
@@ -1514,7 +1542,7 @@ function duelConnect(){
   if(!lg)return;duelStop();
   if(typeof EventSource==="undefined"){startPoll();return}
   const es=DU.es=new EventSource(NTFY+topicOf(lg.code)+"/sse?since=all");
-  es.onopen=()=>{DU.open=true;DU.errs=0;stopPoll();renderDuelOnly();if(!DU.hello){DU.hello=true;publish(true)}};
+  es.onopen=()=>{DU.open=true;DU.errs=0;stopPoll();if(window.mark)mark("relay",true,0);renderDuelOnly();if(!DU.hello){DU.hello=true;publish(true)}};
   es.onmessage=ev=>{try{handleMsg(JSON.parse(ev.data))}catch(e){}};
   es.onerror=()=>{DU.open=false;DU.errs++;renderDuelOnly();if(DU.errs>=2)startPoll()};
 }
@@ -1558,7 +1586,7 @@ function pts(w,sc,m){
 const scoreOpts=bo=>bo===3?["2-0","2-1"]:bo===5?["3-0","3-1","3-2"]:[];
 function members(){return [{id:lg.me.id,name:lg.me.name,p:myBets(),me:true},...Object.entries(lg.players).map(([id,x])=>({id,name:x.name,p:x.p,ts:x.ts}))]}
 function standings(){
-  const all=members(),done=MATCHES.filter(m=>m.winner&&m.t1&&m.t2);
+  const all=members(),done=MATCHES.filter(m=>m.winner&&!m.manual&&m.t1&&m.t2);
   all.forEach(u=>{u.pts=0;u.ex=0;u.ok=0;u.n=0;u.form=[];u.streak=0;u.bold=0;
     done.forEach(m=>{const b=u.p[m.key];if(!b)return;u.n++;const s=pts(b.w,b.sc,m);u.pts+=s;if(s)u.ok++;if(s>1)u.ex++;u.form.push(s>0)});
     for(let k=u.form.length-1;k>=0&&u.form[k];k--)u.streak++});
@@ -1706,7 +1734,8 @@ async function liveTick(m){
   const bt=(g.teams||[]).find(t=>t.side==="blue"),rt=(g.teams||[]).find(t=>t.side==="red");
   L.blue=(L.teams.find(t=>t.id===bt?.id)||{}).our||m.t1;L.red=(L.teams.find(t=>t.id===rt?.id)||{}).our||(L.blue===m.t1?m.t2:m.t1);
   if(!L.first){const w=await feedWin(g.id);if(w&&w.frames&&w.frames.length){L.first=Date.parse(w.frames[0].rfc460Timestamp);L.meta=w.gameMetadata;w.frames.forEach(f=>pushSample(L,f))}}
-  const w=await feedWin(g.id,Date.now()-50000);
+  let w=await feedWin(g.id,Date.now()-50000);
+  if(!w||!w.frames||!w.frames.length)w=await feedWin(g.id,Date.now()-90000);
   if(w&&w.frames&&w.frames.length){L.meta=L.meta||w.gameMetadata;L.frame=w.frames[w.frames.length-1];pushSample(L,L.frame);L.status=L.frame.gameState==="finished"?"ended":"live"}
   else L.status=L.frame?"live":"starting";
   if(L.meta&&!L.draftP)L.draftP=computeDraft(L).then(d=>{L.draft=d;paintLive(m)}).catch(()=>{L.draft={err:1};paintLive(m)});
@@ -1728,7 +1757,9 @@ function winProb(f,mins){
   const z=.34*((b.totalGold-r.totalGold)/1000)*tf+.10*(b.towers-r.towers)+.55*(b.inhibitors-r.inhibitors)+.45*(b.barons-r.barons)+.14*(db-dr)+.02*(b.totalKills-r.totalKills)+(db>=4?.7:0)-(dr>=4?.7:0);
   return 1/(1+Math.exp(-z));
 }
-const gtime=L=>{if(!L.frame||!L.first)return"";const s=Math.max(0,(Date.parse(L.frame.rfc460Timestamp)-L.first)/1000);return Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0")};
+function gameMins(L){const f=L.frame;if(!f)return 0;const fromGold=Math.max(0,((f.blueTeam.totalGold+f.redTeam.totalGold)/2-2500)/1950+1.5);
+  if(L.first){const m=(Date.parse(f.rfc460Timestamp)-L.first)/60000;if(m>=0&&Math.abs(m-fromGold)<8)return m}return fromGold}
+const gtime=L=>{if(!L.frame)return"";const s=Math.round(gameMins(L)*60);return (L.first&&Math.abs((Date.parse(L.frame.rfc460Timestamp)-L.first)/60000-gameMins(L))<.01?"":"≈ ")+Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
 const DRAG={ocean:"#3BA3D9",infernal:"#E8603C",mountain:"#B08A5A",cloud:"#BFD6E6",hextech:"#3BC7C0",chemtech:"#9BD13B",elder:"#F0E6D2"};
 function goldChart(L){
   const S=L.samples;if(S.length<2)return"";
@@ -1744,7 +1775,7 @@ function goldChart(L){
 function heroLiveHTML(m){
   const L=LV.games[m.key];
   if(!L||!L.frame)return `<p class="small" style="text-align:center;margin:8px 0 0;color:#fff">${L&&L.status==="between"?"Pause entre deux parties":"Stats en direct au lancement de la partie"}</p>`;
-  const f=L.frame,p=winProb(f,(Date.parse(f.rfc460Timestamp)-L.first)/60000),gd=f.blueTeam.totalGold-f.redTeam.totalGold;
+  const f=L.frame,p=winProb(f,gameMins(L)),gd=f.blueTeam.totalGold-f.redTeam.totalGold;
   return `<div class="hlive"><span>${logo(L.blue,20)}<b>${f.blueTeam.totalKills}</b></span><em>Partie ${L.num||""} · ${gtime(L)}<br>${gd>=0?esc(T[L.blue].id):esc(T[L.red].id)} +${fx1(Math.abs(gd)/1000)} k or</em><span><b>${f.redTeam.totalKills}</b>${logo(L.red,20)}</span></div>
     <div class="wpbar"><i style="width:${p*100}%;background:${col(L.blue)}"></i><i style="width:${(1-p)*100}%;background:${col(L.red)}"></i></div>
     <p class="small wpl"><span>${Math.round(p*100)} %</span><span>chances de victoire (estimation)</span><span>${Math.round((1-p)*100)} %</span></p>`;
@@ -1756,9 +1787,10 @@ function liveBoxHTML(m){
   if(L.status==="waiting"||L.status==="starting")return `<div class="note">La partie n’a pas encore commencé. Le score s’affiche dès le premier sang.</div>`;
   if(L.status==="between")return `<div class="note">Pause entre deux parties. Série : ${L.teams.map(t=>`${esc(T[t.our]?.id||"")} ${t.w??0}`).join(" - ")}.</div>`;
   if(!L.frame)return LV.err?`<div class="aerr">Flux LoL Esports injoignable (${esc(LV.err)}). Nouvel essai dans 10 s.</div>`:skel(2);
-  const f=L.frame,B=f.blueTeam,R=f.redTeam,mins=(Date.parse(f.rfc460Timestamp)-L.first)/60000,p=winProb(f,mins);
+  const f=L.frame,B=f.blueTeam,R=f.redTeam,mins=gameMins(L),p=winProb(f,mins);
   const md=L.meta||{},bp=(md.blueTeamMetadata?.participantMetadata)||[],rp=(md.redTeamMetadata?.participantMetadata)||[];
-  const part=id=>(f.participants||[]).find(x=>x.participantId===id)||{};
+  const allP=[...(B.participants||[]),...(R.participants||[]),...(f.participants||[])];
+  const part=id=>allP.find(x=>x.participantId===id)||{};
   const drg=d=>(d||[]).map(x=>`<i class="drg" style="background:${DRAG[x]||"#888"}" title="${esc(x)}"></i>`).join("");
   const prow=(pm,rev)=>{const s=part(pm.participantId),pl=playerFromSummoner(pm.summonerName,rev?L.red:L.blue),cn=CH&&CH.nm?CH.nm[pm.championId]||pm.championId:pm.championId;
     return `<div class="lpr${rev?" r":""}">${champ(pm.championId,30)}<span class="lpn"><b>${esc(pl?pl.id:String(pm.summonerName||"").split(" ").slice(1).join(" ")||pm.summonerName||"")}</b><small>${esc(cn)}</small></span><span class="lps"><b>${s.kills??0}/${s.deaths??0}/${s.assists??0}</b><small>${s.creepScore??0} cs</small></span></div>`};
@@ -1945,6 +1977,63 @@ function scheduleNext(){
   syncTimer=setTimeout(()=>sync(false),hot?60e3:5*60e3);
 }
 
+/* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
+const APP_VERSION="v6, 24/10/2026";
+const HEALTH={};
+const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
+function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
+(function instrument(){
+  const wrap=(name,key)=>{const f=window[name];if(typeof f!=="function")return;
+    window[name]=async function(...a){const t=performance.now();try{const r=await f.apply(this,a);mark(key,true,performance.now()-t);return r}catch(e){mark(key,false,performance.now()-t,e&&e.message||e);throw e}}};
+  wrap("leFetch","le");wrap("cargo","lp");wrap("feedWin","feed");
+})();
+const SRC=[["le","LoL Esports (planning, résultats)"],["feed","Flux direct (kills, or, draft)"],["lp","Leaguepedia (stats, photos)"],["relay","Relais de la ligue"],["dd","Data Dragon (icônes)"]];
+function healthRow(k,label){
+  const h=HEALTH[k];
+  const st=!h?`<span class="hz">pas encore utilisé</span>`:h.ok?`<span class="hok">OK, ${h.ms} ms</span>`:`<span class="hko">Échec</span>`;
+  return `<div class="hrow"><b>${label}</b>${st}${h&&!h.ok&&h.err?`<small>${esc(h.err)}</small>`:""}${h?`<small>${ago(h.at)}</small>`:""}</div>`;
+}
+function diagSheet(md){
+  sheetState={k:"g",id:"diag"};
+  const ph=PLAYERS.filter(p=>p.photo||p.lePhoto||p.wikiPhoto).length;
+  if(lg)HEALTH.relay=HEALTH.relay||{ok:DU.open||DU.pollOk,ms:0,at:Date.now(),err:DU.pubErr?"publication impossible":null};
+  const h=`<h2>État de l’appli</h2>
+   <div class="kv frame hx"><dt>Version</dt><dd>${APP_VERSION}</dd><dt>Données matchs</dt><dd>${esc(SOURCE)}${lastSync?`, synchro à ${fmtTime(lastSync)}`:""}</dd><dt>Photos</dt><dd>${ph}/${PLAYERS.length}</dd><dt>Ligue</dt><dd>${lg?`${esc(lg.code)}, ${Object.keys(lg.players).length+1} joueurs, ${DU.open?"flux actif":DU.pollOk?"interrogation régulière":"hors ligne"}`:"aucune"}</dd><dt>Heure du téléphone</dt><dd>${new Date().toLocaleString("fr-FR")}</dd></div>
+   <h2>Sources</h2><div id="hlist">${SRC.map(([k,l])=>healthRow(k,l)).join("")}</div>
+   <div class="drow2"><button class="btn gold" data-diag="run">Lancer le diagnostic</button><button class="btn" data-diag="sync">Actualiser les données</button></div>
+   <div id="dres"></div>
+   <p style="margin-top:14px"><button class="btn" data-diag="copy" style="width:100%">Copier le rapport</button></p>
+   <p class="small">Le rapport contient l’état des sources et les erreurs, rien de personnel. Colle-le dans la conversation avec Claude pour un correctif ciblé.</p>`;
+  openSheet(h,md==="back"?"back":undefined);
+}
+async function timed(label,fn){const t=performance.now();try{const d=await fn();return {label,ok:true,ms:Math.round(performance.now()-t),d}}catch(e){return {label,ok:false,ms:Math.round(performance.now()-t),d:String(e&&e.message||e).slice(0,160)}}}
+let DIAG_LAST=[];
+async function runDiag(){
+  const box=$("#dres");if(box)box.innerHTML=skel(4);
+  const tests=[
+    ()=>timed("LoL Esports : planning Worlds",async()=>{const j=await leFetch(`getSchedule?hl=fr-FR&leagueId=${WORLDS_LEAGUE}`);return (j?.data?.schedule?.events||[]).length+" matchs reçus"}),
+    ()=>timed("LoL Esports : matchs en cours",async()=>{const j=await leFetch("getLive?hl=fr-FR");const ev=j?.data?.schedule?.events||[];return ev.length?ev.map(e=>(e.match?.teams||[]).map(t=>t.code).join(" vs ")).join(", "):"aucun match en cours"}),
+    ()=>timed("Flux direct",async()=>{const L=Object.values(LV.games).find(x=>x.gid);if(!L)return "aucune partie suivie pour l’instant";const w=await feedWin(L.gid,Date.now()-50000);if(!w||!w.frames)return "partie trouvée, pas de nouvelle frame";const f=w.frames[w.frames.length-1];return `kills ${f.blueTeam.totalKills}-${f.redTeam.totalKills}, ${((f.blueTeam.participants||[]).length+(f.redTeam.participants||[]).length)} joueurs lus`}),
+    ()=>timed("Leaguepedia",async()=>{const r=await cargo({tables:"Tournaments",fields:"Tournaments.Name=N",where:'Tournaments.OverviewPage LIKE "2026 Season World Championship%"',limit:"1"});return r.length?"réponse OK : "+r[0].N:"réponse vide"}),
+    ()=>timed("Relais de la ligue",async()=>{const r=await fetch(NTFY+"iagames-worlds26-ping/json?poll=1&since=1m");if(!r.ok)throw new Error("HTTP "+r.status);return "joignable"}),
+    ()=>timed("Data Dragon",async()=>{const r=await fetch("https://ddragon.leagueoflegends.com/api/versions.json");const v=(await r.json())[0];return "patch "+v}),
+    ()=>timed("Images (drapeaux, logos)",()=>new Promise((ok,ko)=>{let n=0,bad=[];setTimeout(()=>ko(new Error("pas de réponse en 6 s")),6000);const srcs=["https://flagcdn.com/kr.svg",lpFile("T1logo square.png",80)];srcs.forEach(s=>{const i=new Image();i.onload=()=>{if(++n===srcs.length)bad.length?ko(new Error(bad.join(", "))):ok("chargées")};i.onerror=()=>{bad.push(s.includes("flagcdn")?"drapeaux":"logos Leaguepedia");if(++n===srcs.length)ko(new Error("échec : "+bad.join(", ")))};i.src=s})}))
+  ];
+  const res=[];for(const t of tests){res.push(await t());if(box)box.innerHTML=diagRes(res)}
+  DIAG_LAST=res;const hl=$("#hlist");if(hl)hl.innerHTML=SRC.map(([k,l])=>healthRow(k,l)).join("");
+}
+const diagRes=res=>`<h2>Résultat</h2>${res.map(r=>`<div class="hrow"><b>${esc(r.label)}</b>${r.ok?`<span class="hok">OK, ${r.ms} ms</span>`:`<span class="hko">Échec, ${r.ms} ms</span>`}<small>${esc(r.d)}</small></div>`).join("")}`;
+function diagReport(){
+  const L=[`Worlds 2026 ${APP_VERSION}`,`Source matchs : ${SOURCE}${lastSync?" à "+fmtTime(lastSync):""}`,`Photos ${PLAYERS.filter(p=>p.photo||p.lePhoto||p.wikiPhoto).length}/${PLAYERS.length}`,`Ligue : ${lg?lg.code+" / "+(Object.keys(lg.players).length+1)+" joueurs / flux "+(DU.open?"SSE":DU.pollOk?"poll":"off"):"aucune"}`,`Navigateur : ${navigator.userAgent}`];
+  SRC.forEach(([k,l])=>{const h=HEALTH[k];L.push(`${l} : ${!h?"non utilisé":h.ok?"OK "+h.ms+" ms":"ÉCHEC "+(h.err||"")}`)});
+  DIAG_LAST.forEach(r=>L.push(`[test] ${r.label} : ${r.ok?"OK":"ÉCHEC"} ${r.ms} ms, ${r.d}`));
+  return L.join("\n");
+}
+async function diagAction(a){
+  if(a==="run"){runDiag();return}
+  if(a==="sync"){toast("Actualisation…");LV.liveT=0;await sync(true);diagSheet("back");return}
+  if(a==="copy"){try{await navigator.clipboard.writeText(diagReport());toast("Rapport copié")}catch(e){toast("Copie impossible")}}
+}
 
 history.replaceState({v:"home"},"");
 MATCHES=finalize(EMBED.map(m=>({...m})));
