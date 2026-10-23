@@ -130,7 +130,7 @@ h2:first-child{margin-top:4px}
 
 /* ===== rows ===== */
 .list{position:relative}
-.mrow{position:relative;display:grid;grid-template-columns:48px 1fr auto 1fr 18px;align-items:center;gap:8px;width:100%;padding:12px 12px;margin-top:6px;text-align:left;overflow:hidden;
+.mrow{position:relative;display:grid;grid-template-columns:48px 1fr auto 1fr 24px;align-items:center;gap:8px;width:100%;padding:12px 12px;margin-top:6px;text-align:left;overflow:hidden;
   background:linear-gradient(90deg,color-mix(in srgb,var(--c1) 22%,var(--panel)) 0%,var(--panel) 32%,var(--panel) 68%,color-mix(in srgb,var(--c2) 22%,var(--panel)) 100%);
   border:1px solid rgba(200,170,110,.14);transition:transform .15s,border-color .2s}
 .mrow:active{transform:scale(.985)}
@@ -147,6 +147,19 @@ h2:first-child{margin-top:4px}
 .mrow.mine{border-color:var(--gold);box-shadow:inset 4px 0 0 var(--gold)}
 .mrow .bo{position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.4px}
 .pick{width:10px;height:10px;border-radius:50%;justify-self:center;border:1px solid var(--line)}
+.pick.todo{width:14px;height:14px;border:1.5px dashed var(--gold);opacity:.8}
+.pick.lg{width:24px;height:24px;display:grid;place-items:center;background:var(--panel2);border:2px solid var(--gold);box-shadow:0 0 10px rgba(200,170,110,.5)}
+.pick.lg.win{border-color:var(--teal);box-shadow:0 0 10px var(--teal);background:var(--panel2)} .pick.lg.bad{border-color:var(--red);box-shadow:none;background:var(--panel2);opacity:.75}
+.pick.lg .logo,.pick.lg .mono{width:16px!important;height:16px!important}
+.mrow .t.pk b{text-decoration:underline 2px var(--gold);text-underline-offset:5px}
+.qb{display:grid;grid-template-columns:52px 1fr auto 1fr 34px;align-items:center;gap:6px;padding:8px 10px;margin-top:6px;background:var(--panel);border:1px solid var(--line)}
+.qb .tm{font-size:12px;color:var(--muted);font-weight:600;line-height:1.15}
+.qb .qbt{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 6px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);font-family:var(--disp);font-weight:800;font-size:18px;min-width:0}
+.qb .qbt:active{transform:scale(.95)}
+.qb i{font-style:normal;font-family:var(--title);font-size:11px;color:var(--gold)}
+.qb .qi{font-size:18px;color:var(--muted);text-align:center}
+nav.tabs button{position:relative}
+.tbadge{position:absolute;top:5px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--gold);color:#1A1205;font-size:10.5px;font-weight:800;font-style:normal;line-height:17px;text-align:center;box-shadow:0 0 10px rgba(200,170,110,.7)}
 .pick.on{background:var(--gold);box-shadow:0 0 10px var(--gold);border:0} .pick.win{background:var(--teal);box-shadow:0 0 10px var(--teal);border:0} .pick.bad{background:var(--red);border:0}
 .live-dot{display:inline-flex;align-items:center;gap:4px;color:#fff;background:var(--red);border-radius:6px;font-size:10px;font-weight:800;padding:2px 6px;box-shadow:0 0 12px rgba(232,64,87,.8)}
 .day{font-family:var(--title);font-weight:700;font-size:16px;margin:26px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--gold2)}
@@ -243,6 +256,7 @@ h2:first-child{margin-top:4px}
 
 /* world map */
 .mapbox{position:relative;padding:10px 8px 8px;margin:6px 0 14px;overflow:hidden}
+#v-players.rankv #mapbox,#v-players.rankv #natchips{display:none}
 .mapbox h3{margin:2px 6px 2px;font-family:var(--title);font-size:15px;color:var(--gold2)}
 .mapbox p{margin:0 6px 6px}
 #worldmap svg{width:100%;height:auto;display:block}
@@ -409,6 +423,18 @@ h2:first-child{margin-top:4px}
 .lrow:first-of-type .rk{color:var(--gold2);text-shadow:0 0 8px var(--gold)}
 .lrow .ln2{display:flex;flex-direction:column;min-width:0}.lrow .ln2 b{font-family:var(--disp);font-size:17px}.lrow .ln2 small{font-size:11px;color:var(--muted)}
 .lrow em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:19px;color:var(--gold2)}
+/* comparaison de joueurs et classements 2026 */
+.rkb{display:inline-block;margin-left:4px;padding:0 5px;border-radius:5px;font-size:10.5px;font-weight:800;color:#1A1205;background:linear-gradient(180deg,#F5E3B3,var(--gold))}
+.rkb.lo{background:rgba(255,255,255,.08);color:var(--muted)}
+.cmphd{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:6px}
+.cmpp{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
+.cmpp b{font-family:var(--disp);font-weight:800;font-size:22px;line-height:1}
+.cmpp small{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.cmphd .vs{font-family:var(--disp);font-weight:800;font-size:20px;color:var(--gold);text-shadow:0 0 12px rgba(200,170,110,.6)}
+.cmpc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mch{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(200,170,110,.08);font-size:12.5px;min-width:0}
+.mch span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mch small{color:var(--muted);white-space:nowrap}
+.lane[data-cmp]{cursor:pointer}
 .recs{display:grid;gap:8px}
 
 /* ===== duel 1v1 ===== */
@@ -704,13 +730,15 @@ function imgTag(srcs,cls,mono,extraStyle=""){
   return `<img class="${cls}" style="${extraStyle}" src="${esc(srcs[0])}" data-alt="${esc(srcs.slice(1).join("|"))}" data-mt="${esc(mono.text)}" data-ms="${esc(ms)}" alt="" loading="lazy" decoding="async" onerror="imgFail(this)">`;
 }
 const LIVE_LOGO = {};
+/* images LoL Esports : PNG de 400 à 600 Ko. On passe par wsrv.nl (vignette WebP de ~15 Ko, mise en cache un an), l'original reste en secours */
+const thumb=(u,w)=>u&&/^https?:\/\/static\.lolesports\.com\//.test(u)?`https://wsrv.nl/?url=${encodeURIComponent(u.replace(/^https?:\/\//,""))}&w=${w}&output=webp&q=80`:null;
 function logo(id,size=34){
   const t=T[id]; if(!t) return `<span class="mono" style="background:var(--panel2);width:${size}px;height:${size}px">?</span>`;
   const w=size>100?320:160;
-  return imgTag([LIVE_LOGO[id],t.lpImg,lpFile(t.lp+"logo square.png",w),lpFile(t.lp+"logo std.png",w)],"logo",{text:t.id,bg:t.color,w:size+"px",style:"font-size:"+Math.max(11,size/3)+"px"},`width:${size}px;height:${size}px`);
+  return imgTag([thumb(LIVE_LOGO[id],w),LIVE_LOGO[id],t.lpImg,lpFile(t.lp+"logo square.png",w),lpFile(t.lp+"logo std.png",w)],"logo",{text:t.id,bg:t.color,w:size+"px",style:"font-size:"+Math.max(11,size/3)+"px"},`width:${size}px;height:${size}px`);
 }
 function photo(p,mode,size){
-  const t=T[p.team], srcs=[p.photo,p.lePhoto,p.wikiPhoto], txt=p.id.slice(0,2).toUpperCase();
+  const t=T[p.team], srcs=[p.photo,thumb(p.lePhoto,320),p.lePhoto,p.wikiPhoto], txt=p.id.slice(0,2).toUpperCase();
   const bg=`linear-gradient(135deg,${t.color},#0A1428)`;
   if(mode==="fill") return imgTag(srcs,"pp",{text:txt,bg,w:"100%",style:"border-radius:0;font-size:46px"});
   return imgTag(srcs,"ava"+(p.titles.length?" lg":""),{text:txt,bg,w:size+"px",style:"border-radius:12px;font-size:"+(size/2.6)+"px"},`width:${size}px;height:${size}px`);
@@ -729,7 +757,7 @@ let MATCHES = [];
 let SOURCE = "embarquées";
 let lastSync = null;
 let picks = LS.get("picks",{}), manual = LS.get("manual",{}), fav = LS.get("fav",null), celebrated = LS.get("celebrated",{});
-const ui = {stage:"all",league:"all",role:"all",nat:null,q:"",counted:false};
+const ui = {stage:"all",league:"all",role:"all",nat:null,q:"",counted:false,pview:"cards",pstat:"kda"};
 
 /* clé de match stable : en suisse et en phase finale deux équipes ne se croisent qu'une fois */
 const mkey = m => {if(!(m.t1&&m.t2))return m.id;const t=[m.t1,m.t2].sort().join("_");return m.stage==="pi"?t+"_"+m.start.slice(0,10):t+"_"+m.stage};
@@ -872,15 +900,16 @@ function nextMatch(){return MATCHES.find(m=>m.state==="live")||MATCHES.find(m=>m
 function tname(m,side){const id=m[side];const n=m[side==="t1"?"n1":"n2"];return id?T[id].id:(n&&norm(n)!=="tbd"?n:"À venir")}
 const col = id => id?T[id].color:"#16294A";
 function pickDot(m){
-  const p=picks[m.key];if(!p)return `<span class="pick"></span>`;
-  if(m.winner)return `<span class="pick ${p===m.winner?"win":"bad"}" title="${p===m.winner?"Prono gagné":"Prono perdu"}"></span>`;
-  return `<span class="pick on" title="Prono : ${esc(p)}"></span>`;
+  const p=picks[m.key];
+  if(!p)return m.state==="soon"&&m.t1&&m.t2?`<span class="pick todo" title="Pas encore parié"></span>`:`<span class="pick"></span>`;
+  const r=m.winner?(p===m.winner?"win":"bad"):"on";
+  return `<span class="pick lg ${r}" title="${r==="win"?"Prono gagné":r==="bad"?"Prono perdu":"Ton prono"} : ${esc(T[p]?T[p].name:p)}">${logo(p,16)}</span>`;
 }
 function matchRow(m){
   const w=m.winner, started=m.state!=="soon";
   const sc=(m.s1!=null&&m.s2!=null&&started)?`${m.s1}-${m.s2}`:(w?(w===m.t1?"V-D":"D-V"):"VS");
   const st=new Date(m.start), isFav=fav&&(m.t1===fav||m.t2===fav);
-  const cls=t=>w?(w===t?" win":" lose"):"";
+  const cls=t=>(w?(w===t?" win":" lose"):"")+(t&&picks[m.key]===t?" pk":"");
   return `<button class="mrow hx${m.state==="live"?" live":""}${isFav?" mine":""}" data-m="${esc(m.id)}" style="--c1:${col(m.t1)};--c2:${col(m.t2)}">
     <span class="bo">Bo${m.bo}</span>
     <span class="tm">${m.state==="live"?'<span class="live-dot">LIVE</span>':fmtTime(st)+(st.getHours()<6?'<small class="nite">nuit</small>':"")}</span>
@@ -925,13 +954,13 @@ function renderHome(){
   const done=MATCHES.filter(x=>x.winner&&picks[x.key]), good=done.filter(x=>picks[x.key]===x.winner).length;
   const open=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]).length;
   const pct=done.length?good/done.length:0, C=2*Math.PI*40;
-  h+=`<h2>Mes pronos</h2><div class="pron frame hx">
+  h+=`<h2>Mes paris</h2><div class="pron frame hx">
     <div class="ring"><svg viewBox="0 0 92 92"><circle cx="46" cy="46" r="40" fill="none" stroke="rgba(200,170,110,.15)" stroke-width="8"/>
       <circle class="p" id="ringP" cx="46" cy="46" r="40" fill="none" stroke="url(#rg)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" data-off="${C*(1-pct)}"/>
       <defs><linearGradient id="rg"><stop offset="0" stop-color="#0AC8B9"/><stop offset="1" stop-color="#F0E6D2"/></linearGradient></defs></svg>
       <span class="rv">${done.length?Math.round(pct*100)+"%":"–"}</span></div>
     <div class="tx"><b>${good}/${done.length}</b> <span class="small">gagnés</span><p>${open?`${open} ${open>1?"matchs attendent":"match attend"} ton prono.`:"Tous les matchs connus sont pronostiqués."}</p>
-      <button class="btn" id="share">Partager mes pronos</button></div></div>`;
+      <button class="btn" id="share">Partager mes pronos</button></div></div>`+betsHTML();
   h+=`<h2>Mon équipe</h2><p class="sub">Ses matchs sont surlignés partout, et son parcours est tracé dans l’onglet Suisse.</p><div class="favs">${TEAMS.map(t=>`<button data-fav="${t.id}" aria-pressed="${fav===t.id}" aria-label="${esc(t.name)}">${logo(t.id,34)}</button>`).join("")}</div>`;
   if(fav){const fm=MATCHES.filter(x=>x.t1===fav||x.t2===fav), st=status(fav,R);
     h+=`<div class="list" style="margin-top:6px"><button class="mrow hx" data-t="${fav}" style="--c1:${col(fav)};--c2:${col(fav)};grid-template-columns:auto 1fr auto">${logo(fav,32)}<b style="font-family:var(--disp);font-size:20px">${esc(T[fav].name)}</b><span class="st ${st.k}">${esc(st.txt)}</span></button>${fm.slice(-4).map(matchRow).join("")}</div>`}
@@ -946,12 +975,28 @@ function renderHome(){
     <div class="fact frame hx wide"><b data-to="${krAbroad.length}">${krAbroad.length}</b><p>Coréens jouent hors de la LCK</p><div class="fl">${krAbroad.map(chip).join("")}</div></div>
     <div class="fact frame hx wide"><b>${fr.length} ${flag("fr")}</b><p>Français titulaires</p><div class="fl">${fr.map(chip).join("")}</div></div></div>
   <p class="small" style="margin-top:14px">Données ${SOURCE==="embarquées"?"embarquées du 23/10/2026 (sources en direct injoignables)":"synchronisées via "+esc(SOURCE)}${lastSync?" à "+fmtTime(lastSync):""}. Horaires en ${tzLabel}.</p>`;
-  $("#v-home").innerHTML=h;
+  $("#v-home").innerHTML=h;betBadge();
   if(m) requestAnimationFrame(()=>{startBeam();applyTilt()});
   if(m&&m.state==="live"&&!sheetState)watchLive(m);
   requestAnimationFrame(()=>{const r=$("#ringP");if(r)r.style.strokeDashoffset=r.dataset.off});
   if(!ui.counted){ui.counted=true;countUp($("#facts"))}
 }
+/* ---- mes paris : à parier en un geste, en attente, derniers résultats ---- */
+function qbRow(m){const st=new Date(m.start),today=dayKeyL(st)===dayKeyL(new Date());
+  const b=t=>`<button class="qbt hx" data-pick="${t}" data-mk="${esc(m.key)}" style="--c1:${col(t)}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,24)}${esc(T[t].id)}</button>`;
+  return `<div class="qb hx"><span class="tm">${today?"":`${esc(st.toLocaleDateString("fr-FR",{weekday:"short"}))}<br>`}${fmtTime(st)}</span>${b(m.t1)}<i>VS</i>${b(m.t2)}<button class="qi" data-m="${esc(m.id)}" aria-label="Détails du match">›</button></div>`}
+function betsHTML(){
+  const todo=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]),pend=MATCHES.filter(x=>picks[x.key]&&!x.winner&&x.t1&&x.t2);
+  const last=MATCHES.filter(x=>picks[x.key]&&x.winner).slice(-4).reverse();
+  let h="";
+  if(todo.length)h+=`<h3 class="h3">À parier (${todo.length})</h3><p class="small" style="margin:0 0 2px">Touche l’équipe que tu vois gagner.</p>${todo.slice(0,6).map(qbRow).join("")}${todo.length>6?`<p class="small" style="margin-top:6px">Et ${todo.length-6} autre${todo.length-6>1?"s":""} dans l’onglet Matchs.</p>`:""}`;
+  if(pend.length)h+=`<h3 class="h3">En attente du résultat (${pend.length})</h3><div class="list">${pend.map(matchRow).join("")}</div>`;
+  if(last.length)h+=`<h3 class="h3">Derniers résultats</h3><div class="list">${last.map(matchRow).join("")}</div>`;
+  return h;
+}
+/* badge sur l'onglet Direct : matchs des prochaines 24 h pas encore pariés */
+function betBadge(){const n=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]&&new Date(x.start)-Date.now()<24*3600e3).length,b=document.querySelector('nav.tabs button[data-v="home"]');if(!b)return;
+  let i=b.querySelector(".tbadge");if(!n){if(i)i.remove();return}if(!i){i=document.createElement("i");i.className="tbadge";b.appendChild(i)}i.textContent=n;i.title=n+" match"+(n>1?"s":"")+" à parier"}
 function renderMatchs(){
   const f=ui.stage, inF=s=>f==="all"||s===f||(f==="ko"&&["qf","sf","f"].includes(s));
   const chip=(k,l)=>`<button class="chip" data-stage="${k}" aria-pressed="${f===k}">${l}</button>`;
@@ -1017,7 +1062,10 @@ function renderPlayers(){
   const nats={};PLAYERS.forEach(p=>nats[p.cc]=(nats[p.cc]||0)+1);
   const natList=Object.entries(nats).sort((a,b)=>b[1]-a[1]);
   const chip=(k,l)=>`<button class="chip" data-role="${k}" aria-pressed="${ui.role===k}">${l}</button>`;
-  $("#pchips").innerHTML=chip("all","Tous")+ROLE_ORDER.map(r=>chip(r,ROLES[r])).join("")+chip("LEG","🏆 Champions du monde");
+  const rv=ui.pview==="rank";
+  $("#pchips").innerHTML=`<button class="chip" data-pview="${rv?"cards":"rank"}" aria-pressed="${rv}">📊 Classement 2026</button>`+chip("all","Tous")+ROLE_ORDER.map(r=>chip(r,ROLES[r])).join("")+chip("LEG","🏆 Champions du monde");
+  $("#v-players").classList.toggle("rankv",rv);
+  if(rv){$("#plist").innerHTML=rankHTML();return}
   $("#natchips").innerHTML=natList.map(([cc,n])=>`<button class="chip" data-nat="${cc}" aria-pressed="${ui.nat===cc}">${flag(cc)}${esc(cname(cc))} <b>${n}</b></button>`).join("");
   const q=norm(ui.q);
   const list=PLAYERS.filter(p=>(ui.role==="all"||(ui.role==="LEG"?p.titles.length:p.role===ui.role))&&(!ui.nat||p.cc===ui.nat)&&(!q||norm(p.id).includes(q)||norm(p.realName).includes(q)||T[p.team].al.some(a=>a.includes(q))));
@@ -1090,7 +1138,7 @@ function hideSheet(){
 }
 function closeSheet(){const n=SH.length;if(n&&history.state&&history.state.sheet)history.go(-n);else hideSheet()}
 function sheetBack(){if(SH.length>1)history.back();else closeSheet()}
-function renderSheetDesc(d){sheetState=d;if(d.k==="m")matchSheet(d.id,"back");else if(d.k==="t")teamSheet(d.id,"back");else if(d.k==="p")playerSheet(d.id,"back");else if(d.k==="d")duelSheet(d.id,d.pre,"back");else if(d.k==="g")diagSheet("back")}
+function renderSheetDesc(d){sheetState=d;if(d.k==="m")matchSheet(d.id,"back");else if(d.k==="t")teamSheet(d.id,"back");else if(d.k==="p")playerSheet(d.id,"back");else if(d.k==="c")compareSheet(d.id,"back");else if(d.k==="d")duelSheet(d.id,d.pre,"back");else if(d.k==="g")diagSheet("back")}
 addEventListener("popstate",e=>{
   const s=e.state||{},n=s.sheet||0;
   if(SH.length>n){SH=SH.slice(0,n);if(n)renderSheetDesc(SH[n-1]);else hideSheet()}
@@ -1107,7 +1155,7 @@ addEventListener("popstate",e=>{
     if(dy>110||v>.7){sh.style.transform="translateY(102%)";setTimeout(()=>{sh.style.transform=""},450);closeSheet()}else sh.style.transform="";y0=null;drag=false};
   sh.addEventListener("touchend",end);sh.addEventListener("touchcancel",end);
 })();
-function refreshSheet(quiet){if(!sheetState)return;const s=sheetState,f={m:matchSheet,t:teamSheet,p:playerSheet}[s.k];if(f)f(s.id,quiet)}
+function refreshSheet(quiet){if(!sheetState)return;const s=sheetState,f={m:matchSheet,t:teamSheet,p:playerSheet,c:compareSheet}[s.k];if(f)f(s.id,quiet)}
 function setSheet(html,quiet){if(quiet===true){const b=$("#sheetBody"),y=$("#sheet").scrollTop;b.innerHTML=html.replace(/class="slam /,'class="slam noanim ');b.querySelectorAll(".slam,.duel,.hscroll .pcard,.bigcard,.tban .logo").forEach(e=>e.style.animation="none");b.querySelectorAll(".slam *,.ak i,.tape i").forEach(e=>e.style.animation="none");$("#sheet").scrollTop=y}else openSheet(html,quiet)}
 function age(bd){if(!bd)return null;const b=new Date(bd);if(isNaN(b))return null;const n=new Date();let a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a}
 function matchSheet(id,quiet){
@@ -1157,10 +1205,10 @@ function playerSheet(key,quiet){
   const nm=MATCHES.find(m=>(m.t1===p.team||m.t2===p.team)&&m.t1&&m.t2&&m.state!=="done");
   let duel="";
   if(nm){const opp=nm.t1===p.team?nm.t2:nm.t1,o=PLAYERS.find(x=>x.team===opp&&x.role===p.role);
-    if(o){duel=`<h2>Prochain duel</h2><button class="duel hx" style="--i:0;--c1:${t.color};--c2:${T[opp].color};width:100%" data-p="${o.key}"><span class="p">${photo(p,"ava",42)}<span><b>${esc(p.id)}</b><small>${flag(p.cc)}${esc(t.id)}</small></span></span><span class="rl">${ROLES[p.role]}</span><span class="p r">${photo(o,"ava",42)}<span><b>${esc(o.id)}</b><small>${flag(o.cc)}${esc(T[opp].id)}</small></span></span></button><p class="small" style="margin-top:6px">${fmtDay(new Date(nm.start))} à ${fmtTime(new Date(nm.start))}</p>`;
+    if(o){duel=`<h2>Prochain duel</h2><button class="duel hx" style="--i:0;--c1:${t.color};--c2:${T[opp].color};width:100%" data-p="${o.key}"><span class="p">${photo(p,"ava",42)}<span><b>${esc(p.id)}</b><small>${flag(p.cc)}${esc(t.id)}</small></span></span><span class="rl">${ROLES[p.role]}</span><span class="p r">${photo(o,"ava",42)}<span><b>${esc(o.id)}</b><small>${flag(o.cc)}${esc(T[opp].id)}</small></span></span></button><p class="small" style="margin-top:6px">${fmtDay(new Date(nm.start))} à ${fmtTime(new Date(nm.start))}</p><p style="margin-top:8px"><button class="btn" style="width:100%" data-cmp="${p.key}|${o.key}">Comparer ${esc(p.id)} et ${esc(o.id)}</button></p>`;
       const [a,b]=[p.team,opp].sort(),flip=a!==p.team;
       duel+=ablock("lane_"+a+"_"+b,()=>laneDuels(a,b),P=>{const x=duelFor(P,p,o,flip);if(!x)return `<p class="small">Jamais affrontés en lane en match officiel.</p>`;
-        return `<div class="lane"><span class="rl">Carrière</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(p.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${t.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${T[opp].color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(o.id)}</b>
+        return `<div class="lane"><span class="rl">${SV2()?"Depuis "+esc(String(SJ.since||"2024").slice(0,4)):"Carrière"}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(p.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${t.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${T[opp].color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(o.id)}</b>
         <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face, KDA ${fx2(kdaV(x.ka,x.da,x.aa))} contre ${fx2(kdaV(x.kb,x.db,x.ab))}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`},12)}}
   let h=`<div class="bigwrap"><div class="bigcard">${pcard(p)}</div></div>
   ${p.titles.length?`<div class="note">🏆 Champion du monde ${p.titles.join(", ")}.</div>`:""}
@@ -1210,6 +1258,9 @@ document.addEventListener("click",e=>{
   const lg=e.target.closest("[data-league]");if(lg){ui.league=lg.dataset.league;renderTeams();return}
   const rl=e.target.closest("[data-role]");if(rl){ui.role=rl.dataset.role;renderPlayers();return}
   const nt=e.target.closest("[data-nat]");if(nt){ui.nat=ui.nat===nt.dataset.nat?null:nt.dataset.nat;vib(8);renderPlayers();if(ui.nat)$("#plist").scrollIntoView({behavior:RM?"auto":"smooth",block:"start"});return}
+  const pv=e.target.closest("[data-pview]");if(pv){ui.pview=pv.dataset.pview;vib(8);renderPlayers();return}
+  const ps=e.target.closest("[data-pstat]");if(ps){ui.pstat=ps.dataset.pstat;vib(8);renderPlayers();return}
+  const cm=e.target.closest("[data-cmp]");if(cm){vib(10);compareSheet(cm.dataset.cmp,cm.dataset.swap&&sheetState&&sheetState.k==="c"?"swap":undefined);return}
   const m=e.target.closest("[data-m]");if(m){vib(10);matchSheet(m.dataset.m);return}
   const p=e.target.closest("[data-p]");if(p){vib(10);playerSheet(p.dataset.p);return}
   const t=e.target.closest("[data-t]");if(t&&t.dataset.t){vib(10);teamSheet(t.dataset.t);return}
@@ -1263,7 +1314,8 @@ const linkOf=p=>p.page||p.id;
 
 /* ---- stats précalculées par le robot GitHub (branche stats), prioritaires sur Leaguepedia en direct ---- */
 let SJ=null,SJt=0,SJp=null;
-function applySJ(){Object.entries(SJ.logos||{}).forEach(([id,f])=>{if(T[id]&&f)T[id].lpImg=lpFile(f,240)});Object.entries(SJ.links||{}).forEach(([k,L])=>{const p=PLAYERS.find(x=>x.key===k);if(p&&L&&!p.page)p.page=L})}
+function applySJ(){Object.entries(SJ.logos||{}).forEach(([id,f])=>{if(T[id]&&f){if(/^https?:/.test(f)){if(!LIVE_LOGO[id])LIVE_LOGO[id]=f}else T[id].lpImg=lpFile(f,240)}});
+  Object.entries(SJ.pinfo||{}).forEach(([k,x])=>{const p=PLAYERS.find(y=>y.key===k);if(p){if(x.rn&&!p.realName)p.realName=x.rn;if(x.img&&!/silhouette|placeholder/i.test(x.img))p.lePhoto=x.img}});Object.entries(SJ.links||{}).forEach(([k,L])=>{const p=PLAYERS.find(x=>x.key===k);if(p&&L&&!p.page)p.page=L})}
 function loadSJ(){
   if(SJ&&Date.now()-SJt<10*60e3)return Promise.resolve(SJ);if(SJp)return SJp;
   SJp=(async()=>{const t=performance.now();
@@ -1378,7 +1430,8 @@ async function h2h(a,b){
 }
 async function laneDuels(a,b){ // a,b triés
   const s=await loadSJ();
-  if(sjOk(s,"duels")&&s.duels){const P={};teamPlayers(a).forEach(pa=>teamPlayers(b).forEach(pb=>{const k=norm(linkOf(pa))+"|"+norm(linkOf(pb));if(s.duels[k])P[k]=s.duels[k]}));return P}
+  // format 2 (LoL Esports) : clés par pseudo ; on les remet au format attendu par duelFor
+  if(sjOk(s,"duels")&&s.duels){const P={},v2=s.v>=2;teamPlayers(a).forEach(pa=>teamPlayers(b).forEach(pb=>{const x=s.duels[v2?norm(pa.id)+"|"+norm(pb.id):norm(linkOf(pa))+"|"+norm(linkOf(pb))];if(x)P[norm(linkOf(pa))+"|"+norm(linkOf(pb))]=x}));return P}
   const la=teamPlayers(a).map(linkOf),lb=teamPlayers(b).map(linkOf);
   const rows=await cqAll({tables:"ScoreboardPlayers=SP1,ScoreboardPlayers=SP2",join_on:"SP1.GameRoleIdVs=SP2.GameRoleId",
     fields:"SP1.Link=PA,SP2.Link=PB,SP1.PlayerWin=W,SP1.Kills=KA,SP1.Deaths=DA,SP1.Assists=AA,SP2.Kills=KB,SP2.Deaths=DB,SP2.Assists=AB,SP1.Champion=CA,SP2.Champion=CB,SP1.DateTime_UTC=DT,SP1.OverviewPage=OP",
@@ -1434,13 +1487,13 @@ async function tourneyStats(){
 /* ---- rendu des stats ---- */
 const playerByLink=L=>PLAYERS.find(p=>norm(linkOf(p))===norm(L))||PLAYERS.find(p=>norm(p.id)===norm(String(L).replace(/\s*\(.*\)$/,"")));
 function form5(last,n=5){return `<span class="f5">${last.slice(0,n).map(x=>`<i class="${x.won?"w":"l"}" title="${x.won?"Victoire":"Défaite"} ${x.s}-${x.o} contre ${esc(x.opp)}, ${esc(tourName(x.op))}">${x.won?"V":"D"}</i>`).join("")}</span>`}
-function tape(label,a,b,fmt,hi=true){
-  const mx=Math.max(Math.abs(a),Math.abs(b))||1,best=a===b?0:((a>b)===hi?1:2);
-  return `<div class="tape"><span class="tv${best===1?" best":""}">${fmt(a)}</span><span class="tb l"><i style="width:${Math.abs(a)/mx*100}%"></i></span><span class="tl">${label}</span><span class="tb r"><i style="width:${Math.abs(b)/mx*100}%"></i></span><span class="tv r${best===2?" best":""}">${fmt(b)}</span></div>`;
+function tape(label,a,b,fmt,hi=true,signed=false){
+  const ba=signed?Math.max(0,a):Math.abs(a),bb=signed?Math.max(0,b):Math.abs(b),mx=Math.max(ba,bb)||1,best=a===b?0:((a>b)===hi?1:2);
+  return `<div class="tape"><span class="tv${best===1?" best":""}">${fmt(a)}</span><span class="tb l"><i style="width:${ba/mx*100}%"></i></span><span class="tl">${label}</span><span class="tb r"><i style="width:${bb/mx*100}%"></i></span><span class="tv r${best===2?" best":""}">${fmt(b)}</span></div>`;
 }
 function renderH2H(a,b){return H=>{
   const tot=H.aw+H.bw;
-  if(!tot)return `<p class="small">Ces deux équipes ne se sont jamais affrontées en match officiel recensé.</p>`;
+  if(!tot)return `<p class="small">${SV2()?`Pas de confrontation officielle depuis ${esc(String(SJ.since||"2024").slice(0,4))}.`:"Ces deux équipes ne se sont jamais affrontées en match officiel recensé."}</p>`;
   return `<div class="h2h"><div class="h2hs"><span>${logo(a,34)}<b>${H.aw}</b></span><em>séries gagnées<br>depuis ${esc(fmtMonth(H.since))}</em><span><b>${H.bw}</b>${logo(b,34)}</span></div>
     <div class="split"><i style="width:${H.aw/tot*100}%;background:${col(a)}"></i><i style="width:${H.bw/tot*100}%;background:${col(b)}"></i></div>
     ${H.intl.aw+H.intl.bw?`<p class="small" style="text-align:center;margin:6px 0 0">En compétition internationale : ${esc(T[a].id)} ${H.intl.aw}, ${esc(T[b].id)} ${H.intl.bw}</p>`:""}
@@ -1471,27 +1524,85 @@ function renderForm(a,b,A,B){
 function renderLanes(m,P,flip){
   const pa=teamPlayers(m.t1),pb=teamPlayers(m.t2);
   return ROLE_ORDER.map((r,i)=>{const a=pa[i],b=pb[i];if(!a||!b)return"";const x=duelFor(P,a,b,flip);
-    if(!x)return `<div class="lane"><span class="rl">${ROLES[r]}</span><b>${esc(a.id)}</b><span class="small">jamais croisés en officiel</span><b>${esc(b.id)}</b></div>`;
+    if(!x)return `<div class="lane" role="button" data-cmp="${a.key}|${b.key}" title="Comparer ${esc(a.id)} et ${esc(b.id)}"><span class="rl">${ROLES[r]}</span><b>${esc(a.id)}</b><span class="small">${SV2()?"pas de face-à-face depuis "+esc(String(SJ.since||"2024").slice(0,4)):"jamais croisés en officiel"}</span><b>${esc(b.id)}</b></div>`;
     const ka=kdaV(x.ka,x.da,x.aa),kb=kdaV(x.kb,x.db,x.ab);
-    return `<div class="lane"><span class="rl">${ROLES[r]}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(a.id)}</b>
+    return `<div class="lane" role="button" data-cmp="${a.key}|${b.key}" title="Comparer ${esc(a.id)} et ${esc(b.id)}"><span class="rl">${ROLES[r]}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(a.id)}</b>
       <span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${col(m.t1)}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${col(m.t2)}"></i></i><em>${x.g-x.w}</em></span>
       <b class="${x.g-x.w>x.w?"lead":""}">${esc(b.id)}</b>
       <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face. KDA ${fx2(ka)} contre ${fx2(kb)}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`}).join("");
 }
 function tiles(list){return `<div class="tiles">${list.map(([v,l])=>`<div class="tile hx"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`}
 function champList(cs){return `<div class="clist">${cs.map(c=>`<div class="crow">${champ(c.c,32)}<span class="cn">${esc(c.c)}<small>${c.g} partie${c.g>1?"s":""}, KDA ${fx1(kdaV(c.k,c.d,c.a))}</small></span><span class="cw"><i style="width:${pct(c.w,c.g)}%"></i></span><b>${pct(c.w,c.g)} %</b></div>`).join("")}</div>`}
+/* ---- stats 2026 par joueur : classements au poste et comparaison (robot, API LoL Esports) ---- */
+const SV2=()=>!!(SJ&&SJ.v>=2);
+// id, libellé, calcul sur la saison, format, plus haut = mieux
+const PSTAT=[["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","KDA",S=>kdaV(S.k,S.d,S.a),fx2,1],
+  ["kpg","Kills par partie",S=>S.k/S.g,fx1,1],["dpg","Morts par partie",S=>S.d/S.g,fx1,0],["apg","Assists par partie",S=>S.a/S.g,fx1,1],
+  ["kp","Participation aux kills",S=>S.tk?(S.k+S.a)/S.tk*100:null,v=>Math.round(v)+" %",1],["dmg","Part des dégâts",S=>S.dsn?S.ds/S.dsn*100:null,v=>Math.round(v)+" %",1],
+  ["csm","CS par minute",S=>S.cs/Math.max(1,S.min),fx1,1],["gpm","Or par minute",S=>S.gold/Math.max(1,S.min),v=>Math.round(v),1],
+  ["gd15","Écart d’or à 15 min",S=>S.n15?S.gd15/S.n15:null,v=>(v>0?"+":"")+Math.round(v),1],["csd15","Écart de CS à 15 min",S=>S.n15?S.csd15/S.n15:null,v=>(v>0?"+":"")+fx1(v),1],
+  ["wpg","Balises par partie",S=>S.wn?S.wp/S.wn:null,fx1,1],["pool","Champions joués",S=>S.pool,v=>v,1]];
+const MINR=10;   // parties 2026 minimum pour être classé
+const ROLEP={TOP:"des tops",JGL:"des junglers",MID:"des mids",BOT:"des ADC",SUP:"des supports"};
+function seasonOf(p){const x=SV2()&&SJ.players&&SJ.players[p.key];return x&&x.S&&x.S.g?x.S:null}
+function statVal(p,id){const S=seasonOf(p),d=PSTAT.find(x=>x[0]===id);if(!S||!d)return null;const v=d[2](S);return v==null||!isFinite(v)?null:v}
+function ranking(id,filt){const d=PSTAT.find(x=>x[0]===id);return PLAYERS.filter(p=>filt(p)&&(seasonOf(p)||{}).g>=MINR&&statVal(p,id)!=null).map(p=>({p,v:statVal(p,id)})).sort((a,b)=>d[4]?b.v-a.v:a.v-b.v)}
+function rankOf(p,id){const r=ranking(id,x=>x.role===p.role),i=r.findIndex(x=>x.p===p);return i<0?null:{i:i+1,n:r.length}}
+const rkBadge=(p,id)=>{const r=rankOf(p,id);return r?`<i class="rkb${r.i>3?" lo":""}" title="${r.i}${r.i===1?"er":"e"} sur ${r.n} ${ROLEP[p.role]}">${r.i}${r.i===1?"er":"e"}/${r.n}</i>`:""};
+function season2Tiles(p,S){
+  const t=id=>{const d=PSTAT.find(x=>x[0]===id),v=d[2](S);return v==null||!isFinite(v)?null:[d[3](v),d[1].toLowerCase()+rkBadge(p,id)]};
+  return tiles([[S.g,"parties"+(S.g<MINR?` <i class="rkb lo">non classé</i>`:"")],t("win"),t("kda"),[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
+    t("csm"),t("gpm"),t("dmg"),t("kp"),t("gd15"),t("csd15"),t("wpg"),t("pool")].filter(Boolean))
+   +`<p class="small" style="margin-top:6px">Saison 2026, toutes compétitions. Rang parmi les titulaires des Worlds au même poste (${MINR} parties minimum). Écarts à 15 min face au joueur d’en face.</p>`;
+}
+function bestFoe(p){const nm=MATCHES.find(m=>(m.t1===p.team||m.t2===p.team)&&m.t1&&m.t2&&m.state!=="done"),opp=nm&&(nm.t1===p.team?nm.t2:nm.t1);
+  return PLAYERS.find(x=>x.team===opp&&x.role===p.role)||(ranking("kda",x=>x.role===p.role&&x!==p)[0]||{}).p||PLAYERS.find(x=>x.role===p.role&&x!==p)}
+const miniChamps=cs=>(cs||[]).slice(0,5).map(c=>`<div class="mch">${champ(c.c,24)}<span>${esc(c.c)}</span><small>${c.g} p., ${pct(c.w,c.g)} %</small></div>`).join("")||`<p class="small">–</p>`;
+function compareSheet(id,md){
+  const [ka,kb]=String(id).split("|"),a=PLAYERS.find(x=>x.key===ka),b=PLAYERS.find(x=>x.key===kb);if(!a||!b)return;
+  sheetState={k:"c",id};const ta=T[a.team],tb=T[b.team],SA=seasonOf(a),SB=seasonOf(b);
+  let h=`<h2>Face à face</h2><div class="cmphd">
+    <button class="cmpp" data-p="${a.key}">${photo(a,"ava",58)}<b>${esc(a.id)}</b><small>${logo(a.team,16)}${esc(ta.id)}, ${ROLES[a.role]}</small></button><span class="vs">VS</span>
+    <button class="cmpp" data-p="${b.key}">${photo(b,"ava",58)}<b>${esc(b.id)}</b><small>${logo(b.team,16)}${esc(tb.id)}, ${ROLES[b.role]}</small></button></div>
+    <p class="sub" style="margin:12px 0 4px">Comparer ${esc(a.id)} avec :</p><div class="chips">${PLAYERS.filter(x=>x.role===a.role&&x!==a).map(x=>`<button class="chip" data-cmp="${a.key}|${x.key}" data-swap="1" aria-pressed="${x===b}">${logo(x.team,16)}${esc(x.id)}</button>`).join("")}</div>`;
+  if(!SV2())h+=`<div class="note">Les stats 2026 arrivent dès que le robot a publié. Réessaie dans quelques minutes.</div>`;
+  else if(!SA||!SB)h+=`<p class="small">Aucune partie 2026 recensée pour ${esc((!SA?a:b).id)}.</p>`;
+  else{
+    h+=`<h2>Saison 2026</h2><div class="tapehd"><span>${esc(a.id)}</span><span>${esc(b.id)}</span></div><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Parties",SA.g,SB.g,v=>v)}`
+      +PSTAT.map(([sid,l,f,fmt,hi])=>{const va=f(SA),vb=f(SB);return va==null||vb==null||!isFinite(va)||!isFinite(vb)?"":tape(l,va,vb,fmt,!!hi,sid==="gd15"||sid==="csd15")}).join("")+`</div>
+      <p class="small" style="margin-top:6px">Toutes compétitions 2026. Le chiffre en or est le meilleur des deux.</p>
+      <h2>Champions 2026</h2><div class="cmpc"><div>${miniChamps(SA.champs)}</div><div>${miniChamps(SB.champs)}</div></div>`;
+    const x=SJ.duels&&SJ.duels[norm(a.id)+"|"+norm(b.id)];
+    h+=`<h2>Duels directs</h2>`+(!x?`<p class="small">Jamais face à face en lane depuis ${esc(String(SJ.since||"2024").slice(0,4))}.</p>`:
+      `<div class="lane"><span class="rl">Depuis ${esc(String(SJ.since||"2024").slice(0,4))}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(a.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${ta.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${tb.color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(b.id)}</b>
+       <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face, KDA ${fx2(kdaV(x.ka,x.da,x.aa))} contre ${fx2(kdaV(x.kb,x.db,x.ab))}${x.n15?`, ${x.gd15/x.n15>=0?"+":""}${Math.round(x.gd15/x.n15)} d’or à 15 min pour ${esc(a.id)}`:""}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`);
+  }
+  if(md==="swap"){setSheet(h,"back");SH[SH.length-1]={...sheetState}}else setSheet(h,md);
+}
+function rankHTML(){
+  if(!SV2())return `<div class="note">Le classement 2026 arrive dès que le robot a publié les stats. Réessaie dans quelques minutes.</div>`;
+  const d=PSTAT.find(x=>x[0]===ui.pstat)||PSTAT[1],role=ROLES[ui.role]?ui.role:null,leg=ui.role==="LEG",q=norm(ui.q);
+  const inF=p=>(!role||p.role===role)&&(!leg||p.titles.length),r=ranking(d[0],inF);
+  const rows=r.map((x,i)=>({...x,i:i+1})).filter(x=>!q||norm(x.p.id).includes(q)||T[x.p.team].al.some(a=>a.includes(q)));
+  const out=PLAYERS.filter(p=>inF(p)&&!r.some(x=>x.p===p));
+  return `<div class="chips">${PSTAT.map(([k,l])=>`<button class="chip" data-pstat="${k}" aria-pressed="${d[0]===k}">${l}</button>`).join("")}</div>
+   ${!role&&!leg?`<p class="small" style="margin:0 0 8px">Choisis un poste juste au-dessus pour comparer à armes égales.</p>`:""}
+   <div class="lead hx">${rows.map(x=>`<button class="lrow" data-p="${x.p.key}"><span class="rk">${x.i}</span>${photo(x.p,"ava",34)}<span class="ln2"><b>${esc(x.p.id)}</b><small>${esc(T[x.p.team].id)}, ${ROLES[x.p.role]}, ${seasonOf(x.p).g} parties</small></span><em>${d[3](x.v)}</em></button>`).join("")||`<p class="small">Aucun joueur.</p>`}</div>
+   <p class="small" style="margin-top:8px">Saison 2026, toutes compétitions, ${MINR} parties minimum${out.length?`. Pas assez de parties : ${out.map(p=>esc(p.id)).join(", ")}`:""}. Touche un joueur pour sa fiche, puis « Comparer ».</p>`;
+}
 function renderPlayerStats(p){return D=>{
   const S=D.S,W=D.W;let h="";
-  if(S.g){h+=`<h2>Saison 2026</h2>`+tiles([[S.g,"parties"],[pct(S.w,S.g)+" %","de victoires"],[fx2(kdaV(S.k,S.d,S.a)),"KDA"],[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
+  if(S.g&&S.ds!=null)h+=`<h2>Saison 2026</h2>`+season2Tiles(p,S)+`<p style="margin-top:10px"><button class="btn gold" style="width:100%" data-cmp="${p.key}|${(bestFoe(p)||{}).key}">Comparer avec un autre joueur</button></p><h3 class="h3">Champions les plus joués</h3>`+champList(S.champs);
+  else if(S.g){h+=`<h2>Saison 2026</h2>`+tiles([[S.g,"parties"],[pct(S.w,S.g)+" %","de victoires"],[fx2(kdaV(S.k,S.d,S.a)),"KDA"],[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
     [fx1(S.cs/Math.max(1,S.min)),"CS par minute"],[Math.round(S.dmg/Math.max(1,S.min)),"dégâts par minute"],[Math.round(S.gold/Math.max(1,S.min)),"or par minute"],[pct(S.k+S.a,S.tk)+" %","participation aux kills"]])
     +`<h3 class="h3">Champions les plus joués</h3>`+champList(S.champs)}
   else h+=`<p class="small">Aucune partie 2026 recensée pour ce joueur.</p>`;
-  h+=`<h2>Aux Worlds</h2>`;
+  h+=`<h2>Aux Worlds${D.since?` depuis ${esc(D.since)}`:""}</h2>`;
   if(W.g){h+=`<div class="yrs">${D.years.map(y=>`<span class="chip">${y}${p.titles.includes(+y)?" 🏆":""}</span>`).join("")}</div>`
-    +tiles([[D.years.length,"participations"],[W.g,"parties"],[pct(W.w,W.g)+" %","de victoires"],[fx2(kdaV(W.k,W.d,W.a)),"KDA aux Worlds"]])
+    +tiles([[D.years.length,D.since?"éditions":"participations"],[W.g,"parties"],[pct(W.w,W.g)+" %","de victoires"],[fx2(kdaV(W.k,W.d,W.a)),"KDA aux Worlds"]])
     +(D.now.g?`<p class="small" style="margin:8px 0 0">À ces Worlds 2026 : ${D.now.g} partie${D.now.g>1?"s":""}, ${pct(D.now.w,D.now.g)} % de victoires, KDA ${fx2(kdaV(D.now.k,D.now.d,D.now.a))}.</p>`:"")
     +`<h3 class="h3">Ses champions aux Worlds</h3>`+champList(W.champs.slice(0,4))}
-  else h+=`<p class="small">Premiers Worlds en carrière.</p>`;
+  else h+=`<p class="small">${D.since?`Aucune partie aux Worlds depuis ${esc(D.since)}.`:"Premiers Worlds en carrière."}</p>`;
   return h}}
 function renderTeamSeason(id){return S=>{
   if(!S.g)return `<p class="small">Pas de parties 2026 recensées.</p>`;
@@ -1508,9 +1619,9 @@ function renderTourney(D){
   const tn=n=>{const id=idOfName(n);return id?T[id].id:esc(n)};
   return `${tiles([[D.n,"parties jouées"],[dur(D.avg),"durée moyenne"],[pct(D.blue,D.n)+" %","victoires côté bleu"],[D.champs.length?esc(D.champs[0].c):"–","champion le plus présent"]])}
    <div class="split big" style="margin-top:10px"><i style="width:${D.blue/D.n*100}%;background:#2F7CF6"></i><i style="width:${D.red/D.n*100}%;background:#E84057"></i></div><p class="small" style="display:flex;justify-content:space-between;margin:4px 0 0"><span>Bleu ${D.blue}</span><span>Rouge ${D.red}</span></p>
-   <h2>Les leaders</h2><div class="leads">${lb("KDA",D.lead.kda,fx2)}${lb("Kills",D.lead.kills,v=>v)}${lb("CS par minute",D.lead.csm,fx1)}${lb("Dégâts par minute",D.lead.dpm,v=>Math.round(v))}${lb("Participation aux kills",D.lead.kp,v=>Math.round(v)+" %")}</div>
+   <h2>Les leaders</h2><div class="leads">${lb("KDA",D.lead.kda,fx2)}${lb("Kills",D.lead.kills,v=>v)}${lb("CS par minute",D.lead.csm,fx1)}${D.lead.dmg?lb("Part des dégâts",D.lead.dmg,v=>Math.round(v)+" %"):lb("Dégâts par minute",D.lead.dpm,v=>Math.round(v))}${lb("Participation aux kills",D.lead.kp,v=>Math.round(v)+" %")}</div>
    <p class="small">Minimum 3 parties, sauf pour les kills.</p>
-   <h2>Champions</h2><p class="sub">Présence = choisi ou banni, rapporté au nombre de parties. En Fearless Draft, un champion joué disparaît pour le reste de la série.</p>
+   <h2>Champions</h2><p class="sub">${D.nobans?"Présence = parties où le champion a été choisi (LoL Esports ne publie pas les bans).":"Présence = choisi ou banni, rapporté au nombre de parties."} En Fearless Draft, un champion joué disparaît pour le reste de la série.</p>
    <div class="ctab">${D.champs.map(c=>`<div class="ct">${champ(c.c,34)}<span class="cn">${esc(c.c)}<small>${c.p} pick${c.p>1?"s":""}, ${c.b} ban${c.b>1?"s":""}${c.p?`, ${pct(c.w,c.p)} % de victoires`:""}</small></span><span class="cw"><i style="width:${Math.min(100,c.pr)}%"></i></span><b>${Math.round(c.pr)} %</b></div>`).join("")}</div>
    <h2>Records</h2><div class="recs">
     ${D.longest?`<div class="tile hx"><b>${dur(D.longest.gl)}</b><span>partie la plus longue, ${tn(D.longest.b1)} contre ${tn(D.longest.b2)}</span></div>`:""}
@@ -1518,7 +1629,7 @@ function renderTourney(D){
     ${D.bloodiest?`<div class="tile hx"><b>${D.bloodiest.kills}</b><span>kills dans une partie, ${tn(D.bloodiest.b1)} contre ${tn(D.bloodiest.b2)}</span></div>`:""}</div>`;
 }
 function renderStats(){
-  $("#v-stats").innerHTML=`<h2>Worlds 2026 en stats</h2><p class="sub">Calculé en direct depuis les feuilles de match Leaguepedia, Play-In compris.</p>`+ablock("tourney",tourneyStats,renderTourney,.25);
+  $("#v-stats").innerHTML=`<h2>Worlds 2026 en stats</h2><p class="sub">${SV2()?"Calculé par notre robot depuis les données officielles LoL Esports, Play-In compris. Mis à jour toutes les 30 minutes.":"Calculé en direct depuis les feuilles de match Leaguepedia, Play-In compris."}</p>`+ablock("tourney",tourneyStats,renderTourney,.25);
 }
 /* blocs prêts à insérer dans les fiches */
 function matchStatsHTML(m){
@@ -1845,7 +1956,7 @@ async function computeDraft(L){
   const champs=all.map(x=>x.c),links=all.map(x=>x.pl&&linkOf(x.pl)).filter(Boolean);
   const sj=await loadSJ();
   if(sjOk(sj,"champions")&&sj.champs&&Object.keys(sj.champs).length){
-    const sc=x=>{const c=sj.champs[norm(x.c)]||{n:0,w:0},m=(x.pl&&sj.mastery[norm(linkOf(x.pl))+"|"+norm(x.c)])||{n:0,w:0};
+    const sc=x=>{const c=sj.champs[norm(x.c)]||{n:0,w:0},m=(x.pl&&sj.mastery[norm(sj.v>=2?x.pl.id:linkOf(x.pl))+"|"+norm(x.c)])||{n:0,w:0};
       const cwr=(c.w+10)/(c.n+20),mwr=(m.w+3)/(m.n+6),comfort=Math.min(m.n,20)/20;return {...x,cn:c.n,cw:c.w,mn:m.n,mw:m.w,s:cwr+.06*comfort+.08*(mwr-.5)*comfort}};
     const b=B.map(sc),r=R.map(sc),avg=a=>a.reduce((s,x)=>s+x.s,0)/Math.max(1,a.length);return {b,r,sb:avg(b),sr:avg(r)};
   }
@@ -1871,7 +1982,7 @@ function draftHTML(L){
   return `<div class="dadv"><span>${logo(lead,26)}<b>${Math.abs(diff)<.5?"Drafts équilibrées":`Avantage ${esc(T[lead]?.id||"")} +${fx1(Math.abs(diff))} pts`}</b></span></div>
    <div class="wpbar"><i style="width:${D.sb/(D.sb+D.sr)*100}%;background:${col(L.blue)}"></i><i style="width:${D.sr/(D.sb+D.sr)*100}%;background:${col(L.red)}"></i></div>
    <div class="lvp" style="margin-top:10px"><div>${D.b.map(row).join("")}</div><div>${D.r.map(row).join("")}</div></div>
-   <p class="small" style="margin-top:6px">Calcul maison : taux de victoire de chaque champion en pro depuis janvier 2026, plus l’expérience du joueur sur son champion depuis 2025.</p>`;
+   <p class="small" style="margin-top:6px">Calcul maison : taux de victoire de chaque champion en pro en 2026, plus l’expérience du joueur sur son champion depuis 2025.</p>`;
 }
 /* ===================== sources en direct ===================== */
 const LE_KEY="0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z", WORLDS_LEAGUE="98767975604431411";
@@ -1931,10 +2042,11 @@ async function fromLeaguepedia(){
 }
 const LP_CTRY={"South Korea":"kr","Korea":"kr","China":"cn","Vietnam":"vn","Taiwan":"tw","Hong Kong":"hk","Macau":"mo","Japan":"jp","United States":"us","Canada":"ca","Mexico":"mx","Brazil":"br","Argentina":"ar","Chile":"cl","Peru":"pe","Uruguay":"uy","Colombia":"co","Venezuela":"ve","France":"fr","Germany":"de","Denmark":"dk","Greece":"gr","Spain":"es","Sweden":"se","Poland":"pl","Netherlands":"nl","Belgium":"be","United Kingdom":"gb","England":"gb","Scotland":"gb","Wales":"gb","Ireland":"ie","Turkey":"tr","Czech Republic":"cz","Czechia":"cz","Slovakia":"sk","Slovenia":"si","Croatia":"hr","Serbia":"rs","Bosnia and Herzegovina":"ba","North Macedonia":"mk","Bulgaria":"bg","Romania":"ro","Hungary":"hu","Austria":"at","Switzerland":"ch","Italy":"it","Portugal":"pt","Norway":"no","Finland":"fi","Lithuania":"lt","Latvia":"lv","Estonia":"ee","Ukraine":"ua","Russia":"ru","Belarus":"by","Israel":"il","Morocco":"ma","Algeria":"dz","Tunisia":"tn","Egypt":"eg","Lebanon":"lb","Australia":"au","New Zealand":"nz","Philippines":"ph","Malaysia":"my","Thailand":"th","Singapore":"sg","Indonesia":"id","Kazakhstan":"kz","Albania":"al","Kosovo":"xk","Cyprus":"cy","Iceland":"is","Luxembourg":"lu","Moldova":"md","Georgia":"ge","Armenia":"am","Azerbaijan":"az","Iran":"ir","India":"in","Pakistan":"pk","Saudi Arabia":"sa","United Arab Emirates":"ae","Jordan":"jo","Dominican Republic":"do","Puerto Rico":"pr","Costa Rica":"cr","Guatemala":"gt","Ecuador":"ec","Bolivia":"bo","Paraguay":"py","Panama":"pa","El Salvador":"sv","Honduras":"hn","Cuba":"cu"};
 async function enrichPlayers(force){
+  const sj=await loadSJ();if(sj&&sj.v>=2&&sj.pinfo)return PLAYERS.filter(p=>p.realName).length;   // noms et photos fournis par le robot
   const cache=LS.get("lp_players",null);
   let rows=null;
   if(!force&&cache&&Date.now()-cache.t<24*3600e3)rows=cache.rows;
-  if(!rows){const s=await loadSJ();if(s&&s.prows&&s.prows.length)rows=s.prows}
+  if(!rows&&sj&&sj.prows&&sj.prows.length)rows=sj.prows;
   if(!rows){
     const ids=[...new Set(PLAYERS.map(p=>p.id))].map(i=>'"'+i.replace(/"/g,"")+'"').join(",");
     rows=await cargo({tables:"Players",fields:"Players.ID=PID,Players.Image=Img,Players.Name=RN,Players.NativeName=NN,Players.Country=Ctry,Players.Birthdate=BD,Players.Team=Tm,Players.OverviewPage=OP",where:`Players.ID IN (${ids})`});
@@ -1955,6 +2067,7 @@ async function enrichPlayers(force){
   return n;
 }
 async function enrichPhotosLE(){
+  const s=await loadSJ();if(s&&s.v>=2&&s.pinfo&&Object.keys(s.pinfo).length)return;   // photos et logos déjà fournis par le robot
   const cache=LS.get("le_photos",null);
   let map=cache&&Date.now()-cache.t<24*3600e3?cache.map:null;
   if(!map){
@@ -2016,7 +2129,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v8, 23/10/2026";
+const APP_VERSION="v9, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
@@ -2025,7 +2138,7 @@ function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err
     window[name]=async function(...a){const t=performance.now();try{const r=await f.apply(this,a);mark(key,true,performance.now()-t);return r}catch(e){mark(key,false,performance.now()-t,e&&e.message||e);throw e}}};
   wrap("leFetch","le");wrap("cargo","lp");wrap("feedWin","feed");
 })();
-const SRC=[["sj","Stats précalculées (robot GitHub)"],["le","LoL Esports (planning, résultats)"],["feed","Flux direct (kills, or, draft)"],["lp","Leaguepedia (stats, photos)"],["relay","Relais de la ligue"],["dd","Data Dragon (icônes)"]];
+const SRC=[["sj","Stats précalculées (robot GitHub)"],["le","LoL Esports (planning, résultats)"],["feed","Flux direct (kills, or, draft)"],["lp","Leaguepedia (secours)"],["relay","Relais de la ligue"],["dd","Data Dragon (icônes)"]];
 function healthRow(k,label){
   const h=HEALTH[k];
   const st=!h?`<span class="hz">pas encore utilisé</span>`:h.ok?`<span class="hok">OK, ${h.ms} ms</span>`:`<span class="hko">Échec</span>`;
@@ -2053,10 +2166,10 @@ async function runDiag(){
     ()=>timed("LoL Esports : matchs en cours",async()=>{const j=await leFetch("getLive?hl=fr-FR");const ev=j?.data?.schedule?.events||[];return ev.length?ev.map(e=>(e.match?.teams||[]).map(t=>t.code).join(" vs ")).join(", "):"aucun match en cours"}),
     ()=>timed("Flux direct",async()=>{const L=Object.values(LV.games).find(x=>x.gid);if(!L)return "aucune partie suivie pour l’instant";const w=await feedWin(L.gid,Date.now()-50000);if(!w||!w.frames)return "partie trouvée, pas de nouvelle frame";const f=w.frames[w.frames.length-1];return `kills ${f.blueTeam.totalKills}-${f.redTeam.totalKills}, ${((f.blueTeam.participants||[]).length+(f.redTeam.participants||[]).length)} joueurs lus`}),
     ()=>timed("Stats précalculées",async()=>{SJt=0;const s=await loadSJ();if(!s)throw new Error("pas encore générées");const st=Object.keys(s.stale||{});return `générées le ${new Date(s.built).toLocaleString("fr-FR")}, ${s.meta?.duels||0} duels, ${(s.errors||[]).length} erreur(s)${st.length?`, en retard : ${st.join(", ")}`:""}`}),
-    ()=>timed("Leaguepedia",async()=>{const r=await cargo({tables:"Tournaments",fields:"Tournaments.Name=N",where:'Tournaments.OverviewPage LIKE "2026 Season World Championship%"',limit:"1"});return r.length?"réponse OK : "+r[0].N:"réponse vide"}),
+    ()=>timed("Leaguepedia (secours)",async()=>{const r=await cargo({tables:"Tournaments",fields:"Tournaments.Name=N",where:'Tournaments.OverviewPage LIKE "2026 Season World Championship%"',limit:"1"});return r.length?"réponse OK : "+r[0].N:"réponse vide"}),
     ()=>timed("Relais de la ligue",async()=>{const r=await fetch(NTFY+"iagames-worlds26-ping/json?poll=1&since=1m");if(!r.ok)throw new Error("HTTP "+r.status);return "joignable"}),
     ()=>timed("Data Dragon",async()=>{const r=await fetch("https://ddragon.leagueoflegends.com/api/versions.json");const v=(await r.json())[0];return "patch "+v}),
-    ()=>timed("Images (drapeaux, logos)",()=>new Promise((ok,ko)=>{let n=0,bad=[];setTimeout(()=>ko(new Error("pas de réponse en 6 s")),6000);const srcs=["https://flagcdn.com/kr.svg",lpFile("T1logo square.png",80)];srcs.forEach(s=>{const i=new Image();i.onload=()=>{if(++n===srcs.length)bad.length?ko(new Error(bad.join(", "))):ok("chargées")};i.onerror=()=>{bad.push(s.includes("flagcdn")?"drapeaux":"logos Leaguepedia");if(++n===srcs.length)ko(new Error("échec : "+bad.join(", ")))};i.src=s})}))
+    ()=>timed("Images (drapeaux, logos)",()=>new Promise((ok,ko)=>{let n=0,bad=[];setTimeout(()=>ko(new Error("pas de réponse en 6 s")),6000);const srcs=["https://flagcdn.com/kr.svg",thumb(LIVE_LOGO.T1||"https://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png",160)];srcs.forEach(s=>{const i=new Image();i.onload=()=>{if(++n===srcs.length)bad.length?ko(new Error(bad.join(", "))):ok("chargées")};i.onerror=()=>{bad.push(s.includes("flagcdn")?"drapeaux":"logos");if(++n===srcs.length)ko(new Error("échec : "+bad.join(", ")))};i.src=s})}))
   ];
   const res=[];for(const t of tests){res.push(await t());if(box)box.innerHTML=diagRes(res)}
   DIAG_LAST=res;const hl=$("#hlist");if(hl)hl.innerHTML=SRC.map(([k,l])=>healthRow(k,l)).join("");

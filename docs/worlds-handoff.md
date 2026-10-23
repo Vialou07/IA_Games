@@ -19,12 +19,13 @@ claude
 - Dépôt : `Vialou07/IA_Games`, publié par GitHub Pages (branche `main`, mode classique) sur https://vialou07.github.io/IA_Games/
 - L'appli : `worlds.html`, un seul fichier HTML (CSS et JS inclus), lien direct https://vialou07.github.io/IA_Games/worlds.html. Elle a une tuile « Worlds 2026 » en tête de `index.html` (le hub).
 - Utilisateurs : Thomas et un groupe de potes, sur Android (Chrome et navigateur intégré de Messenger), souvent en 5G.
-- Version actuelle : `APP_VERSION = "v8, 23/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
+- Version actuelle : `APP_VERSION = "v9, 24/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
 - Autres fichiers de l'appli :
-  - `tools/build_stats.py` : le générateur de stats côté serveur (le « robot ») ;
+  - `tools/build_stats.py` : le générateur de stats côté serveur (le « robot »), 100 % API officielle LoL Esports ;
   - `.github/workflows/stats.yml` : le workflow GitHub Actions qui le lance toutes les 30 minutes ;
-  - `data/teams.json` : le référentiel des 19 équipes et 95 joueurs, utilisé par le générateur ;
-  - branche `stats` : contient seulement `data/stats.json`, réécrite par le robot (un seul commit, forcé). L'appli la lit sur `raw.githubusercontent.com/Vialou07/IA_Games/stats/data/stats.json`. `data/stats.json` est ignoré sur `main`.
+  - `data/teams.json` : le référentiel des 19 équipes (avec leur ligue) et 95 joueurs, utilisé par le robot ;
+  - branche `stats` : `data/stats.json` (lu par l'appli sur `raw.githubusercontent.com/Vialou07/IA_Games/stats/data/stats.json`) et `data/cache.json.gz` (la mémoire du robot : planning, détails des matchs, résumé de chaque partie). Un seul commit, réécrit par le robot. Ces deux fichiers sont ignorés sur `main` ;
+  - branche `stats-preprod` : la même chose quand le workflow est lancé à la main depuis une autre branche que `main`. Sert à tester un nouveau robot sans toucher à l'appli.
 
 ### Fonctions de l'appli
 
@@ -37,10 +38,12 @@ Six onglets : Direct, Matchs, Suisse, Stats, Équipes, Joueurs.
   - les paris de la ligue, cachés jusqu'au coup d'envoi ;
   - le direct : kills, or, objectifs, courbe d'or, 10 joueurs, chances de victoire estimées, analyse de draft ;
   - l'historique des confrontations, les duels de lane en carrière, la forme et la saison 2026 comparée.
-- **Fiche joueur** : carte holographique, saison 2026, carrière aux Worlds, prochain duel.
+- **Fiche joueur** : carte holographique, saison 2026 avec le rang au poste parmi les 95 titulaires (KDA, CS/min, or/min, part des dégâts, participation aux kills, écarts d’or et de CS à 15 min, balises), Worlds depuis 2024, prochain duel, bouton « Comparer ».
+- **Comparaison** (`compareSheet`, fiche `c`) : deux joueurs côte à côte (saison 2026, champions, duels directs depuis 2024). On y arrive par la fiche joueur, le prochain duel ou en touchant une ligne de duel de lane dans une fiche match. Changer d’adversaire ne crée pas d’entrée d’historique.
 - **Fiche équipe** : saison 2026, 10 dernières séries, bilan contre les équipes des Worlds.
 - **Suisse** : arbre 0-0 à 3-x, avec le parcours de l'équipe favorite tracé en doré.
-- **Joueurs** : grille de cartes, filtres par poste, nationalité et champions du monde, carte du monde des nationalités (d3 et world-atlas, chargés à la demande).
+- **Joueurs** : grille de cartes, filtres par poste, nationalité et champions du monde, carte du monde des nationalités (d3 et world-atlas, chargés à la demande). Puce « Classement 2026 » : classement des titulaires par stat et par poste (`rankHTML`, 10 parties minimum).
+- **Mes paris** (accueil) : « À parier » avec un bouton par équipe (pari en un geste), « En attente du résultat », « Derniers résultats ». Chaque ligne de match montre le logo de l’équipe pariée (or, vert si gagné, rouge si perdu) ou un rond en pointillés s’il reste à parier. Badge sur l’onglet Direct : matchs des prochaines 24 h pas encore pariés.
 - **Ligue de paris** : multi-joueurs avec un code de 4 caractères, synchronisée par ntfy.sh. Classement, podium, titres (devin, en feu, audacieux).
 - **Diagnostic** : touche la pastille en haut à droite. Il teste chaque source, mesure la latence et permet de copier un rapport.
 
@@ -64,10 +67,11 @@ Le JS est un seul `<script>`, en blocs dans cet ordre. On repère chaque bloc gr
    - `closeSheet`, glisser vers le bas pour fermer ;
    - `matchSheet`, `teamSheet`, `playerSheet`, avec un mode `true` (rafraîchissement silencieux) ou `"back"` (retour sans nouvelle entrée d'historique).
 7. **Stats** :
-   - `cq` : file d'attente Leaguepedia, 2,5 s entre requêtes, pause de 60 s en cas de limite (`lpPause`). Ne sert plus que si le robot n'a encore rien publié pour une section ;
+   - `cq` : file d'attente Leaguepedia, 2,5 s entre requêtes, pause qui double à chaque limite (`lpPause`, 1 à 10 min). Secours seulement : ne sert que si le robot n'a encore rien publié ;
    - `ablock` : blocs asynchrones, mis en cache dans localStorage, chargés quand ils arrivent à l'écran (IntersectionObserver) ;
-   - `loadSJ` : lit les stats du robot (branche `stats`). Dès qu'une section y existe, l'appli ne va plus du tout sur Leaguepedia pour elle. Les infos joueurs (`prows` : photo, vrai nom, pays) et les noms d'équipes (`names`) en viennent aussi ;
-   - les agrégats `teamSeason`, `h2h`, `laneDuels`, `playerStats`, `tourneyStats`, et leurs rendus.
+   - `loadSJ` : lit les stats du robot (branche `stats`). Format 2 (`SJ.v === 2`, source LoL Esports, données depuis `SJ.since`) : duels et maîtrise indexés par `norm(pseudo)`, photos, logos et vrais noms dans `pinfo` et `logos`. Dès qu'une section existe, l'appli ne va plus sur Leaguepedia ;
+   - les agrégats `teamSeason`, `h2h`, `laneDuels`, `playerStats`, `tourneyStats`, et leurs rendus ;
+   - stats 2026 par joueur : `PSTAT` (définition des stats), `seasonOf`, `ranking`, `rankOf`, `season2Tiles`, `rankHTML`, `compareSheet`.
 8. **Ligue** : `lg` dans localStorage (`w26_league`), `publish` et `duelConnect` (SSE ntfy avec repli sur interrogation régulière), `standings`, `duelHome`, `duelMatchHTML`. Les fonctions s'appellent encore « duel… » pour l'historique.
 9. **Direct** : `liveTick`, `watchLive`, `winProb` (modèle maison), `computeDraft`, `liveBoxHTML`, `heroLiveHTML`.
 10. **Sources en direct** :
@@ -96,10 +100,12 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 |---|---|---|
 | `esports-api.lolesports.com/persisted/gw/` (`getSchedule`, `getLive`, `getEventDetails`, `getTeams`), en-tête `x-api-key: 0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z`, ligue Worlds `98767975604431411` | planning, résultats, matchs en cours | **Marche.** Libellés en français : Play-In = « Play-ins » (tous les matchs), puis « Système suisse », « Quarts de finale », « Demi-finales », « Finale ». Côtés dans `games[].teams[].side`. `getLive` renvoie toutes les ligues : l'appli filtre en reconnaissant les deux équipes. Depuis un PC, la connexion est parfois coupée (1 essai sur 2) : réessayer |
 | `feed.lolesports.com/livestats/v1/window/{gameId}?startingTime=…` (ISO arrondi à 10 s) | kills, or, objectifs, stats des 10 joueurs | **Vérifié sur MKOI–BLG.** Stats joueurs dans `blueTeam.participants` et `redTeam.participants` ; K/D/A et CS identiques à `livestats/v1/details`. Sans `startingTime` : début de partie (or à 0 au chargement, 2 500 par équipe à 0:00), l'horloge est juste à ~10 s près. La fenêtre doit finir plus de 20 s avant l'heure du serveur, sinon erreur 400 : l'appli essaie 50 s, puis 90 s, puis 180 s. Noms du flux du type « MKOI Myrwn », bien rapprochés du roster |
-| Leaguepedia Cargo `lol.fandom.com/api.php?action=cargoquery` | stats, photos, nationalités | **Limité à environ 1 requête par minute et par adresse IP en anonyme** (mesuré : 1 réponse sur 5 en 4 minutes, refus même 70 s après un succès). C'est la cause des « Leaguepedia limite les requêtes » sur les téléphones. Le robot se connecte avec un mot de passe de robot s'il en a un (voir P0) |
+| `esports-api…/getSchedule`, `getEventDetails`, `getTeams`, et `feed…/window` et `details` sur les parties terminées | tout le robot de stats | **Vérifié le 23/10.** Le planning de chaque ligue remonte à janvier 2024 (LPL comprise : `getCompletedEvents` ne la liste presque pas, il faut passer par `getSchedule`). Le flux garde les parties terminées : `window` sans `startingTime` = début, à début + 6 h = image finale, `details` = part des dégâts, participation aux kills, balises. Aucune limite rencontrée à 8 requêtes en parallèle. Les identifiants `esportsPlayerId` du flux sont ceux de `getTeams`. L'API ne donne pas le vainqueur de chaque partie (voir section 4). Pas de bans dans le flux |
+| Leaguepedia Cargo `lol.fandom.com/api.php?action=cargoquery` | secours seulement | **Limité à environ 1 requête par minute et par adresse IP en anonyme**, bloqué depuis les téléphones (« Failed to fetch »). Abandonné par le robot le 23/10 |
 | `lol.fandom.com/wiki/Special:FilePath/…` | logos et photos Leaguepedia | **Peu fiable** : la redirection renvoie parfois une page 403, que Chrome bloque (ERR_BLOCKED_BY_ORB). L'appli passe alors aux logos et photos LoL Esports (cascade `imgTag`), rien ne casse |
 | `ntfy.sh` (topic `iagames-worlds26-ligue-<CODE>`) | ligue de paris | **Vérifié avec 3 navigateurs sur le vrai ntfy.sh** (création, lien, code, notification de pari, pari caché, classements identiques). Pas encore avec de vrais téléphones. ntfy.sh ne garde les messages que 12 h : un nouveau venu ne voit que les membres actifs depuis 12 h, les anciens membres gardent tout en local |
 | Data Dragon, flagcdn | icônes de champions, drapeaux | OK |
+| `wsrv.nl` (redimensionneur d'images public, Cloudflare) | vignettes des photos et logos LoL Esports | Les PNG LoL Esports pèsent 400 à 600 Ko ; via `thumb()`, ~15 Ko en WebP, mis en cache un an. L'original reste en secours dans `imgTag` si wsrv.nl ne répond pas |
 
 ---
 
@@ -107,26 +113,18 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 
 ### P0 : le robot de stats
 
-Fait le 23/10 :
-- Workflow activé (`.github/workflows/stats.yml`). Il tourne toutes les 30 min, sur `workflow_dispatch` et au push du générateur.
-- Le générateur garde l'ancienne version d'une section qui échoue, au lieu d'écrire du vide. Il ralentit à 1 requête par minute dès le premier refus, et travaille dans un budget de 100 min par passage. Les sections lourdes (saisons, h2h, stats joueurs, duels) sont recalculées toutes les 6 h, les champions, noms et joueurs toutes les 24 h, le tournoi à chaque passage. `fresh` donne la date de chaque section, `stale` les sections en retard, `errors` celles qui n'ont encore aucune donnée.
-- Le résultat est publié sur la branche `stats`, seulement s'il a changé. Plus de commits du robot sur `main`.
+Fait les 23 et 24/10 :
+- Leaguepedia abandonné (1 requête par minute, bloqué sur les téléphones). Le robot prend tout chez LoL Esports : planning de 15 ligues depuis janvier 2024, détails de chaque match terminé, puis pour chaque partie le flux au début, à 15 min, à la fin, et les détails de fin.
+- Vainqueur de chaque partie : l'API ne le donne pas. Le robot le déduit de l'image finale (seule l'équipe qui a détruit un inhibiteur peut finir, puis tours et or) sous la contrainte du score de la série (`winners`). La règle seule était juste sur 202 parties sur 204 au vainqueur certain ; la contrainte de série corrige le reste.
+- Parties au flux coupé avant la fin (1,8 %) : comptées dans les bilans de séries, exclues des moyennes. Parties sans flux (1,5 %) : réessayées à chaque passage pendant 2 jours, puis 3 fois, une par jour.
+- Premier chargement complet en préprod : 8 509 parties (2024 : 2 673, 2025 : 2 936, 2026 : 2 773), 30 496 requêtes, 21 minutes. Passage suivant : 8 secondes. Stats 2026 pour les 95 titulaires, 710 duels de lane, 73 face-à-face d'équipes.
+- Publication sur la branche `stats` (stats + mémoire), seulement si quelque chose a changé.
 
 À faire :
-1. **Créer un mot de passe de robot Leaguepedia** (Thomas, 5 min) :
-   - se connecter sur https://lol.fandom.com avec un compte Fandom (en créer un si besoin) ;
-   - ouvrir https://lol.fandom.com/wiki/Special:BotPasswords, nom du robot `worlds`, cocher « Basic rights » et, si proposé, « High-volume (bot) access », puis créer ;
-   - noter l'identifiant affiché (`TonPseudo@worlds`) et le mot de passe ;
-   - sur GitHub, dépôt IA_Games, Settings, Secrets and variables, Actions : créer `LP_USER` (l'identifiant) et `LP_PASS` (le mot de passe).
-   Ensuite, relancer le workflow (onglet Actions, « Stats Worlds 2026 », Run workflow) et vérifier dans son journal la ligne `connexion : OK` et le rythme (`pace` dans la ligne `écrit`). Si le rythme reste à 65 s ou plus malgré la connexion, la limite s'applique aussi aux comptes : le robot reste lent mais finit par tout remplir en quelques passages.
-2. Vérifier les premiers passages : `gh run list --workflow stats.yml`, puis `gh run view <id> --log`. Ensuite :
-   ```bash
-   curl -s https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/stats.json | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['built'],d['meta'],d['errors'],d['stale'],sorted(d['fresh']))"
-   ```
-   Il faut à terme : `errors` vide, environ 19 équipes, 95 joueurs, plusieurs dizaines de paires `h2h`, plusieurs centaines de `duels`.
-3. Contrôler un échantillon à la main contre Leaguepedia : le bilan T1 contre Gen.G, les stats 2026 de Faker, un duel de lane connu.
-4. Vérifier les nationalités embarquées contre `prows` (champ `Ctry`), en particulier Zhuo (TES), JiaQi (IG), Ackerman (LØS), Bie (TSW), Kino et POUT (CFO), Saint et Isles (LYON).
-5. Points fragiles des requêtes, à surveiller dans le journal : l'auto-jointure des duels (`ScoreboardPlayers=SP1,ScoreboardPlayers=SP2`, `join_on=SP1.GameRoleIdVs=SP2.GameRoleId`), `COUNT(*)` avec `group_by`, les noms d'équipes historiques, le nom Leaguepedia de LYON (« LYON (2024 American Team) »).
+1. Surveiller les premiers passages : `gh run list --workflow stats.yml`, puis `gh run view <id> --log`. Lignes à regarder : `parties à résumer`, `écrit … {'games': …, 'left': …, 'cover': …}`. `left` doit revenir à 0 au passage suivant un match.
+2. Contrôler à la main quelques chiffres sur un site de stats (gol.gg par exemple) : bilan 2026 de GEN, KDA 2026 de Faker, écart d'or à 15 min de Chovy. Écarts de quelques pour cent normaux (parties coupées exclues, horloge à ~10 s près).
+3. Nationalités embarquées à confirmer (LoL Esports ne les donne pas) : Zhuo (TES), JiaQi (IG), Ackerman (LØS), Bie (TSW), Kino et POUT (CFO), Saint et Isles (LYON).
+4. Si une nouvelle équipe ou un remplaçant apparaît : mettre à jour `data/teams.json` et `TEAMS` dans `worlds.html`. Le journal du robot signale « joueur introuvable chez LoL Esports ».
 
 ### P1 : le direct
 
@@ -163,20 +161,27 @@ Fait le 23/10 avec Playwright (Pixel 7) : tous les onglets et toutes les fiches 
 
 ## 5. Requêtes utiles pour déboguer
 
-Leaguepedia (1 requête par minute au plus en anonyme, sinon la pénalité s'allonge) :
+Robot en local (`STATS_MAX_MIN` = budget en minutes). Il reprend sa mémoire `data/cache.json.gz` si elle est là ; sans elle, le premier passage charge tout depuis 2024 (environ une heure). Depuis le PC de Thomas, la connexion vers l'API LoL Esports coupe souvent : préférer la préprod GitHub.
 
 ```bash
-cq(){ curl -sG "https://lol.fandom.com/api.php" --data-urlencode action=cargoquery --data-urlencode format=json --data-urlencode limit=5 "$@"; echo; }
-cq --data-urlencode 'tables=ScoreboardPlayers=SP1,ScoreboardPlayers=SP2' --data-urlencode 'join_on=SP1.GameRoleIdVs=SP2.GameRoleId' \
-   --data-urlencode 'fields=SP1.Link=PA,SP2.Link=PB,SP1.PlayerWin=W,SP1.Champion=CA,SP2.Champion=CB' --data-urlencode 'where=SP1.Link="Faker" AND SP2.Link="Chovy"'
-cq --data-urlencode 'tables=Teams' --data-urlencode 'fields=Teams.Name=N,Teams.Image=I' --data-urlencode 'where=Teams.Name LIKE "LYON%"'
+STATS_MAX_MIN=20 python3 tools/build_stats.py
+cat data/stats_log.txt
 ```
 
-Générateur en local, sur quelques sections seulement (`STATS_MAX_MIN` = budget en minutes) :
+Préprod : pousser une branche, puis la lancer et récupérer son résultat :
 
 ```bash
-STATS_MAX_MIN=20 python3 tools/build_stats.py noms joueurs tournoi
-cat data/stats_log.txt
+gh workflow run stats.yml --ref <branche>
+gh run list --workflow stats.yml
+curl -s https://raw.githubusercontent.com/Vialou07/IA_Games/stats-preprod/data/stats.json -o /tmp/stats.json
+```
+
+Une partie terminée dans le flux :
+
+```bash
+curl -s "https://feed.lolesports.com/livestats/v1/window/<gameId>"                       # début
+curl -s "https://feed.lolesports.com/livestats/v1/window/<gameId>?startingTime=<début + 6 h>"   # image finale
+curl -s "https://feed.lolesports.com/livestats/v1/details/<gameId>?startingTime=<début + 6 h>"  # part des dégâts, balises
 ```
 
 Direct (pendant un match) :
@@ -196,7 +201,7 @@ curl -s "https://feed.lolesports.com/livestats/v1/window/<gameId>?startingTime=$
 - Garde `worlds.html` en un seul fichier. Pas de framework, pas d'étape de build.
 - Avant chaque push : `node --check` sur le JS extrait, et si possible un passage Playwright (tous les onglets, aucune erreur de console).
 - Ne touche pas aux autres jeux ni à `net.js`, `duo.js`, `lobby.js`, `themes.js`, `styles.css`, sauf demande explicite.
-- Ne commite pas `data/stats.json` sur `main` : il vit sur la branche `stats`, écrite par le robot.
+- Ne commite pas `data/stats.json` ni `data/cache.json.gz` sur `main` : ils vivent sur la branche `stats`, écrite par le robot.
 - Interface :
   - textes en français, phrases courtes ;
   - typographie : apostrophe ’ et guillemets « » dans le texte affiché, apostrophe droite dans le code ;
@@ -214,5 +219,4 @@ curl -s "https://feed.lolesports.com/livestats/v1/window/<gameId>?startingTime=$
 ## 7. Sécurité
 
 - L'ancien Claude utilisait un token GitHub nommé `claude-worlds`, visible dans une conversation. Thomas doit le supprimer sur github.com/settings/personal-access-tokens s'il ne l'a pas déjà fait.
-- Le mot de passe de robot Leaguepedia ne va que dans les secrets GitHub (`LP_USER`, `LP_PASS`), jamais dans le code ni dans une conversation.
-- La clé `x-api-key` LoL Esports est la clé publique du site lolesports.com, pas un secret.
+- La clé `x-api-key` LoL Esports est la clé publique du site lolesports.com, pas un secret. Le robot n'a besoin d'aucun secret.

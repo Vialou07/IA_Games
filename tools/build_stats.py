@@ -360,7 +360,7 @@ def build(C, teams):
     tourney["red"] = n - tourney["blue"]
 
     names = {t["id"]: sorted({t["lp"], t["name"], t["id"]} | {x[c] for mid in D for x in D[mid]["tm"] if our_team.get(x[0]) == t["id"] for c in (1, 2) if x[c]}) for t in teams}
-    return {"v": 2, "src": "lolesports", "since": SINCE, "teams": teams_out, "h2h": h2h, "duels": duels, "players": players, "tourney": tourney,
+    return {"v": 2, "src": "lolesports", "since": SINCE[:4], "teams": teams_out, "h2h": h2h, "duels": duels, "players": players, "tourney": tourney,
             "champs": champs, "mastery": mastery, "names": names, "logos": R["logos"], "pinfo": R["pinfo"],
             "cover": cover, "errors": [], "stale": {}}
 
