@@ -1,0 +1,4 @@
+# fichiers générés par tools/build_stats.py (publiés par le robot sur la branche stats)
+data/stats.json
+data/stats_log.txt
+__pycache__/

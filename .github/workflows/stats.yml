@@ -1,0 +1,48 @@
+name: Stats Worlds 2026
+# Calcule data/stats.json depuis Leaguepedia et le publie sur la branche « stats »
+# (un seul commit, réécrit à chaque mise à jour : l'historique de main reste propre).
+# L'appli le lit sur raw.githubusercontent.com/Vialou07/IA_Games/stats/data/stats.json.
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["tools/build_stats.py", "data/teams.json", ".github/workflows/stats.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: stats-worlds
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+      - name: Reprend les stats déjà publiées
+        run: |
+          if git fetch -q --depth=1 origin stats && git show FETCH_HEAD:data/stats.json > "$RUNNER_TEMP/prev.json"; then
+            cp "$RUNNER_TEMP/prev.json" data/stats.json
+          else
+            echo "pas encore de stats publiées"; : > "$RUNNER_TEMP/prev.json"
+          fi
+      - name: Interroge Leaguepedia
+        env:
+          LP_USER: ${{ secrets.LP_USER }}
+          LP_PASS: ${{ secrets.LP_PASS }}
+          STATS_MAX_MIN: "100"
+        run: python3 tools/build_stats.py
+      - name: Publie sur la branche stats
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if cmp -s data/stats.json "$RUNNER_TEMP/prev.json"; then echo "rien de nouveau"; exit 0; fi
+          cp data/stats.json "$RUNNER_TEMP/stats.json"
+          git checkout -q --orphan stats-pub
+          git rm -rqf --cached .
+          cp "$RUNNER_TEMP/stats.json" data/stats.json
+          git add -f data/stats.json
+          git -c user.name="stats-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "Stats Worlds : mise à jour auto"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:stats
+          echo "publié : $(stat -c%s data/stats.json) octets"
