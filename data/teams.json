@@ -1,0 +1,707 @@
+[
+ {
+  "id": "GEN",
+  "name": "Gen.G",
+  "lp": "Gen.G",
+  "al": [
+   "gen",
+   "geng",
+   "gengesports"
+  ],
+  "players": [
+   {
+    "id": "Kiin",
+    "role": "TOP",
+    "key": "GEN_kiin"
+   },
+   {
+    "id": "Canyon",
+    "role": "JGL",
+    "key": "GEN_canyon"
+   },
+   {
+    "id": "Chovy",
+    "role": "MID",
+    "key": "GEN_chovy"
+   },
+   {
+    "id": "Ruler",
+    "role": "BOT",
+    "key": "GEN_ruler"
+   },
+   {
+    "id": "Duro",
+    "role": "SUP",
+    "key": "GEN_duro"
+   }
+  ]
+ },
+ {
+  "id": "HLE",
+  "name": "Hanwha Life Esports",
+  "lp": "Hanwha Life Esports",
+  "al": [
+   "hle",
+   "hanwhalifeesports",
+   "hanwhalife"
+  ],
+  "players": [
+   {
+    "id": "Zeus",
+    "role": "TOP",
+    "key": "HLE_zeus"
+   },
+   {
+    "id": "Kanavi",
+    "role": "JGL",
+    "key": "HLE_kanavi"
+   },
+   {
+    "id": "Zeka",
+    "role": "MID",
+    "key": "HLE_zeka"
+   },
+   {
+    "id": "Gumayusi",
+    "role": "BOT",
+    "key": "HLE_gumayusi"
+   },
+   {
+    "id": "Delight",
+    "role": "SUP",
+    "key": "HLE_delight"
+   }
+  ]
+ },
+ {
+  "id": "T1",
+  "name": "T1",
+  "lp": "T1",
+  "al": [
+   "t1",
+   "skt",
+   "skt1"
+  ],
+  "players": [
+   {
+    "id": "Doran",
+    "role": "TOP",
+    "key": "T1_doran"
+   },
+   {
+    "id": "Oner",
+    "role": "JGL",
+    "key": "T1_oner"
+   },
+   {
+    "id": "Faker",
+    "role": "MID",
+    "key": "T1_faker"
+   },
+   {
+    "id": "Peyz",
+    "role": "BOT",
+    "key": "T1_peyz"
+   },
+   {
+    "id": "Keria",
+    "role": "SUP",
+    "key": "T1_keria"
+   }
+  ]
+ },
+ {
+  "id": "DK",
+  "name": "Dplus KIA",
+  "lp": "Dplus KIA",
+  "al": [
+   "dk",
+   "dpluskia",
+   "dplus",
+   "dwgkia"
+  ],
+  "players": [
+   {
+    "id": "Siwoo",
+    "role": "TOP",
+    "key": "DK_siwoo"
+   },
+   {
+    "id": "Lucid",
+    "role": "JGL",
+    "key": "DK_lucid"
+   },
+   {
+    "id": "ShowMaker",
+    "role": "MID",
+    "key": "DK_showmaker"
+   },
+   {
+    "id": "Smash",
+    "role": "BOT",
+    "key": "DK_smash"
+   },
+   {
+    "id": "Career",
+    "role": "SUP",
+    "key": "DK_career"
+   }
+  ]
+ },
+ {
+  "id": "AL",
+  "name": "Anyone’s Legend",
+  "lp": "Anyone's Legend",
+  "al": [
+   "al",
+   "anyoneslegend"
+  ],
+  "players": [
+   {
+    "id": "Breathe",
+    "role": "TOP",
+    "key": "AL_breathe"
+   },
+   {
+    "id": "Tarzan",
+    "role": "JGL",
+    "key": "AL_tarzan"
+   },
+   {
+    "id": "Shanks",
+    "role": "MID",
+    "key": "AL_shanks"
+   },
+   {
+    "id": "Hope",
+    "role": "BOT",
+    "key": "AL_hope"
+   },
+   {
+    "id": "Kael",
+    "role": "SUP",
+    "key": "AL_kael"
+   }
+  ]
+ },
+ {
+  "id": "BLG",
+  "name": "Bilibili Gaming",
+  "lp": "Bilibili Gaming",
+  "al": [
+   "blg",
+   "bilibiligaming",
+   "bilibili"
+  ],
+  "players": [
+   {
+    "id": "Bin",
+    "role": "TOP",
+    "key": "BLG_bin"
+   },
+   {
+    "id": "Xun",
+    "role": "JGL",
+    "key": "BLG_xun"
+   },
+   {
+    "id": "Knight",
+    "role": "MID",
+    "key": "BLG_knight"
+   },
+   {
+    "id": "Viper",
+    "role": "BOT",
+    "key": "BLG_viper"
+   },
+   {
+    "id": "ON",
+    "role": "SUP",
+    "key": "BLG_on"
+   }
+  ]
+ },
+ {
+  "id": "TES",
+  "name": "Top Esports",
+  "lp": "Top Esports",
+  "al": [
+   "tes",
+   "topesports",
+   "top"
+  ],
+  "players": [
+   {
+    "id": "369",
+    "role": "TOP",
+    "key": "TES_369"
+   },
+   {
+    "id": "Tian",
+    "role": "JGL",
+    "key": "TES_tian"
+   },
+   {
+    "id": "Creme",
+    "role": "MID",
+    "key": "TES_creme"
+   },
+   {
+    "id": "JackeyLove",
+    "role": "BOT",
+    "key": "TES_jackeylove"
+   },
+   {
+    "id": "Zhuo",
+    "role": "SUP",
+    "key": "TES_zhuo"
+   }
+  ]
+ },
+ {
+  "id": "IG",
+  "name": "Invictus Gaming",
+  "lp": "Invictus Gaming",
+  "al": [
+   "ig",
+   "invictusgaming",
+   "shanghaiinvictusgamingmeituan"
+  ],
+  "players": [
+   {
+    "id": "TheShy",
+    "role": "TOP",
+    "key": "IG_theshy"
+   },
+   {
+    "id": "Wei",
+    "role": "JGL",
+    "key": "IG_wei"
+   },
+   {
+    "id": "Rookie",
+    "role": "MID",
+    "key": "IG_rookie"
+   },
+   {
+    "id": "JiaQi",
+    "role": "BOT",
+    "key": "IG_jiaqi"
+   },
+   {
+    "id": "Meiko",
+    "role": "SUP",
+    "key": "IG_meiko"
+   }
+  ]
+ },
+ {
+  "id": "G2",
+  "name": "G2 Esports",
+  "lp": "G2 Esports",
+  "al": [
+   "g2",
+   "g2esports"
+  ],
+  "players": [
+   {
+    "id": "BrokenBlade",
+    "role": "TOP",
+    "key": "G2_brokenblade"
+   },
+   {
+    "id": "SkewMond",
+    "role": "JGL",
+    "key": "G2_skewmond"
+   },
+   {
+    "id": "Caps",
+    "role": "MID",
+    "key": "G2_caps"
+   },
+   {
+    "id": "Hans Sama",
+    "role": "BOT",
+    "key": "G2_hanssama"
+   },
+   {
+    "id": "Labrov",
+    "role": "SUP",
+    "key": "G2_labrov"
+   }
+  ]
+ },
+ {
+  "id": "MKOI",
+  "name": "Movistar KOI",
+  "lp": "Movistar KOI",
+  "al": [
+   "mkoi",
+   "koi",
+   "movistarkoi"
+  ],
+  "players": [
+   {
+    "id": "Myrwn",
+    "role": "TOP",
+    "key": "MKOI_myrwn"
+   },
+   {
+    "id": "Elyoya",
+    "role": "JGL",
+    "key": "MKOI_elyoya"
+   },
+   {
+    "id": "Jojopyun",
+    "role": "MID",
+    "key": "MKOI_jojopyun"
+   },
+   {
+    "id": "Supa",
+    "role": "BOT",
+    "key": "MKOI_supa"
+   },
+   {
+    "id": "Alvaro",
+    "role": "SUP",
+    "key": "MKOI_alvaro"
+   }
+  ]
+ },
+ {
+  "id": "KC",
+  "name": "Karmine Corp",
+  "lp": "Karmine Corp",
+  "al": [
+   "kc",
+   "karminecorp",
+   "kcorp"
+  ],
+  "players": [
+   {
+    "id": "Canna",
+    "role": "TOP",
+    "key": "KC_canna"
+   },
+   {
+    "id": "Yike",
+    "role": "JGL",
+    "key": "KC_yike"
+   },
+   {
+    "id": "kyeahoo",
+    "role": "MID",
+    "key": "KC_kyeahoo"
+   },
+   {
+    "id": "Caliste",
+    "role": "BOT",
+    "key": "KC_caliste"
+   },
+   {
+    "id": "Busio",
+    "role": "SUP",
+    "key": "KC_busio"
+   }
+  ]
+ },
+ {
+  "id": "TL",
+  "name": "Team Liquid Alienware",
+  "lp": "Team Liquid",
+  "al": [
+   "tl",
+   "tlaw",
+   "teamliquid",
+   "teamliquidalienware",
+   "liquid"
+  ],
+  "players": [
+   {
+    "id": "Morgan",
+    "role": "TOP",
+    "key": "TL_morgan"
+   },
+   {
+    "id": "Josedeodo",
+    "role": "JGL",
+    "key": "TL_josedeodo"
+   },
+   {
+    "id": "Quid",
+    "role": "MID",
+    "key": "TL_quid"
+   },
+   {
+    "id": "Yeon",
+    "role": "BOT",
+    "key": "TL_yeon"
+   },
+   {
+    "id": "CoreJJ",
+    "role": "SUP",
+    "key": "TL_corejj"
+   }
+  ]
+ },
+ {
+  "id": "LYON",
+  "name": "LYON",
+  "lp": "LYON (2024 American Team)",
+  "al": [
+   "lyon",
+   "ly",
+   "lyon2024americanteam",
+   "lyongaming"
+  ],
+  "players": [
+   {
+    "id": "Dhokla",
+    "role": "TOP",
+    "key": "LYON_dhokla"
+   },
+   {
+    "id": "Inspired",
+    "role": "JGL",
+    "key": "LYON_inspired"
+   },
+   {
+    "id": "Saint",
+    "role": "MID",
+    "key": "LYON_saint"
+   },
+   {
+    "id": "Berserker",
+    "role": "BOT",
+    "key": "LYON_berserker"
+   },
+   {
+    "id": "Isles",
+    "role": "SUP",
+    "key": "LYON_isles"
+   }
+  ]
+ },
+ {
+  "id": "TSW",
+  "name": "Team Secret Whales",
+  "lp": "Team Secret Whales",
+  "al": [
+   "tsw",
+   "teamsecretwhales",
+   "secretwhales"
+  ],
+  "players": [
+   {
+    "id": "Pun",
+    "role": "TOP",
+    "key": "TSW_pun"
+   },
+   {
+    "id": "Hizto",
+    "role": "JGL",
+    "key": "TSW_hizto"
+   },
+   {
+    "id": "Dire",
+    "role": "MID",
+    "key": "TSW_dire"
+   },
+   {
+    "id": "Eddie",
+    "role": "BOT",
+    "key": "TSW_eddie"
+   },
+   {
+    "id": "Bie",
+    "role": "SUP",
+    "key": "TSW_bie"
+   }
+  ]
+ },
+ {
+  "id": "CFO",
+  "name": "CTBC Flying Oyster",
+  "lp": "CTBC Flying Oyster",
+  "al": [
+   "cfo",
+   "ctbcflyingoyster",
+   "flyingoyster"
+  ],
+  "players": [
+   {
+    "id": "Rest",
+    "role": "TOP",
+    "key": "CFO_rest"
+   },
+   {
+    "id": "Shad0w",
+    "role": "JGL",
+    "key": "CFO_shad0w"
+   },
+   {
+    "id": "POUT",
+    "role": "MID",
+    "key": "CFO_pout"
+   },
+   {
+    "id": "Doggo",
+    "role": "BOT",
+    "key": "CFO_doggo"
+   },
+   {
+    "id": "Kino",
+    "role": "SUP",
+    "key": "CFO_kino"
+   }
+  ]
+ },
+ {
+  "id": "LOS",
+  "name": "LØS",
+  "lp": "LØS",
+  "al": [
+   "los",
+   "losgrandes"
+  ],
+  "players": [
+   {
+    "id": "Zest",
+    "role": "TOP",
+    "key": "LOS_zest"
+   },
+   {
+    "id": "Curse",
+    "role": "JGL",
+    "key": "LOS_curse"
+   },
+   {
+    "id": "Feisty",
+    "role": "MID",
+    "key": "LOS_feisty"
+   },
+   {
+    "id": "Duduhh",
+    "role": "BOT",
+    "key": "LOS_duduhh"
+   },
+   {
+    "id": "Ackerman",
+    "role": "SUP",
+    "key": "LOS_ackerman"
+   }
+  ]
+ },
+ {
+  "id": "C9",
+  "name": "Cloud9 Kia",
+  "lp": "Cloud9",
+  "al": [
+   "c9",
+   "cloud9",
+   "cloud9kia"
+  ],
+  "players": [
+   {
+    "id": "Thanatos",
+    "role": "TOP",
+    "key": "C9_thanatos"
+   },
+   {
+    "id": "Blaber",
+    "role": "JGL",
+    "key": "C9_blaber"
+   },
+   {
+    "id": "Loki",
+    "role": "MID",
+    "key": "C9_loki"
+   },
+   {
+    "id": "Tactical",
+    "role": "BOT",
+    "key": "C9_tactical"
+   },
+   {
+    "id": "Vulcan",
+    "role": "SUP",
+    "key": "C9_vulcan"
+   }
+  ]
+ },
+ {
+  "id": "FUR",
+  "name": "FURIA",
+  "lp": "FURIA",
+  "al": [
+   "fur",
+   "furia",
+   "furiaesports"
+  ],
+  "players": [
+   {
+    "id": "Guigo",
+    "role": "TOP",
+    "key": "FUR_guigo"
+   },
+   {
+    "id": "Tatu",
+    "role": "JGL",
+    "key": "FUR_tatu"
+   },
+   {
+    "id": "Tutsz",
+    "role": "MID",
+    "key": "FUR_tutsz"
+   },
+   {
+    "id": "Ayu",
+    "role": "BOT",
+    "key": "FUR_ayu"
+   },
+   {
+    "id": "JoJo",
+    "role": "SUP",
+    "key": "FUR_jojo"
+   }
+  ]
+ },
+ {
+  "id": "MVK",
+  "name": "MVK Esports",
+  "lp": "MVK Esports",
+  "al": [
+   "mvk",
+   "mvkesports",
+   "mgnvikings",
+   "mgnvikingsesports"
+  ],
+  "players": [
+   {
+    "id": "Kratos",
+    "role": "TOP",
+    "key": "MVK_kratos"
+   },
+   {
+    "id": "Gury",
+    "role": "JGL",
+    "key": "MVK_gury"
+   },
+   {
+    "id": "Chika",
+    "role": "MID",
+    "key": "MVK_chika"
+   },
+   {
+    "id": "Harky",
+    "role": "BOT",
+    "key": "MVK_harky"
+   },
+   {
+    "id": "SiuLoong",
+    "role": "SUP",
+    "key": "MVK_siuloong"
+   }
+  ]
+ }
+]
