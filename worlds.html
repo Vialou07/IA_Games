@@ -58,10 +58,10 @@ a{color:var(--teal)}
 
 /* nav */
 nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:25;background:rgba(8,16,32,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav.tabs .wrap{display:grid;grid-template-columns:repeat(5,1fr);padding:0 4px;position:relative}
-nav.tabs .ind{position:absolute;top:0;left:4px;height:3px;width:calc((100% - 8px)/5);transition:transform .35s cubic-bezier(.3,1.4,.5,1);display:flex;justify-content:center}
+nav.tabs .wrap{display:grid;grid-template-columns:repeat(6,1fr);padding:0 4px;position:relative}
+nav.tabs .ind{position:absolute;top:0;left:4px;height:3px;width:calc((100% - 8px)/6);transition:transform .35s cubic-bezier(.3,1.4,.5,1);display:flex;justify-content:center}
 nav.tabs .ind::before{content:"";width:44px;height:3px;border-radius:0 0 3px 3px;background:var(--gold);box-shadow:0 0 12px var(--gold),0 0 24px rgba(200,170,110,.6)}
-nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 11px;font-size:11.5px;font-weight:600;color:var(--muted);transition:color .2s}
+nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 11px;font-size:11px;font-weight:600;color:var(--muted);transition:color .2s}
 nav.tabs button svg{width:22px;height:22px;transition:transform .25s}
 nav.tabs button[aria-selected="true"]{color:var(--gold2)}
 nav.tabs button[aria-selected="true"] svg{transform:translateY(-2px);filter:drop-shadow(0 0 6px rgba(200,170,110,.8));color:var(--gold)}
@@ -285,7 +285,7 @@ h2:first-child{margin-top:4px}
 .slam .in2{position:relative;padding:14px 14px 16px}
 .slam .code{font-size:48px}
 .duels{display:flex;flex-direction:column;gap:6px}
-.duel{display:grid;grid-template-columns:1fr 58px 1fr;align-items:center;gap:6px;padding:8px 9px;background:linear-gradient(90deg,color-mix(in srgb,var(--c1) 20%,var(--panel)),var(--panel) 40%,var(--panel) 60%,color-mix(in srgb,var(--c2) 20%,var(--panel)));border:1px solid rgba(200,170,110,.14);animation:rise .45s cubic-bezier(.2,.9,.3,1.2) backwards;animation-delay:calc(.7s + var(--i) * 80ms)}
+.duel{display:grid;grid-template-columns:1fr 58px 1fr;align-items:center;gap:6px;padding:8px 9px;background:linear-gradient(90deg,color-mix(in srgb,var(--c1) 20%,var(--panel)),var(--panel) 40%,var(--panel) 60%,color-mix(in srgb,var(--c2) 20%,var(--panel)));border:1px solid rgba(200,170,110,.14);animation:rise .45s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(.7s + var(--i) * 80ms)}
 @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.97)}}
 .duel .p{display:flex;align-items:center;gap:8px;min-width:0;text-align:left}
 .duel .p.r{flex-direction:row-reverse;text-align:right}
@@ -312,10 +312,10 @@ h2:first-child{margin-top:4px}
 .tban p{margin:5px 0 0;color:rgba(255,255,255,.8);font-size:13.5px;display:flex;align-items:center;gap:6px}
 .hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:150px;gap:12px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none}
 .hscroll::-webkit-scrollbar{display:none}
-.hscroll .pcard{animation:rise .5s cubic-bezier(.2,.9,.3,1.2) backwards;animation-delay:calc(.25s + var(--i) * 70ms)}
+.hscroll .pcard{animation:rise .5s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(.25s + var(--i) * 70ms)}
 /* big player card */
 .bigwrap{perspective:1000px;display:flex;justify-content:center;margin:10px 0 8px}
-.bigcard{width:min(300px,78vw);transform-style:preserve-3d;animation:cardIn .8s cubic-bezier(.2,.9,.25,1.15) backwards;transform:rotateY(calc(var(--gx) * 14deg)) rotateX(calc(var(--gy) * -10deg))}
+.bigcard{width:min(300px,78vw);transform-style:preserve-3d;animation:cardIn .8s cubic-bezier(.2,.9,.25,1.15) both;transform:rotateY(calc(var(--gx) * 14deg)) rotateX(calc(var(--gy) * -10deg))}
 @keyframes cardIn{from{transform:rotateY(-110deg) scale(.6);opacity:0}}
 .bigcard .pcard{pointer-events:none}
 .bigcard .pcard .bd b{font-size:30px}
@@ -339,6 +339,76 @@ h2:first-child{margin-top:4px}
 @keyframes ttlIn{from{opacity:0;letter-spacing:22px;filter:blur(6px)}}
 #intro .burst{position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent,rgba(200,170,110,.18),transparent 12%,transparent 25%,rgba(10,200,185,.14),transparent 37%,transparent 50%,rgba(200,170,110,.18),transparent 62%,transparent 75%,rgba(10,200,185,.14),transparent 87%);animation:rot 14s linear infinite reverse;opacity:0;animation-name:rot,fadeIn;animation-duration:14s,1s;animation-delay:0s,.6s;animation-fill-mode:none,forwards}
 @keyframes fadeIn{to{opacity:1}}
+
+/* ===== stats ===== */
+.ak.in>*{animation:viewIn .4s ease both}
+.skel{display:grid;gap:8px}.skel i{display:block;height:44px;border-radius:8px;background:linear-gradient(90deg,var(--panel) 0%,var(--panel2) 50%,var(--panel) 100%);background-size:200% 100%;animation:shim 1.2s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+.aerr{font-size:13.5px;color:var(--muted);display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;background:var(--panel);border:1px dashed rgba(232,64,87,.4)}
+.h3{font-family:var(--title);font-size:13.5px;color:var(--gold);margin:16px 0 8px;letter-spacing:.4px}
+.h2h{padding:2px 0}
+.h2hs{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.h2hs span{display:flex;align-items:center;gap:10px}
+.h2hs b{font-family:var(--disp);font-weight:800;font-size:46px;line-height:1;color:var(--gold2);text-shadow:0 0 18px rgba(200,170,110,.5)}
+.h2hs em{font-style:normal;text-align:center;font-size:11.5px;color:var(--muted)}
+.split{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--panel2);margin-top:10px;gap:2px}
+.split>i{display:block;height:100%;animation:grow 1s cubic-bezier(.2,.9,.3,1) backwards}
+.split.big{height:14px}
+.split.mini{height:6px;margin:0;width:64px;border-radius:3px}
+@keyframes grow{from{width:0!important}}
+.h2hr{display:grid;grid-template-columns:72px 1fr auto 24px;gap:8px;align-items:center;padding:8px 10px;margin-top:5px;background:var(--panel);border:1px solid rgba(200,170,110,.12)}
+.h2hr .tn{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc2{font-family:var(--disp);font-size:20px;font-weight:800;color:var(--muted)} .sc2 b.w{color:var(--gold2)}
+.tapehd{display:flex;justify-content:space-between;font-family:var(--disp);font-weight:800;font-size:18px;margin-bottom:4px}
+.tapehd span{display:flex;align-items:center;gap:6px}
+.tape{display:grid;grid-template-columns:56px 1fr auto 1fr 56px;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(200,170,110,.08)}
+.tape .tv{font-family:var(--disp);font-weight:700;font-size:16px;color:var(--muted)} .tape .tv.r{text-align:right}
+.tape .tv.best{color:var(--gold2);text-shadow:0 0 10px rgba(200,170,110,.6)}
+.tape .tl{font-size:11.5px;color:var(--text);text-align:center;min-width:92px}
+.tape .tb{height:8px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;overflow:hidden}
+.tape .tb.l{justify-content:flex-end} .tape .tb i{display:block;height:100%;border-radius:4px;animation:grow .9s cubic-bezier(.2,.9,.3,1) backwards}
+.tape .tb.l i{background:var(--c1,var(--gold))} .tape .tb.r i{background:var(--c2,var(--teal))}
+.formrow{display:flex;gap:10px;align-items:flex-start;padding:10px;margin-top:6px;background:var(--panel);border:1px solid rgba(200,170,110,.12)}
+.formrow b{font-family:var(--disp);font-size:18px}
+.fopp{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.fopp span{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.05)}
+.fopp span.w{box-shadow:inset 3px 0 0 var(--teal)} .fopp span.l{box-shadow:inset 3px 0 0 var(--red);opacity:.75}
+.f5{display:inline-flex;gap:3px}.f5 i{width:18px;height:18px;border-radius:4px;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800;color:#fff}.f5 i.w{background:var(--teal)}.f5 i.l{background:var(--red)}
+.lane{display:grid;grid-template-columns:56px 1fr auto 1fr;align-items:center;gap:8px;padding:9px 10px;margin-top:6px;background:var(--panel);border:1px solid rgba(200,170,110,.12)}
+.lane .rl{font-family:var(--title);font-size:10.5px;color:var(--gold);font-weight:700}
+.lane>b{font-family:var(--disp);font-size:18px;font-weight:800;color:var(--muted)} .lane>b:nth-of-type(2){text-align:right}
+.lane>b.lead{color:var(--gold2)}
+.lane .lsc{display:flex;align-items:center;gap:6px}.lane .lsc em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:20px;color:var(--text)}
+.lane .lsub{grid-column:1/-1;font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.lane>.small{text-align:center}
+.chi{border-radius:6px;object-fit:cover;flex:none;box-shadow:0 0 0 1px rgba(200,170,110,.35);vertical-align:middle;background:var(--panel2)}
+.chi.tx{display:inline-grid;place-items:center;font-size:10px;font-weight:800;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (min-width:560px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{padding:11px 12px;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid rgba(200,170,110,.18)}
+.tile b{display:block;font-family:var(--disp);font-weight:800;font-size:24px;line-height:1.05;background:linear-gradient(180deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tile span{font-size:12px;color:var(--muted)}
+.clist,.ctab{display:flex;flex-direction:column;gap:6px}
+.crow,.ct{display:grid;grid-template-columns:34px 1fr 70px 44px;align-items:center;gap:10px;padding:6px 8px;background:var(--panel);border:1px solid rgba(200,170,110,.1)}
+.crow .cn,.ct .cn{font-weight:700;font-size:14px;display:flex;flex-direction:column;min-width:0}
+.crow .cn small,.ct .cn small{font-weight:500;color:var(--muted);font-size:11.5px}
+.cw{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}.cw i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold2));animation:grow 1s cubic-bezier(.2,.9,.3,1) backwards}
+.crow>b,.ct>b{font-family:var(--disp);font-size:17px;text-align:right;color:var(--gold2)}
+.yrs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.vsl{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px}
+.vsr{display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--panel);border:1px solid rgba(200,170,110,.12);font-weight:700}
+.vsr b{margin-left:auto;font-family:var(--disp);font-size:18px;color:var(--muted)}.vsr b.w{color:var(--teal)}.vsr b.l{color:var(--red)}
+.leads{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.leads{grid-template-columns:1fr 1fr}}
+.lead{padding:10px;background:var(--panel);border:1px solid rgba(200,170,110,.18)}
+.lead h4{margin:0 0 6px;font-family:var(--title);font-size:14px;color:var(--gold)}
+.lrow{display:grid;grid-template-columns:18px 34px 1fr auto;align-items:center;gap:9px;width:100%;text-align:left;padding:5px 2px;border-top:1px solid rgba(200,170,110,.08)}
+.lrow:first-of-type{border-top:0}
+.lrow .rk{font-family:var(--disp);font-weight:800;color:var(--muted)}
+.lrow:first-of-type .rk{color:var(--gold2);text-shadow:0 0 8px var(--gold)}
+.lrow .ln2{display:flex;flex-direction:column;min-width:0}.lrow .ln2 b{font-family:var(--disp);font-size:17px}.lrow .ln2 small{font-size:11px;color:var(--muted)}
+.lrow em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:19px;color:var(--gold2)}
+.recs{display:grid;gap:8px}
 
 @media (min-width:700px){.facts{grid-template-columns:repeat(4,1fr)}.fact.wide{grid-column:span 2}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}#intro{display:none}.arc{stroke-dashoffset:0}}
@@ -365,6 +435,7 @@ h2:first-child{margin-top:4px}
   <section class="view on" id="v-home"></section>
   <section class="view" id="v-matchs"></section>
   <section class="view" id="v-swiss"></section>
+  <section class="view" id="v-stats"></section>
   <section class="view" id="v-teams"></section>
   <section class="view" id="v-players">
     <input class="search" id="q" type="search" placeholder="Chercher un joueur ou une équipe" autocomplete="off">
@@ -380,6 +451,7 @@ h2:first-child{margin-top:4px}
   <button role="tab" data-v="home" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Direct</button>
   <button role="tab" data-v="matchs" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Matchs</button>
   <button role="tab" data-v="swiss" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h5v4H4zM4 14h5v4H4zM15 10h5v4h-5zM9 8h3v8H9M12 12h3"/></svg>Suisse</button>
+  <button role="tab" data-v="stats" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Stats</button>
   <button role="tab" data-v="teams" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Équipes</button>
   <button role="tab" data-v="players" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.4.3 4.2 2 4.9 4.9"/></svg>Joueurs</button>
 </div></nav>
@@ -389,7 +461,7 @@ h2:first-child{margin-top:4px}
 <div class="toast" id="toast" role="status"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 <script>
-/* Données de base au 23/10/2026 : l'appli se synchronise ensuite seule (LoL Esports, Leaguepedia, Wikipédia). */
+/* Données de base au 23/10/2026 : l'appli se synchronise ensuite seule (LoL Esports, Leaguepedia, Wikipédia, Data Dragon). */
 const ROLES = {TOP:"Top",JGL:"Jungle",MID:"Mid",BOT:"ADC",SUP:"Support"};
 const ROLE_ORDER = ["TOP","JGL","MID","BOT","SUP"];
 const LEAGUES = {LCK:"Corée",LPL:"Chine",LEC:"Europe (EMEA)",LCS:"Amérique du Nord",LCP:"Asie-Pacifique",CBLOL:"Brésil"};
@@ -532,7 +604,7 @@ const LIVE_LOGO = {};
 function logo(id,size=34){
   const t=T[id]; if(!t) return `<span class="mono" style="background:var(--panel2);width:${size}px;height:${size}px">?</span>`;
   const w=size>100?320:160;
-  return imgTag([LIVE_LOGO[id],lpFile(t.lp+"logo square.png",w),lpFile(t.lp+"logo std.png",w)],"logo",{text:t.id,bg:t.color,w:size+"px",style:"font-size:"+Math.max(11,size/3)+"px"},`width:${size}px;height:${size}px`);
+  return imgTag([LIVE_LOGO[id],t.lpImg,lpFile(t.lp+"logo square.png",w),lpFile(t.lp+"logo std.png",w)],"logo",{text:t.id,bg:t.color,w:size+"px",style:"font-size:"+Math.max(11,size/3)+"px"},`width:${size}px;height:${size}px`);
 }
 function photo(p,mode,size){
   const t=T[p.team], srcs=[p.photo,p.lePhoto,p.wikiPhoto], txt=p.id.slice(0,2).toUpperCase();
@@ -837,7 +909,7 @@ function renderPlayers(){
     <p class="small" style="margin:0 0 8px">${list.length} joueur${list.length>1?"s":""}${ui.nat?`, filtre ${esc(cname(ui.nat))}`:""}</p><div class="pgrid">${list.map((p,i)=>pcard(p,i)).join("")}</div>`;
   document.querySelectorAll("#worldmap [data-nat]").forEach(el=>el.classList.toggle("sel",el.dataset.nat===ui.nat));
 }
-function renderAll(){renderHome();renderMatchs();renderSwiss();renderTeams();renderPlayers();refreshSheet(true);celebrate()}
+function renderAll(){renderHome();renderMatchs();renderSwiss();renderTeams();renderPlayers();if(statsOpen)renderStats();refreshSheet(true);celebrate()}
 
 /* ===================== carte du monde ===================== */
 const GEO={kr:[127.8,36.4],cn:[104,34],vn:[106,15.5],tw:[121,23.7],us:[-100,40],ca:[-106,56],br:[-51,-10],ar:[-64,-34],fr:[2.4,46.6],de:[10.4,51.1],dk:[9.5,56],gr:[22,39.3],es:[-3.7,40.2],se:[15.5,62],pl:[19.3,52],mx:[-102,23.5],jp:[138,36],gb:[-2,53.5],nl:[5.3,52.2],be:[4.5,50.6],tr:[35,39],it:[12.5,42.8],pt:[-8,39.6],cz:[15.4,49.8],ru:[60,58],au:[134,-25],ph:[122,12],hk:[114.2,22.3],cl:[-71,-35],pe:[-75,-9.5],co:[-74,4.5],uy:[-56,-33]};
@@ -871,7 +943,7 @@ let sheetState=null;
 function openSheet(html){$("#sheetBody").innerHTML=html;$("#sheet").classList.add("on");$("#scrim").classList.add("on");$("#sheet").scrollTop=0;document.body.style.overflow="hidden"}
 function closeSheet(){$("#sheet").classList.remove("on");$("#scrim").classList.remove("on");sheetState=null;document.body.style.overflow=""}
 function refreshSheet(quiet){if(!sheetState)return;const s=sheetState;({m:matchSheet,t:teamSheet,p:playerSheet})[s.k](s.id,quiet)}
-function setSheet(html,quiet){if(quiet){const b=$("#sheetBody"),y=$("#sheet").scrollTop;b.innerHTML=html.replace(/class="slam /,'class="slam noanim ');b.querySelectorAll(".slam,.duel,.hscroll .pcard,.bigcard,.tban .logo").forEach(e=>e.style.animation="none");b.querySelectorAll(".slam *").forEach(e=>e.style.animation="none");$("#sheet").scrollTop=y}else openSheet(html)}
+function setSheet(html,quiet){if(quiet){const b=$("#sheetBody"),y=$("#sheet").scrollTop;b.innerHTML=html.replace(/class="slam /,'class="slam noanim ');b.querySelectorAll(".slam,.duel,.hscroll .pcard,.bigcard,.tban .logo").forEach(e=>e.style.animation="none");b.querySelectorAll(".slam *,.ak i,.tape i").forEach(e=>e.style.animation="none");$("#sheet").scrollTop=y}else openSheet(html)}
 function age(bd){if(!bd)return null;const b=new Date(bd);if(isNaN(b))return null;const n=new Date();let a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a}
 function matchSheet(id,quiet){
   const m=MATCHES.find(x=>x.id===id);if(!m)return;sheetState={k:"m",id};
@@ -894,6 +966,7 @@ function matchSheet(id,quiet){
     if(common.length)h+=`<p class="small" style="margin-top:10px">Compatriotes des deux côtés : ${common.map(c=>flag(c)+" "+esc(cname(c))).join(", ")}.</p>`;
     const t1l=p1.reduce((a,p)=>a+p.titles.length,0),t2l=p2.reduce((a,p)=>a+p.titles.length,0);
     if(t1l||t2l)h+=`<p class="small">Titres mondiaux cumulés : ${esc(T[m.t1].id)} ${t1l}, ${esc(T[m.t2].id)} ${t2l}.</p>`;
+    h+=matchStatsHTML(m);
     const prev=MATCHES.filter(x=>x!==m&&x.winner&&((x.t1===m.t1&&x.t2===m.t2)||(x.t1===m.t2&&x.t2===m.t1)));
     if(prev.length)h+=`<h2>Déjà croisés à ces Worlds</h2><div class="list">${prev.map(matchRow).join("")}</div>`;
   } else h+=`<div class="note">Affiche pas encore connue, elle dépend du tirage.</div>`;
@@ -905,7 +978,8 @@ function teamSheet(id,quiet){
   <div class="note">${esc(t.note)}</div>
   <h2>Les cinq</h2><div class="hscroll">${teamPlayers(id).map((p,i)=>pcard(p,i)).join("")}</div>
   <dl class="kv frame hx"><dt>Qualification</dt><dd>${esc(t.seed)}</dd><dt>Entrée</dt><dd>${t.entry==="pi"?"Play-In":"Phase suisse"}</dd><dt>Bilan suisse</dt><dd>${R[id].sw.w}-${R[id].sw.l}</dd><dt>Nationalités</dt><dd>${[...new Set(teamPlayers(id).map(p=>p.cc))].map(c=>flag(c)+" "+esc(cname(c))).join(" ")}</dd></dl>`;
-  if(ms.length)h+=`<h2>Ses matchs</h2><div class="list">${ms.map(matchRow).join("")}</div>`;
+  h+=`<h2>Saison 2026</h2>`+ablock("ts_"+id,()=>teamSeasonC(id),renderTeamSeason(id),3);
+  if(ms.length)h+=`<h2>Ses matchs à ces Worlds</h2><div class="list">${ms.map(matchRow).join("")}</div>`;
   h+=`<p style="margin-top:16px"><button class="btn${fav===id?" gold":""}" data-fav="${id}">${fav===id?"Mon équipe":"Suivre cette équipe"}</button></p>`;
   setSheet(h,quiet);
 }
@@ -914,11 +988,15 @@ function playerSheet(key,quiet){
   const nm=MATCHES.find(m=>(m.t1===p.team||m.t2===p.team)&&m.t1&&m.t2&&m.state!=="done");
   let duel="";
   if(nm){const opp=nm.t1===p.team?nm.t2:nm.t1,o=PLAYERS.find(x=>x.team===opp&&x.role===p.role);
-    if(o)duel=`<h2>Prochain duel</h2><button class="duel hx" style="--i:0;--c1:${t.color};--c2:${T[opp].color};width:100%" data-p="${o.key}"><span class="p">${photo(p,"ava",42)}<span><b>${esc(p.id)}</b><small>${flag(p.cc)}${esc(t.id)}</small></span></span><span class="rl">${ROLES[p.role]}</span><span class="p r">${photo(o,"ava",42)}<span><b>${esc(o.id)}</b><small>${flag(o.cc)}${esc(T[opp].id)}</small></span></span></button><p class="small" style="margin-top:6px">${fmtDay(new Date(nm.start))} à ${fmtTime(new Date(nm.start))}</p>`}
+    if(o){duel=`<h2>Prochain duel</h2><button class="duel hx" style="--i:0;--c1:${t.color};--c2:${T[opp].color};width:100%" data-p="${o.key}"><span class="p">${photo(p,"ava",42)}<span><b>${esc(p.id)}</b><small>${flag(p.cc)}${esc(t.id)}</small></span></span><span class="rl">${ROLES[p.role]}</span><span class="p r">${photo(o,"ava",42)}<span><b>${esc(o.id)}</b><small>${flag(o.cc)}${esc(T[opp].id)}</small></span></span></button><p class="small" style="margin-top:6px">${fmtDay(new Date(nm.start))} à ${fmtTime(new Date(nm.start))}</p>`;
+      const [a,b]=[p.team,opp].sort(),flip=a!==p.team;
+      duel+=ablock("lane_"+a+"_"+b,()=>laneDuels(a,b),P=>{const x=duelFor(P,p,o,flip);if(!x)return `<p class="small">Jamais affrontés en lane en match officiel.</p>`;
+        return `<div class="lane"><span class="rl">Carrière</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(p.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${t.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${T[opp].color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(o.id)}</b>
+        <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face, KDA ${fx2(kdaV(x.ka,x.da,x.aa))} contre ${fx2(kdaV(x.kb,x.db,x.ab))}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`},12)}}
   let h=`<div class="bigwrap"><div class="bigcard">${pcard(p)}</div></div>
   ${p.titles.length?`<div class="note">🏆 Champion du monde ${p.titles.join(", ")}.</div>`:""}
   <dl class="kv frame hx">${p.realName?`<dt>Nom</dt><dd>${esc(p.realName)}${p.native?" ("+esc(p.native)+")":""}</dd>`:""}${a!=null?`<dt>Âge</dt><dd>${a} ans</dd>`:""}<dt>Poste</dt><dd>${ROLES[p.role]}</dd><dt>Nationalité</dt><dd>${flag(p.cc)} ${esc(cname(p.cc))}</dd><dt>Équipe</dt><dd><button data-t="${t.id}" style="display:inline-flex;align-items:center;gap:6px;color:var(--teal);font-weight:700">${logo(t.id,20)}${esc(t.name)}</button></dd><dt>Ligue</dt><dd>${esc(t.league)} ${flag(t.cc)}</dd>${p.cc!==t.cc?`<dt>Expatrié</dt><dd>joue loin de son pays</dd>`:""}</dl>
-  ${duel}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
+  ${duel}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
   setSheet(h,quiet);
 }
 
@@ -939,15 +1017,16 @@ async function sharePicks(){
 }
 
 /* ===================== interactions ===================== */
-const TABS=["home","matchs","swiss","teams","players"];
+const TABS=["home","matchs","swiss","stats","teams","players"];let statsOpen=false;
 document.addEventListener("click",e=>{
   askGyro();
   const tab=e.target.closest("nav.tabs button");
   if(tab){const v=tab.dataset.v;document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b===tab));
     document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
     $("#ind").style.transform=`translateX(${TABS.indexOf(v)*100}%)`;window.scrollTo({top:0});vib(8);
-    if(v==="players")renderMap(); if(v==="home")startBeam(); return}
+    if(v==="players")renderMap(); if(v==="home")startBeam(); if(v==="stats"){statsOpen=true;renderStats()} return}
   if(e.target.closest("#share")){sharePicks();return}
+  const rt=e.target.closest("[data-retry]");if(rt){const k=rt.dataset.retry;if(AK[k]){document.querySelectorAll(`[data-ak="${CSS.escape(k)}"]`).forEach(el=>el.innerHTML=skel());runAk(k)}return}
   if(e.target.closest("#reloadPh")){PHOTO_LOG.lp=PHOTO_LOG.le=PHOTO_LOG.wk="en cours…";renderPlayers();loadPhotos(true);return}
   const pk=e.target.closest("[data-pick]");
   if(pk){const k=pk.dataset.mk,v=pk.dataset.pick;if(picks[k]===v)delete picks[k];else{picks[k]=v;const b=pk.getBoundingClientRect();confetti(b.left+b.width/2,b.top+b.height/2,[T[v].color,"#C8AA6E","#F0E6D2"],45);vib(20)}
@@ -975,6 +1054,277 @@ setInterval(()=>{const c=$("#cd"),m=nextMatch();if(!c||!m||m.state!=="soon")retu
   if(nums.length!==parts.length){c.innerHTML=cdHTML(ms);return}
   parts.forEach(([k,v],i)=>{const el=nums[i];if(el.textContent!==v){el.textContent=v;if(!RM){el.classList.remove("flip");void el.offsetWidth;el.classList.add("flip")}}});
 },1000);
+/* ===================== STATS (Leaguepedia, en direct) ===================== */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let cqLast=0;
+async function cq(params){
+  const wait=Math.max(0,cqLast+650-Date.now());cqLast=Date.now()+wait;if(wait)await sleep(wait);
+  try{return await cargo(params)}catch(e){await sleep(2500);cqLast=Date.now();return await cargo(params)}
+}
+async function cqAll(params,max=1500){let out=[];for(let off=0;off<max;off+=500){const r=await cq({...params,offset:String(off)});out=out.concat(r);if(r.length<500)break}return out}
+const qlist=a=>[...new Set(a)].map(n=>'"'+String(n).replace(/"/g,"")+'"').join(",");
+const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n};
+const pct=(w,n)=>n?Math.round(w/n*100):0;
+const kdaV=(k,d,a)=>(k+a)/Math.max(1,d);
+const fx1=v=>(Math.round(v*10)/10).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1});
+const fx2=v=>(Math.round(v*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtMonth=dt=>{const d=new Date(String(dt).replace(" ","T")+"Z");return isNaN(d)?"":d.toLocaleDateString("fr-FR",{month:"short",year:"numeric"})};
+const fmtShort=dt=>{const d=new Date(String(dt).replace(" ","T")+"Z");return isNaN(d)?"":d.toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"2-digit"})};
+function tourName(op){
+  op=String(op||"");let m;
+  if(m=op.match(/(\d{4}) Season World Championship/))return "Worlds "+m[1];
+  if(m=op.match(/(\d{4}) Mid-Season Invitational/))return "MSI "+m[1];
+  if(m=op.match(/(\d{4}) First Stand/))return "First Stand "+m[1];
+  if(m=op.match(/(\d{4}) Americas Cup/))return "Americas Cup "+m[1];
+  const s=op.split("/").map(x=>x.replace(/\bSeason\b/g,"").trim()).filter(Boolean).join(" ").replace(/\s+/g," ");
+  return s.length>34?s.slice(0,33)+"…":s;
+}
+const linkOf=p=>p.page||p.id;
+
+/* ---- blocs asynchrones : squelette, puis contenu, survivent aux re-rendus ---- */
+const AK={};
+const skel=(n=3)=>`<div class="skel">${Array.from({length:n},()=>"<i></i>").join("")}</div>`;
+const errHTML=k=>`<div class="aerr">Leaguepedia ne répond pas pour l’instant. <button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`;
+function ablock(key,fn,render,ttlH=6){
+  let a=AK[key];
+  if(!a){
+    a=AK[key]={st:"load",fn,render,ttlH};
+    const c=LS.get("ak_"+key,null);
+    if(c&&Date.now()-c.t<ttlH*3600e3){a.st="ok";a.data=c.d}
+    else setTimeout(()=>runAk(key),0);
+  } else {a.render=render;a.fn=fn}
+  const body=a.st==="ok"?safeRender(a):a.st==="err"?errHTML(key):skel();
+  return `<div class="ak" data-ak="${esc(key)}">${body}</div>`;
+}
+function safeRender(a){try{return a.render(a.data)}catch(e){console.error(e);return `<p class="small">Données incomplètes pour ce bloc.</p>`}}
+async function runAk(key){
+  const a=AK[key];a.st="load";
+  try{a.data=await a.fn();a.st="ok";LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err"}
+  document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>{el.innerHTML=a.st==="ok"?safeRender(a):errHTML(key);el.classList.add("in")});
+}
+
+/* ---- noms historiques des équipes (renommages) + vrais logos ---- */
+const EXTRA_NAMES={DK:["DWG KIA","DAMWON Gaming"],T1:["SK Telecom T1"],MKOI:["MAD Lions KOI","MAD Lions"],TL:["Team Liquid Honda"],MVK:["MGN Vikings Esports","Vikings Esports"],
+  LOS:["Los Grandes"],TSW:["Team Whales"],LYON:["LYON","LYON Gaming"],C9:["Cloud9 Kia"],GEN:["KSV Esports"]};
+let TN=null,TNp=null;
+function applyLogos(img){Object.entries(img||{}).forEach(([id,f])=>{if(T[id])T[id].lpImg=lpFile(f,240)})}
+function loadTeamNames(){
+  if(TN)return Promise.resolve(TN); if(TNp)return TNp;
+  const c=LS.get("tnames",null);
+  if(c&&Date.now()-c.t<7*864e5){TN=c.d.tn;applyLogos(c.d.img);return Promise.resolve(TN)}
+  TNp=(async()=>{
+    const base={};TEAMS.forEach(t=>base[t.id]=[t.lp,...(EXTRA_NAMES[t.id]||[])]);
+    const all=()=>Object.values(base).flat(), owner=n=>Object.keys(base).find(k=>base[k].includes(n)), img={};
+    try{const red=await cq({tables:"TeamRedirects",fields:"TeamRedirects.AllName=A,TeamRedirects.OtherName=O",where:`TeamRedirects.AllName IN (${qlist(all())}) OR TeamRedirects.OtherName IN (${qlist(all())})`});
+      red.forEach(r=>{const id=owner(r.A)||owner(r.O);if(id){if(r.A)base[id].push(r.A);if(r.O)base[id].push(r.O)}})}catch(e){}
+    for(let it=0;it<2;it++){try{
+      const rows=await cq({tables:"Teams",fields:"Teams.Name=N,Teams.RenamedTo=R,Teams.Image=I",where:`Teams.RenamedTo IN (${qlist(all())}) OR Teams.Name IN (${qlist(all())})`});
+      rows.forEach(r=>{const id=r.R&&owner(r.R);if(id&&r.N)base[id].push(r.N);const t=TEAMS.find(t=>t.lp===r.N);if(t&&r.I)img[t.id]=r.I});
+    }catch(e){}}
+    TN={};Object.keys(base).forEach(k=>TN[k]=[...new Set(base[k].filter(Boolean))]);
+    LS.set("tnames",{t:Date.now(),d:{tn:TN,img}});applyLogos(img);return TN;
+  })();
+  return TNp;
+}
+const idOfName=n=>{if(TN)for(const k in TN)if(TN[k].includes(n))return k;return resolveTeam(n)};
+
+/* ---- icônes de champions (Data Dragon) ---- */
+let CH=LS.get("champs",null),CHp=null;
+function champMap(){
+  if(CH&&Date.now()-CH.t<7*864e5)return Promise.resolve(CH); if(CHp)return CHp;
+  CHp=(async()=>{try{const v=(await (await fetch("https://ddragon.leagueoflegends.com/api/versions.json")).json())[0];
+    const j=await (await fetch(`https://ddragon.leagueoflegends.com/cdn/${v}/data/en_US/champion.json`)).json();
+    const map={};Object.values(j.data).forEach(c=>{map[norm(c.name)]=c.id;map[norm(c.id)]=c.id});
+    CH={t:Date.now(),v,map};LS.set("champs",CH)}catch(e){}return CH})();
+  return CHp;
+}
+const champImg=n=>{const id=CH&&CH.map&&CH.map[norm(n)];return id?`https://ddragon.leagueoflegends.com/cdn/${CH.v}/img/champion/${id}.png`:null};
+const champ=(n,size=26)=>{const s=champImg(n);return s?`<img class="chi" src="${s}" alt="${esc(n)}" title="${esc(n)}" loading="lazy" style="width:${size}px;height:${size}px">`:`<span class="chi tx" title="${esc(n)}" style="width:${size}px;height:${size}px">${esc(String(n).slice(0,2))}</span>`};
+
+/* ---- requêtes agrégées ---- */
+const MS_F="MatchSchedule.Team1=A,MatchSchedule.Team2=B,MatchSchedule.Winner=W,MatchSchedule.Team1Score=SA,MatchSchedule.Team2Score=SB,MatchSchedule.DateTime_UTC=DT,MatchSchedule.OverviewPage=OP,MatchSchedule.BestOf=BO";
+async function teamSeason(id){
+  const tn=await loadTeamNames(),q=qlist(tn[id]),mine=n=>tn[id].includes(n);
+  const ms=await cqAll({tables:"MatchSchedule",fields:MS_F,where:`(MatchSchedule.Team1 IN (${q}) OR MatchSchedule.Team2 IN (${q})) AND MatchSchedule.DateTime_UTC >= "2026-01-01" AND MatchSchedule.Winner IN ("1","2")`,order_by:"MatchSchedule.DateTime_UTC DESC"},1000);
+  const sg=await cqAll({tables:"ScoreboardGames",fields:"ScoreboardGames.Team1=A,ScoreboardGames.Team2=B,ScoreboardGames.WinTeam=WT,ScoreboardGames.Gamelength_Number=GL,ScoreboardGames.Team1Kills=KA,ScoreboardGames.Team2Kills=KB,ScoreboardGames.Team1Dragons=DA,ScoreboardGames.Team2Dragons=DB,ScoreboardGames.Team1Barons=BA,ScoreboardGames.Team2Barons=BB,ScoreboardGames.Team1Towers=TA,ScoreboardGames.Team2Towers=TB,ScoreboardGames.Team1Gold=GA,ScoreboardGames.Team2Gold=GB",
+    where:`(ScoreboardGames.Team1 IN (${q}) OR ScoreboardGames.Team2 IN (${q})) AND ScoreboardGames.DateTime_UTC >= "2026-01-01"`},1500);
+  const S={sw:0,sl:0,last:[],vs:{},g:0,gw:0,bn:0,bw:0,rn:0,rw:0,gl:0,k:0,d:0,dr:0,ba:0,to:0,gd:0};
+  ms.forEach(r=>{const side=mine(r.A)?1:mine(r.B)?2:0;if(!side)return;const won=String(r.W)===String(side),opp=side===1?r.B:r.A;
+    won?S.sw++:S.sl++;
+    if(S.last.length<10)S.last.push({opp,oid:idOfName(opp),won,s:num(side===1?r.SA:r.SB),o:num(side===1?r.SB:r.SA),dt:r.DT,op:r.OP});
+    const oid=idOfName(opp);if(oid&&oid!==id){S.vs[oid]=S.vs[oid]||{w:0,l:0};won?S.vs[oid].w++:S.vs[oid].l++}});
+  sg.forEach(r=>{const side=mine(r.A)?1:mine(r.B)?2:0;if(!side)return;const won=mine(r.WT)||(r.WT==="1"&&side===1)||(r.WT==="2"&&side===2);
+    S.g++;if(won)S.gw++;if(side===1){S.bn++;if(won)S.bw++}else{S.rn++;if(won)S.rw++}
+    const o=side===1?["KA","KB","DA","BA","TA","GA","GB"]:["KB","KA","DB","BB","TB","GB","GA"];
+    S.gl+=num(r.GL);S.k+=num(r[o[0]]);S.d+=num(r[o[1]]);S.dr+=num(r[o[2]]);S.ba+=num(r[o[3]]);S.to+=num(r[o[4]]);S.gd+=num(r[o[5]])-num(r[o[6]])});
+  if(S.g){["gl","k","d","dr","ba","to","gd"].forEach(k=>S[k]=S[k]/S.g)}
+  return S;
+}
+async function h2h(a,b){
+  const tn=await loadTeamNames(),qa=qlist(tn[a]),qb=qlist(tn[b]);
+  const rows=await cq({tables:"MatchSchedule",fields:MS_F,where:`((MatchSchedule.Team1 IN (${qa}) AND MatchSchedule.Team2 IN (${qb})) OR (MatchSchedule.Team1 IN (${qb}) AND MatchSchedule.Team2 IN (${qa}))) AND MatchSchedule.Winner IN ("1","2")`,order_by:"MatchSchedule.DateTime_UTC DESC",limit:"300"});
+  const H={aw:0,bw:0,list:[],since:null,intl:{aw:0,bw:0}};
+  rows.forEach(r=>{const aSide=tn[a].includes(r.A)?1:2,aWon=String(r.W)===String(aSide);aWon?H.aw++:H.bw++;
+    if(/World Championship|Mid-Season|First Stand/.test(r.OP||"")){aWon?H.intl.aw++:H.intl.bw++}
+    if(H.list.length<5)H.list.push({dt:r.DT,op:r.OP,as:num(aSide===1?r.SA:r.SB),bs:num(aSide===1?r.SB:r.SA),aWon,bo:num(r.BO)});
+    H.since=r.DT});
+  return H;
+}
+async function laneDuels(a,b){ // a,b triés
+  const la=teamPlayers(a).map(linkOf),lb=teamPlayers(b).map(linkOf);
+  const rows=await cqAll({tables:"ScoreboardPlayers=SP1,ScoreboardPlayers=SP2",join_on:"SP1.GameRoleIdVs=SP2.GameRoleId",
+    fields:"SP1.Link=PA,SP2.Link=PB,SP1.PlayerWin=W,SP1.Kills=KA,SP1.Deaths=DA,SP1.Assists=AA,SP2.Kills=KB,SP2.Deaths=DB,SP2.Assists=AB,SP1.Champion=CA,SP2.Champion=CB,SP1.DateTime_UTC=DT,SP1.OverviewPage=OP",
+    where:`SP1.Link IN (${qlist(la)}) AND SP2.Link IN (${qlist(lb)})`,order_by:"SP1.DateTime_UTC DESC"},1000);
+  const P={};
+  rows.forEach(r=>{const k=norm(r.PA)+"|"+norm(r.PB),x=P[k]=P[k]||{g:0,w:0,ka:0,da:0,aa:0,kb:0,db:0,ab:0,last:null,ca:{},cb:{}};
+    x.g++;if(r.W==="Yes")x.w++;x.ka+=num(r.KA);x.da+=num(r.DA);x.aa+=num(r.AA);x.kb+=num(r.KB);x.db+=num(r.DB);x.ab+=num(r.AB);
+    if(!x.last)x.last={dt:r.DT,ca:r.CA,cb:r.CB,w:r.W==="Yes",op:r.OP}});
+  return P;
+}
+function duelFor(P,pa,pb,flip){
+  const k=flip?norm(linkOf(pb))+"|"+norm(linkOf(pa)):norm(linkOf(pa))+"|"+norm(linkOf(pb)),x=P&&P[k];if(!x)return null;
+  if(!flip)return x;
+  return {g:x.g,w:x.g-x.w,ka:x.kb,da:x.db,aa:x.ab,kb:x.ka,db:x.da,ab:x.aa,last:x.last&&{dt:x.last.dt,ca:x.last.cb,cb:x.last.ca,w:!x.last.w,op:x.last.op}};
+}
+async function playerStats(p){
+  await champMap();const L=linkOf(p);
+  const se=await cqAll({tables:"ScoreboardPlayers=SP,ScoreboardGames=SG",join_on:"SP.GameId=SG.GameId",
+    fields:"SP.Champion=C,SP.Kills=K,SP.Deaths=D,SP.Assists=A,SP.CS=CS,SP.Gold=G,SP.DamageToChampions=DMG,SP.TeamKills=TK,SP.PlayerWin=W,SP.VisionScore=VS,SG.Gamelength_Number=GL",
+    where:`SP.Link="${L.replace(/"/g,"")}" AND SP.DateTime_UTC >= "2026-01-01"`},1000);
+  const wo=await cqAll({tables:"ScoreboardPlayers",fields:"ScoreboardPlayers.Champion=C,ScoreboardPlayers.Kills=K,ScoreboardPlayers.Deaths=D,ScoreboardPlayers.Assists=A,ScoreboardPlayers.PlayerWin=W,ScoreboardPlayers.OverviewPage=OP",
+    where:`ScoreboardPlayers.Link="${L.replace(/"/g,"")}" AND ScoreboardPlayers.OverviewPage LIKE "%Season World Championship%"`},1000);
+  const agg=rows=>{const A={g:0,w:0,k:0,d:0,a:0,cs:0,gold:0,dmg:0,tk:0,vs:0,min:0,ch:{}};
+    rows.forEach(r=>{A.g++;const w=r.W==="Yes";if(w)A.w++;A.k+=num(r.K);A.d+=num(r.D);A.a+=num(r.A);A.cs+=num(r.CS);A.gold+=num(r.G);A.dmg+=num(r.DMG);A.tk+=num(r.TK);A.vs+=num(r.VS);A.min+=num(r.GL);
+      const c=A.ch[r.C]=A.ch[r.C]||{g:0,w:0,k:0,d:0,a:0};c.g++;if(w)c.w++;c.k+=num(r.K);c.d+=num(r.D);c.a+=num(r.A)});
+    A.champs=Object.entries(A.ch).sort((x,y)=>y[1].g-x[1].g||y[1].w-x[1].w).slice(0,6).map(([c,v])=>({c,...v}));delete A.ch;return A};
+  const S=agg(se),W=agg(wo),years=[...new Set(wo.map(r=>(String(r.OP).match(/(\d{4}) Season World/)||[])[1]).filter(Boolean))].sort();
+  const now=agg(wo.filter(r=>/^2026 Season World Championship/.test(r.OP)));
+  return {S,W,years,now};
+}
+async function tourneyStats(){
+  await champMap();
+  const rows=await cqAll({tables:"ScoreboardPlayers=SP,ScoreboardGames=SG",join_on:"SP.GameId=SG.GameId",
+    fields:"SP.Link=L,SP.Team=TM,SP.Champion=C,SP.Kills=K,SP.Deaths=D,SP.Assists=A,SP.CS=CS,SP.DamageToChampions=DMG,SP.TeamKills=TK,SP.PlayerWin=W,SP.GameId=G,SG.Gamelength_Number=GL,SG.Team1=B1,SG.Team2=B2,SG.WinTeam=WT,SG.Team1Kills=K1,SG.Team2Kills=K2",
+    where:`SP.OverviewPage LIKE "2026 Season World Championship%"`},3000);
+  let bans=[];try{bans=await cqAll({tables:"PicksAndBansS7",fields:"PicksAndBansS7.Team1Ban1=a1,PicksAndBansS7.Team1Ban2=a2,PicksAndBansS7.Team1Ban3=a3,PicksAndBansS7.Team1Ban4=a4,PicksAndBansS7.Team1Ban5=a5,PicksAndBansS7.Team2Ban1=b1,PicksAndBansS7.Team2Ban2=b2,PicksAndBansS7.Team2Ban3=b3,PicksAndBansS7.Team2Ban4=b4,PicksAndBansS7.Team2Ban5=b5",where:`PicksAndBansS7.OverviewPage LIKE "2026 Season World Championship%"`},1000)}catch(e){}
+  const pl={},ch={},games={};
+  rows.forEach(r=>{const w=r.W==="Yes";
+    const p=pl[r.L]=pl[r.L]||{L:r.L,tm:r.TM,g:0,w:0,k:0,d:0,a:0,cs:0,dmg:0,tk:0,min:0};p.g++;if(w)p.w++;p.k+=num(r.K);p.d+=num(r.D);p.a+=num(r.A);p.cs+=num(r.CS);p.dmg+=num(r.DMG);p.tk+=num(r.TK);p.min+=num(r.GL);
+    const c=ch[r.C]=ch[r.C]||{p:0,w:0,b:0};c.p++;if(w)c.w++;
+    if(!games[r.G])games[r.G]={gl:num(r.GL),b1:r.B1,b2:r.B2,wt:r.WT,kills:num(r.K1)+num(r.K2)}});
+  bans.forEach(r=>["a1","a2","a3","a4","a5","b1","b2","b3","b4","b5"].forEach(k=>{const c=r[k];if(c&&c!=="None"){ch[c]=ch[c]||{p:0,w:0,b:0};ch[c].b++}}));
+  const G=Object.values(games),n=G.length;
+  const blue=G.filter(g=>g.wt===g.b1||g.wt==="1").length;
+  const byLen=[...G].sort((x,y)=>y.gl-x.gl),byK=[...G].sort((x,y)=>y.kills-x.kills);
+  const players=Object.values(pl);
+  const top=(f,min=3,asc=false)=>players.filter(p=>p.g>=min).map(p=>({...p,v:f(p)})).sort((x,y)=>asc?x.v-y.v:y.v-x.v).slice(0,5);
+  return {n,blue,red:n-blue,avg:n?G.reduce((a,g)=>a+g.gl,0)/n:0,longest:byLen[0]||null,shortest:byLen[byLen.length-1]||null,bloodiest:byK[0]||null,
+    lead:{kda:top(p=>kdaV(p.k,p.d,p.a)),kills:top(p=>p.k,1),csm:top(p=>p.cs/Math.max(1,p.min)),dpm:top(p=>p.dmg/Math.max(1,p.min)),kp:top(p=>(p.k+p.a)/Math.max(1,p.tk)*100)},
+    champs:Object.entries(ch).map(([c,v])=>({c,...v,pr:n?(v.p+v.b)/n*100:0})).sort((x,y)=>y.pr-x.pr).slice(0,15)};
+}
+
+/* ---- rendu des stats ---- */
+const playerByLink=L=>PLAYERS.find(p=>norm(linkOf(p))===norm(L))||PLAYERS.find(p=>norm(p.id)===norm(String(L).replace(/\s*\(.*\)$/,"")));
+function form5(last,n=5){return `<span class="f5">${last.slice(0,n).map(x=>`<i class="${x.won?"w":"l"}" title="${x.won?"Victoire":"Défaite"} ${x.s}-${x.o} contre ${esc(x.opp)}, ${esc(tourName(x.op))}">${x.won?"V":"D"}</i>`).join("")}</span>`}
+function tape(label,a,b,fmt,hi=true){
+  const mx=Math.max(Math.abs(a),Math.abs(b))||1,best=a===b?0:((a>b)===hi?1:2);
+  return `<div class="tape"><span class="tv${best===1?" best":""}">${fmt(a)}</span><span class="tb l"><i style="width:${Math.abs(a)/mx*100}%"></i></span><span class="tl">${label}</span><span class="tb r"><i style="width:${Math.abs(b)/mx*100}%"></i></span><span class="tv r${best===2?" best":""}">${fmt(b)}</span></div>`;
+}
+function renderH2H(a,b){return H=>{
+  const tot=H.aw+H.bw;
+  if(!tot)return `<p class="small">Ces deux équipes ne se sont jamais affrontées en match officiel recensé.</p>`;
+  return `<div class="h2h"><div class="h2hs"><span>${logo(a,34)}<b>${H.aw}</b></span><em>séries gagnées<br>depuis ${esc(fmtMonth(H.since))}</em><span><b>${H.bw}</b>${logo(b,34)}</span></div>
+    <div class="split"><i style="width:${H.aw/tot*100}%;background:${col(a)}"></i><i style="width:${H.bw/tot*100}%;background:${col(b)}"></i></div>
+    ${H.intl.aw+H.intl.bw?`<p class="small" style="text-align:center;margin:6px 0 0">En compétition internationale : ${esc(T[a].id)} ${H.intl.aw}, ${esc(T[b].id)} ${H.intl.bw}</p>`:""}
+    <h3 class="h3">Les ${H.list.length} derniers Bo</h3>${H.list.map(x=>`<div class="h2hr"><span class="small">${esc(fmtShort(x.dt))}</span><span class="tn">${esc(tourName(x.op))}</span>
+      <span class="sc2"><b class="${x.aWon?"w":""}">${x.as}</b>-<b class="${x.aWon?"":"w"}">${x.bs}</b></span><span class="wl">${logo(x.aWon?a:b,20)}</span></div>`).join("")}</div>`}}
+function renderTape(a,b,A,B){
+  if(!A.g||!B.g)return `<p class="small">Pas assez de parties recensées en 2026.</p>`;
+  const dur=v=>Math.floor(v)+":"+String(Math.round(v%1*60)).padStart(2,"0");
+  return `<div class="tapehd"><span>${logo(a,26)}${esc(T[a].id)}</span><span>${esc(T[b].id)}${logo(b,26)}</span></div>
+   ${tape("Séries gagnées",pct(A.sw,A.sw+A.sl),pct(B.sw,B.sw+B.sl),v=>v+" %")}
+   ${tape("Parties gagnées",pct(A.gw,A.g),pct(B.gw,B.g),v=>v+" %")}
+   ${tape("Côté bleu",pct(A.bw,A.bn),pct(B.bw,B.bn),v=>v+" %")}
+   ${tape("Côté rouge",pct(A.rw,A.rn),pct(B.rw,B.rn),v=>v+" %")}
+   ${tape("Kills par partie",A.k,B.k,fx1)}
+   ${tape("Morts par partie",A.d,B.d,fx1,false)}
+   ${tape("Dragons",A.dr,B.dr,fx1)}
+   ${tape("Barons",A.ba,B.ba,fx2)}
+   ${tape("Tours",A.to,B.to,fx1)}
+   ${tape("Écart d’or final",A.gd,B.gd,v=>(v>0?"+":"")+fx1(v/1000)+" k")}
+   ${tape("Durée moyenne",A.gl,B.gl,dur,false)}
+   <p class="small" style="margin-top:6px">Saison 2026, toutes compétitions : ${A.sw}-${A.sl} en séries pour ${esc(T[a].id)}, ${B.sw}-${B.sl} pour ${esc(T[b].id)}. Le chiffre en or est le meilleur des deux.</p>`;
+}
+function renderForm(a,b,A,B){
+  const row=(id,S)=>`<div class="formrow">${logo(id,28)}<div style="flex:1;min-width:0"><b>${esc(T[id].id)}</b> <span class="small">${S.last.slice(0,5).filter(x=>x.won).length}V-${S.last.slice(0,5).filter(x=>!x.won).length}D</span>
+    <div class="fopp">${S.last.slice(0,5).map(x=>`<span class="${x.won?"w":"l"}" title="${esc(tourName(x.op))}">${x.oid?logo(x.oid,16):""}${esc(x.oid?T[x.oid].id:String(x.opp).slice(0,10))} ${x.s}-${x.o}</span>`).join("")}</div></div></div>`;
+  return row(a,A)+row(b,B);
+}
+function renderLanes(m,P,flip){
+  const pa=teamPlayers(m.t1),pb=teamPlayers(m.t2);
+  return ROLE_ORDER.map((r,i)=>{const a=pa[i],b=pb[i];if(!a||!b)return"";const x=duelFor(P,a,b,flip);
+    if(!x)return `<div class="lane"><span class="rl">${ROLES[r]}</span><b>${esc(a.id)}</b><span class="small">jamais croisés en officiel</span><b>${esc(b.id)}</b></div>`;
+    const ka=kdaV(x.ka,x.da,x.aa),kb=kdaV(x.kb,x.db,x.ab);
+    return `<div class="lane"><span class="rl">${ROLES[r]}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(a.id)}</b>
+      <span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${col(m.t1)}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${col(m.t2)}"></i></i><em>${x.g-x.w}</em></span>
+      <b class="${x.g-x.w>x.w?"lead":""}">${esc(b.id)}</b>
+      <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face. KDA ${fx2(ka)} contre ${fx2(kb)}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`}).join("");
+}
+function tiles(list){return `<div class="tiles">${list.map(([v,l])=>`<div class="tile hx"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`}
+function champList(cs){return `<div class="clist">${cs.map(c=>`<div class="crow">${champ(c.c,32)}<span class="cn">${esc(c.c)}<small>${c.g} partie${c.g>1?"s":""}, KDA ${fx1(kdaV(c.k,c.d,c.a))}</small></span><span class="cw"><i style="width:${pct(c.w,c.g)}%"></i></span><b>${pct(c.w,c.g)} %</b></div>`).join("")}</div>`}
+function renderPlayerStats(p){return D=>{
+  const S=D.S,W=D.W;let h="";
+  if(S.g){h+=`<h2>Saison 2026</h2>`+tiles([[S.g,"parties"],[pct(S.w,S.g)+" %","de victoires"],[fx2(kdaV(S.k,S.d,S.a)),"KDA"],[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
+    [fx1(S.cs/Math.max(1,S.min)),"CS par minute"],[Math.round(S.dmg/Math.max(1,S.min)),"dégâts par minute"],[Math.round(S.gold/Math.max(1,S.min)),"or par minute"],[pct(S.k+S.a,S.tk)+" %","participation aux kills"]])
+    +`<h3 class="h3">Champions les plus joués</h3>`+champList(S.champs)}
+  else h+=`<p class="small">Aucune partie 2026 recensée pour ce joueur.</p>`;
+  h+=`<h2>Aux Worlds</h2>`;
+  if(W.g){h+=`<div class="yrs">${D.years.map(y=>`<span class="chip">${y}${p.titles.includes(+y)?" 🏆":""}</span>`).join("")}</div>`
+    +tiles([[D.years.length,"participations"],[W.g,"parties"],[pct(W.w,W.g)+" %","de victoires"],[fx2(kdaV(W.k,W.d,W.a)),"KDA aux Worlds"]])
+    +(D.now.g?`<p class="small" style="margin:8px 0 0">À ces Worlds 2026 : ${D.now.g} partie${D.now.g>1?"s":""}, ${pct(D.now.w,D.now.g)} % de victoires, KDA ${fx2(kdaV(D.now.k,D.now.d,D.now.a))}.</p>`:"")
+    +`<h3 class="h3">Ses champions aux Worlds</h3>`+champList(W.champs.slice(0,4))}
+  else h+=`<p class="small">Premiers Worlds en carrière.</p>`;
+  return h}}
+function renderTeamSeason(id){return S=>{
+  if(!S.g)return `<p class="small">Pas de parties 2026 recensées.</p>`;
+  const dur=v=>Math.floor(v)+" min "+String(Math.round(v%1*60)).padStart(2,"0");
+  const vs=Object.entries(S.vs).sort((x,y)=>(y[1].w+y[1].l)-(x[1].w+x[1].l));
+  return tiles([[`${S.sw}-${S.sl}`,"séries"],[pct(S.gw,S.g)+" %",`des ${S.g} parties`],[pct(S.bw,S.bn)+" %","côté bleu"],[pct(S.rw,S.rn)+" %","côté rouge"],[fx1(S.k),"kills par partie"],[fx1(S.dr),"dragons par partie"],[(S.gd>0?"+":"")+fx1(S.gd/1000)+" k","écart d’or final"],[dur(S.gl),"durée moyenne"]])
+   +`<h3 class="h3">10 dernières séries</h3><div class="fopp wide">${S.last.map(x=>`<span class="${x.won?"w":"l"}" title="${esc(tourName(x.op))}, ${esc(fmtShort(x.dt))}">${x.oid?logo(x.oid,16):""}${esc(x.oid?T[x.oid].id:String(x.opp).slice(0,12))} ${x.s}-${x.o}</span>`).join("")}</div>`
+   +(vs.length?`<h3 class="h3">En 2026 contre les équipes de ces Worlds</h3><div class="vsl">${vs.map(([o,r])=>`<button class="vsr" data-t="${o}">${logo(o,24)}<span>${esc(T[o].id)}</span><b class="${r.w>r.l?"w":r.w<r.l?"l":""}">${r.w}-${r.l}</b></button>`).join("")}</div>`:"");
+}}
+function renderTourney(D){
+  if(!D.n)return `<div class="note">Les stats du tournoi apparaissent dès que Leaguepedia a saisi les premières parties.</div>`;
+  const dur=v=>Math.floor(v)+":"+String(Math.round(v%1*60)).padStart(2,"0");
+  const lb=(title,list,fmt)=>`<div class="lead hx"><h4>${title}</h4>${list.map((x,i)=>{const p=playerByLink(x.L);return `<button class="lrow" ${p?`data-p="${p.key}"`:""}><span class="rk">${i+1}</span>${p?photo(p,"ava",34):`<span class="mono" style="width:34px;height:34px;background:var(--panel2)">?</span>`}<span class="ln2"><b>${esc(p?p.id:x.L)}</b><small>${esc(p?T[p.team].id:x.tm)}, ${x.g} p.</small></span><em>${fmt(x.v)}</em></button>`}).join("")}</div>`;
+  const tn=n=>{const id=idOfName(n);return id?T[id].id:esc(n)};
+  return `${tiles([[D.n,"parties jouées"],[dur(D.avg),"durée moyenne"],[pct(D.blue,D.n)+" %","victoires côté bleu"],[D.champs.length?esc(D.champs[0].c):"–","champion le plus présent"]])}
+   <div class="split big" style="margin-top:10px"><i style="width:${D.blue/D.n*100}%;background:#2F7CF6"></i><i style="width:${D.red/D.n*100}%;background:#E84057"></i></div><p class="small" style="display:flex;justify-content:space-between;margin:4px 0 0"><span>Bleu ${D.blue}</span><span>Rouge ${D.red}</span></p>
+   <h2>Les leaders</h2><div class="leads">${lb("KDA",D.lead.kda,fx2)}${lb("Kills",D.lead.kills,v=>v)}${lb("CS par minute",D.lead.csm,fx1)}${lb("Dégâts par minute",D.lead.dpm,v=>Math.round(v))}${lb("Participation aux kills",D.lead.kp,v=>Math.round(v)+" %")}</div>
+   <p class="small">Minimum 3 parties, sauf pour les kills.</p>
+   <h2>Champions</h2><p class="sub">Présence = choisi ou banni, rapporté au nombre de parties. En Fearless Draft, un champion joué disparaît pour le reste de la série.</p>
+   <div class="ctab">${D.champs.map(c=>`<div class="ct">${champ(c.c,34)}<span class="cn">${esc(c.c)}<small>${c.p} pick${c.p>1?"s":""}, ${c.b} ban${c.b>1?"s":""}${c.p?`, ${pct(c.w,c.p)} % de victoires`:""}</small></span><span class="cw"><i style="width:${Math.min(100,c.pr)}%"></i></span><b>${Math.round(c.pr)} %</b></div>`).join("")}</div>
+   <h2>Records</h2><div class="recs">
+    ${D.longest?`<div class="tile hx"><b>${dur(D.longest.gl)}</b><span>partie la plus longue, ${tn(D.longest.b1)} contre ${tn(D.longest.b2)}</span></div>`:""}
+    ${D.shortest?`<div class="tile hx"><b>${dur(D.shortest.gl)}</b><span>partie la plus courte, ${tn(D.shortest.b1)} contre ${tn(D.shortest.b2)}</span></div>`:""}
+    ${D.bloodiest?`<div class="tile hx"><b>${D.bloodiest.kills}</b><span>kills dans une partie, ${tn(D.bloodiest.b1)} contre ${tn(D.bloodiest.b2)}</span></div>`:""}</div>`;
+}
+function renderStats(){
+  $("#v-stats").innerHTML=`<h2>Worlds 2026 en stats</h2><p class="sub">Calculé en direct depuis les feuilles de match Leaguepedia, Play-In compris.</p>`+ablock("tourney",tourneyStats,renderTourney,.25);
+}
+/* blocs prêts à insérer dans les fiches */
+function matchStatsHTML(m){
+  if(!m.t1||!m.t2)return"";
+  const [a,b]=[m.t1,m.t2].sort(),flip=a!==m.t1;
+  const tsA=()=>teamSeason(m.t1),tsB=()=>teamSeason(m.t2);
+  return `<div style="--c1:${col(m.t1)};--c2:${col(m.t2)}"><h2>Historique des confrontations</h2>`+ablock("h2h_"+m.t1+"_"+m.t2,()=>h2h(m.t1,m.t2),renderH2H(m.t1,m.t2),12)
+   +`<h2>Duels de lane en carrière</h2><p class="sub">Toutes les parties officielles où ces deux joueurs étaient face à face dans la même lane.</p>`
+   +ablock("lane_"+a+"_"+b,()=>laneDuels(a,b),P=>renderLanes(m,P,flip),12)
+   +`<h2>Forme du moment</h2>`+ablock("pairS_"+m.t1+"_"+m.t2,async()=>({A:await teamSeasonC(m.t1),B:await teamSeasonC(m.t2)}),D=>renderForm(m.t1,m.t2,D.A,D.B),3)
+   +`<h2>Saison 2026 comparée</h2>`+ablock("tape_"+m.t1+"_"+m.t2,async()=>({A:await teamSeasonC(m.t1),B:await teamSeasonC(m.t2)}),D=>renderTape(m.t1,m.t2,D.A,D.B),3)+`</div>`;
+}
+const TSC={};
+function teamSeasonC(id){const c=LS.get("ak_ts_"+id,null);if(c&&Date.now()-c.t<3*3600e3)return Promise.resolve(c.d);if(!TSC[id])TSC[id]=teamSeason(id).then(d=>{LS.set("ak_ts_"+id,{t:Date.now(),d});return d}).finally(()=>setTimeout(()=>delete TSC[id],1000));return TSC[id]}
 /* ===================== sources en direct ===================== */
 const LE_KEY="0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z", WORLDS_LEAGUE="98767975604431411";
 async function leFetch(path){
@@ -1121,6 +1471,8 @@ MATCHES=finalize(EMBED.map(m=>({...m})));
 intro();
 renderAll();
 sync(false);
+champMap();
+loadTeamNames().then(()=>renderAll()).catch(()=>{});
 </script>
 </body>
 </html>
