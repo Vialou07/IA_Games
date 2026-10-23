@@ -19,7 +19,7 @@ claude
 - Dépôt : `Vialou07/IA_Games`, publié par GitHub Pages (branche `main`, mode classique) sur https://vialou07.github.io/IA_Games/
 - L'appli : `worlds.html`, un seul fichier HTML (CSS et JS inclus), lien direct https://vialou07.github.io/IA_Games/worlds.html. Elle a une tuile « Worlds 2026 » en tête de `index.html` (le hub).
 - Utilisateurs : Thomas et un groupe de potes, sur Android (Chrome et navigateur intégré de Messenger), souvent en 5G.
-- Version actuelle : `APP_VERSION = "v9.1, 24/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
+- Version actuelle : `APP_VERSION = "v9.2, 24/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
 - Autres fichiers de l'appli :
   - `tools/build_stats.py` : le générateur de stats côté serveur (le « robot »), 100 % API officielle LoL Esports ;
   - `.github/workflows/stats.yml` : le workflow GitHub Actions qui le lance toutes les 30 minutes ;
@@ -37,6 +37,7 @@ Six onglets : Direct, Matchs, Suisse, Stats, Équipes, Joueurs.
   - le pari (vainqueur, puis score exact en Bo3 et Bo5) ;
   - les paris de la ligue, cachés jusqu'au coup d'envoi ;
   - le direct : kills, or, objectifs, courbe d'or, 10 joueurs, chances de victoire estimées, analyse de draft ;
+  - la feuille de match de chaque partie terminée (`matchGames`, `renderGames`) : vainqueur, durée, objectifs, champion, K/D/A, CS et part des dégâts des 10 joueurs, lue dans le flux officiel par le téléphone, avec la même déduction du vainqueur que le robot ;
   - l'historique des confrontations, les duels de lane en carrière, la forme et la saison 2026 comparée.
 - **Fiche joueur** : carte holographique, saison 2026 avec le rang au poste parmi les 95 titulaires (KDA, CS/min, or/min, part des dégâts, participation aux kills, écarts d’or et de CS à 15 min, balises), Worlds depuis 2024, prochain duel, bouton « Comparer ».
 - **Comparaison** (`compareSheet`, fiche `c`) : deux joueurs côte à côte (saison 2026, champions, duels directs depuis 2024). On y arrive par la fiche joueur, le prochain duel ou en touchant une ligne de duel de lane dans une fiche match. Changer d’adversaire ne crée pas d’entrée d’historique.
