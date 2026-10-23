@@ -645,14 +645,14 @@ const EMBED = [
  {id:"pi4",stage:"pi",label:"Repêchage 1",t1:"FUR",t2:"C9",start:"2026-10-16T23:00:00Z",bo:5,s1:3,s2:1},
  {id:"pi5",stage:"pi",label:"Repêchage 2",t1:"MVK",t2:"FUR",start:"2026-10-17T18:00:00Z",bo:5,s1:3,s2:1},
  {id:"pi6",stage:"pi",label:"Qualification",t1:"KC",t2:"MVK",start:"2026-10-18T18:00:00Z",bo:5,s1:3,s2:0},
- {id:"sw1",stage:"sw",label:"Ronde 1",t1:"GEN",t2:"IG",start:"2026-10-23T17:00:00Z",bo:1},
- {id:"sw2",stage:"sw",label:"Ronde 1",t1:"TL",t2:"CFO",start:"2026-10-23T18:00:00Z",bo:1},
- {id:"sw3",stage:"sw",label:"Ronde 1",t1:"AL",t2:"KC",start:"2026-10-23T19:00:00Z",bo:1},
- {id:"sw4",stage:"sw",label:"Ronde 1",t1:"G2",t2:"DK",start:"2026-10-23T20:00:00Z",bo:1},
- {id:"sw5",stage:"sw",label:"Ronde 1",t1:"HLE",t2:"TES",start:"2026-10-23T21:00:00Z",bo:1},
- {id:"sw6",stage:"sw",label:"Ronde 1",t1:"LOS",t2:"T1",start:"2026-10-23T22:00:00Z",bo:1},
- {id:"sw7",stage:"sw",label:"Ronde 1",t1:"TSW",t2:"LYON",start:"2026-10-23T23:00:00Z",bo:1},
- {id:"sw8",stage:"sw",label:"Ronde 1",t1:"BLG",t2:"MKOI",start:"2026-10-24T00:00:00Z",bo:1}
+ {id:"sw1",stage:"sw",label:"Ronde 1",t1:"IG",t2:"GEN",start:"2026-10-23T17:00:00Z",bo:1,s1:0,s2:1},
+ {id:"sw2",stage:"sw",label:"Ronde 1",t1:"TES",t2:"HLE",start:"2026-10-23T18:00:00Z",bo:1,s1:0,s2:1},
+ {id:"sw3",stage:"sw",label:"Ronde 1",t1:"MKOI",t2:"BLG",start:"2026-10-23T19:00:00Z",bo:1,s1:1,s2:0},
+ {id:"sw4",stage:"sw",label:"Ronde 1",t1:"AL",t2:"KC",start:"2026-10-23T20:00:00Z",bo:1},
+ {id:"sw5",stage:"sw",label:"Ronde 1",t1:"G2",t2:"DK",start:"2026-10-23T21:00:00Z",bo:1},
+ {id:"sw6",stage:"sw",label:"Ronde 1",t1:"TL",t2:"CFO",start:"2026-10-23T22:00:00Z",bo:1},
+ {id:"sw7",stage:"sw",label:"Ronde 1",t1:"LOS",t2:"T1",start:"2026-10-23T23:00:00Z",bo:1},
+ {id:"sw8",stage:"sw",label:"Ronde 1",t1:"TSW",t2:"LYON",start:"2026-10-24T00:00:00Z",bo:1}
 ];
 
 /* jours de compétition sans affiche connue (tirage au fil de l'eau) */
@@ -680,7 +680,7 @@ const norm = s => String(s||"").toLowerCase().replace(/ø/g,"o").normalize("NFD"
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const T = {}; TEAMS.forEach(t=>{t.al=[...new Set([...t.al,norm(t.id),norm(t.name),norm(t.lp)])];T[t.id]=t});
 const CHAMPS={Faker:[2013,2015,2016,2023,2024,2025],Oner:[2023,2024,2025],Keria:[2023,2024,2025],Gumayusi:[2023,2024,2025],Zeus:[2023,2024],Doran:[2025],
-  Canyon:[2020],ShowMaker:[2020],Ruler:[2017],CoreJJ:[2017],TheShy:[2018],Rookie:[2018],JackeyLove:[2018],Viper:[2021],Meiko:[2021]};
+  Canyon:[2020],ShowMaker:[2020],Ruler:[2017],CoreJJ:[2017],TheShy:[2018],Rookie:[2018],JackeyLove:[2018],Viper:[2021],Meiko:[2021],Zeka:[2022],Tian:[2019]};
 const PLAYERS = [];
 TEAMS.forEach(t=>t.p.forEach(([id,role,cc])=>PLAYERS.push({id,role,cc,team:t.id,key:t.id+"_"+norm(id),titles:CHAMPS[id]||[]})));
 const teamPlayers = id => ROLE_ORDER.map(r=>PLAYERS.find(p=>p.team===id&&p.role===r)).filter(Boolean);
@@ -771,7 +771,8 @@ function records(){
   });
   return R;
 }
-const piWinner = () => (MATCHES.find(m=>m.stage==="pi"&&m.label==="Qualification"&&m.winner)||{}).winner;
+/* l'API LoL Esports nomme tous les matchs du Play-In « Play-ins » : le dernier match joué fait foi */
+const piWinner = () => {const pi=MATCHES.filter(m=>m.stage==="pi"),last=pi[pi.length-1];return (pi.find(m=>m.label==="Qualification"&&m.winner)||(last&&last.winner?last:{})).winner};
 function status(id,R){
   const t=T[id],r=R[id];
   if(t.entry==="pi"){
@@ -1227,14 +1228,15 @@ setInterval(()=>{const c=$("#cd"),m=nextMatch();if(!c||!m||m.state!=="soon")retu
 /* ===================== STATS (Leaguepedia, en direct) ===================== */
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let cqLast=0;
-let lpPause=0;
+let lpPause=0,lpStrikes=0;
 const isRL=e=>/rate|limit|429|503|ratelimited|exceeded/i.test(String(e&&e.message||e));
+/* chaque refus prolonge la pénalité de Leaguepedia : la pause double à chaque limite (1 à 10 min) */
 async function cq(params){
   for(let a=0;;a++){
     if(lpPause>Date.now())await sleep(lpPause-Date.now());
     const wait=Math.max(0,cqLast+2500-Date.now());cqLast=Date.now()+wait;if(wait)await sleep(wait);
-    try{return await cargo(params)}catch(e){
-      if(isRL(e)){lpPause=Date.now()+60000;if(a>=1)throw e}
+    try{const r=await cargo(params);lpStrikes=0;return r}catch(e){
+      if(isRL(e)){lpStrikes++;lpPause=Date.now()+Math.min(600e3,60e3*2**(lpStrikes-1));if(a>=1||lpStrikes>1)throw e}
       else{if(a>=2)throw e;await sleep(2000*(a+1))}
     }
   }
@@ -1259,24 +1261,24 @@ function tourName(op){
 }
 const linkOf=p=>p.page||p.id;
 
-/* ---- stats précalculées par le robot GitHub (data/stats.json), prioritaires sur Leaguepedia en direct ---- */
+/* ---- stats précalculées par le robot GitHub (branche stats), prioritaires sur Leaguepedia en direct ---- */
 let SJ=null,SJt=0,SJp=null;
 function applySJ(){Object.entries(SJ.logos||{}).forEach(([id,f])=>{if(T[id]&&f)T[id].lpImg=lpFile(f,240)});Object.entries(SJ.links||{}).forEach(([k,L])=>{const p=PLAYERS.find(x=>x.key===k);if(p&&L&&!p.page)p.page=L})}
 function loadSJ(){
   if(SJ&&Date.now()-SJt<10*60e3)return Promise.resolve(SJ);if(SJp)return SJp;
   SJp=(async()=>{const t=performance.now();
-    for(const u of ["https://raw.githubusercontent.com/Vialou07/IA_Games/main/data/stats.json","data/stats.json"]){
+    for(const u of ["https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/stats.json"]){
       try{const r=await fetch(u,{cache:"no-cache"});if(r.ok){const j=await r.json();if(j&&j.teams&&j.built){SJ=j;SJt=Date.now();applySJ();if(window.mark)mark("sj",true,performance.now()-t);return SJ}}}catch(e){}}
     if(window.mark)mark("sj",false,performance.now()-t,"stats précalculées pas encore disponibles");return SJ})().finally(()=>setTimeout(()=>{SJp=null},1000));
   return SJp;
 }
-const sjOk=(s,sec)=>s&&!(s.errors||[]).some(e=>String(e).startsWith(sec));
+const sjOk=(s,sec)=>s&&!(s.errors||[]).some(e=>String(e).startsWith(sec+":"));
 
 /* ---- blocs asynchrones : squelette, puis contenu, survivent aux re-rendus ---- */
 const AK={};
 const skel=(n=3)=>`<div class="skel">${Array.from({length:n},()=>"<i></i>").join("")}</div>`;
 const errHTML=k=>{const a=AK[k]||{},m=String(a.emsg||"");const rl=/rate|limit|exceeded/i.test(m);
-  return `<div class="aerr"><span>${rl?"Leaguepedia limite les requêtes. Nouvel essai automatique dans une minute.":"Leaguepedia ne répond pas pour l’instant."}${!rl&&m?`<small>${esc(m.slice(0,120))}</small>`:""}</span><button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`};
+  return `<div class="aerr"><span>${rl?`Leaguepedia limite les requêtes. Nouvel essai automatique dans ${Math.max(1,Math.ceil((lpPause-Date.now())/60e3))} min.`:"Leaguepedia ne répond pas pour l’instant."}${!rl&&m?`<small>${esc(m.slice(0,120))}</small>`:""}</span><button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`};
 const waitHTML=()=>`<div class="aerr"><span>Leaguepedia limite les requêtes. Chargement automatique dans ${Math.max(5,Math.round((lpPause-Date.now())/1000))} s.</span></div>`;
 let akIO=null;
 function armAk(){
@@ -1291,14 +1293,14 @@ function ablock(key,fn,render,ttlH=6){
     if(c&&Date.now()-c.t<ttlH*3600e3){a.st="ok";a.data=c.d}
     else setTimeout(armAk,0);
   } else {a.render=render;a.fn=fn;if(a.st==="load"&&!a.started)setTimeout(armAk,0)}
-  const body=a.st==="ok"?safeRender(a):a.st==="err"?errHTML(key):lpPause>Date.now()?waitHTML():skel();
+  const body=a.st==="ok"?safeRender(a):a.st==="err"?errHTML(key):lpPause>Date.now()&&!SJ?waitHTML():skel();
   return `<div class="ak" data-ak="${esc(key)}">${body}</div>`;
 }
 function safeRender(a){try{return a.render(a.data)}catch(e){console.error(e);return `<p class="small">Données incomplètes pour ce bloc.</p>`}}
 async function runAk(key){
   const a=AK[key];a.st="load";a.started=true;
   try{a.data=await a.fn();a.st="ok";a.emsg=null;LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err";a.emsg=String(e&&e.message||e);
-    if(isRL(e)){clearTimeout(a.rt);a.rt=setTimeout(()=>{if(a.st==="err"&&document.querySelector(`[data-ak="${CSS.escape(key)}"]`)){document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>el.innerHTML=skel());runAk(key)}},65000)}}
+    if(isRL(e)){clearTimeout(a.rt);a.rt=setTimeout(()=>{if(a.st==="err"&&document.querySelector(`[data-ak="${CSS.escape(key)}"]`)){document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>el.innerHTML=skel());runAk(key)}},Math.max(65000,lpPause-Date.now()+5000))}}
   document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>{el.innerHTML=a.st==="ok"?safeRender(a):errHTML(key);el.classList.add("in")});
 }
 
@@ -1309,6 +1311,7 @@ let TN=null,TNp=null;
 function applyLogos(img){Object.entries(img||{}).forEach(([id,f])=>{if(T[id])T[id].lpImg=lpFile(f,240)})}
 function loadTeamNames(){
   if(TN)return Promise.resolve(TN); if(TNp)return TNp;
+  if(SJ&&SJ.names&&Object.keys(SJ.names).length){TN=SJ.names;applyLogos(SJ.logos);return Promise.resolve(TN)}
   const c=LS.get("tnames",null);
   if(c&&Date.now()-c.t<7*864e5){TN=c.d.tn;applyLogos(c.d.img);return Promise.resolve(TN)}
   TNp=(async()=>{
@@ -1343,7 +1346,7 @@ const champ=(n,size=26)=>{const s=champImg(n);return s?`<img class="chi" src="${
 /* ---- requêtes agrégées ---- */
 const MS_F="MatchSchedule.Team1=A,MatchSchedule.Team2=B,MatchSchedule.Winner=W,MatchSchedule.Team1Score=SA,MatchSchedule.Team2Score=SB,MatchSchedule.DateTime_UTC=DT,MatchSchedule.OverviewPage=OP,MatchSchedule.BestOf=BO";
 async function teamSeason(id){
-  const s=await loadSJ();if(sjOk(s,"saisons")&&s.teams&&s.teams[id])return s.teams[id];
+  const s=await loadSJ();if(sjOk(s,"saisons")&&s.teams&&Object.keys(s.teams).length)return s.teams[id]||{sw:0,sl:0,last:[],vs:{},g:0};
   const tn=await loadTeamNames(),q=qlist(tn[id]),mine=n=>tn[id].includes(n);
   const ms=await cqAll({tables:"MatchSchedule",fields:MS_F,where:`(MatchSchedule.Team1 IN (${q}) OR MatchSchedule.Team2 IN (${q})) AND MatchSchedule.DateTime_UTC >= "2026-01-01" AND MatchSchedule.Winner IN ("1","2")`,order_by:"MatchSchedule.DateTime_UTC DESC"},1000);
   const sg=await cqAll({tables:"ScoreboardGames",fields:"ScoreboardGames.Team1=A,ScoreboardGames.Team2=B,ScoreboardGames.WinTeam=WT,ScoreboardGames.Gamelength_Number=GL,ScoreboardGames.Team1Kills=KA,ScoreboardGames.Team2Kills=KB,ScoreboardGames.Team1Dragons=DA,ScoreboardGames.Team2Dragons=DB,ScoreboardGames.Team1Barons=BA,ScoreboardGames.Team2Barons=BB,ScoreboardGames.Team1Towers=TA,ScoreboardGames.Team2Towers=TB,ScoreboardGames.Team1Gold=GA,ScoreboardGames.Team2Gold=GB",
@@ -1392,7 +1395,7 @@ function duelFor(P,pa,pb,flip){
   return {g:x.g,w:x.g-x.w,ka:x.kb,da:x.db,aa:x.ab,kb:x.ka,db:x.da,ab:x.aa,last:x.last&&{dt:x.last.dt,ca:x.last.cb,cb:x.last.ca,w:!x.last.w,op:x.last.op}};
 }
 async function playerStats(p){
-  await champMap();const s=await loadSJ();if(sjOk(s,"joueurs stats")&&s.players&&s.players[p.key])return s.players[p.key];const L=linkOf(p);
+  await champMap();const s=await loadSJ();if(sjOk(s,"joueurs stats")&&s.players&&Object.keys(s.players).length){const z={g:0,w:0,k:0,d:0,a:0,champs:[]};return s.players[p.key]||{S:z,W:z,years:[],now:z}}const L=linkOf(p);
   const se=await cqAll({tables:"ScoreboardPlayers=SP,ScoreboardGames=SG",join_on:"SP.GameId=SG.GameId",
     fields:"SP.Champion=C,SP.Kills=K,SP.Deaths=D,SP.Assists=A,SP.CS=CS,SP.Gold=G,SP.DamageToChampions=DMG,SP.TeamKills=TK,SP.PlayerWin=W,SP.VisionScore=VS,SG.Gamelength_Number=GL",
     where:`SP.Link="${L.replace(/"/g,"")}" AND SP.DateTime_UTC >= "2026-01-01"`},1000);
@@ -1762,8 +1765,8 @@ async function liveTick(m){
   const bt=(g.teams||[]).find(t=>t.side==="blue"),rt=(g.teams||[]).find(t=>t.side==="red");
   L.blue=(L.teams.find(t=>t.id===bt?.id)||{}).our||m.t1;L.red=(L.teams.find(t=>t.id===rt?.id)||{}).our||(L.blue===m.t1?m.t2:m.t1);
   if(!L.first){const w=await feedWin(g.id);if(w&&w.frames&&w.frames.length){L.first=Date.parse(w.frames[0].rfc460Timestamp);L.meta=w.gameMetadata;w.frames.forEach(f=>pushSample(L,f))}}
-  let w=await feedWin(g.id,Date.now()-50000);
-  if(!w||!w.frames||!w.frames.length)w=await feedWin(g.id,Date.now()-90000);
+  // le flux refuse (400) une fenêtre finissant il y a moins de 20 s : si l'horloge du téléphone avance, on recule
+  let w=null;for(const back of [50000,90000,180000]){try{w=await feedWin(g.id,Date.now()-back)}catch(e){w=null;if(back===180000)throw e}if(w&&w.frames&&w.frames.length)break}
   if(w&&w.frames&&w.frames.length){L.meta=L.meta||w.gameMetadata;L.frame=w.frames[w.frames.length-1];pushSample(L,L.frame);L.status=L.frame.gameState==="finished"?"ended":"live"}
   else L.status=L.frame?"live":"starting";
   if(L.meta&&!L.draftP)L.draftP=computeDraft(L).then(d=>{L.draft=d;paintLive(m)}).catch(()=>{L.draft={err:1};paintLive(m)});
@@ -1931,6 +1934,7 @@ async function enrichPlayers(force){
   const cache=LS.get("lp_players",null);
   let rows=null;
   if(!force&&cache&&Date.now()-cache.t<24*3600e3)rows=cache.rows;
+  if(!rows){const s=await loadSJ();if(s&&s.prows&&s.prows.length)rows=s.prows}
   if(!rows){
     const ids=[...new Set(PLAYERS.map(p=>p.id))].map(i=>'"'+i.replace(/"/g,"")+'"').join(",");
     rows=await cargo({tables:"Players",fields:"Players.ID=PID,Players.Image=Img,Players.Name=RN,Players.NativeName=NN,Players.Country=Ctry,Players.Birthdate=BD,Players.Team=Tm,Players.OverviewPage=OP",where:`Players.ID IN (${ids})`});
@@ -2012,7 +2016,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v6, 24/10/2026";
+const APP_VERSION="v8, 23/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
@@ -2048,7 +2052,7 @@ async function runDiag(){
     ()=>timed("LoL Esports : planning Worlds",async()=>{const j=await leFetch(`getSchedule?hl=fr-FR&leagueId=${WORLDS_LEAGUE}`);return (j?.data?.schedule?.events||[]).length+" matchs reçus"}),
     ()=>timed("LoL Esports : matchs en cours",async()=>{const j=await leFetch("getLive?hl=fr-FR");const ev=j?.data?.schedule?.events||[];return ev.length?ev.map(e=>(e.match?.teams||[]).map(t=>t.code).join(" vs ")).join(", "):"aucun match en cours"}),
     ()=>timed("Flux direct",async()=>{const L=Object.values(LV.games).find(x=>x.gid);if(!L)return "aucune partie suivie pour l’instant";const w=await feedWin(L.gid,Date.now()-50000);if(!w||!w.frames)return "partie trouvée, pas de nouvelle frame";const f=w.frames[w.frames.length-1];return `kills ${f.blueTeam.totalKills}-${f.redTeam.totalKills}, ${((f.blueTeam.participants||[]).length+(f.redTeam.participants||[]).length)} joueurs lus`}),
-    ()=>timed("Stats précalculées",async()=>{SJt=0;const s=await loadSJ();if(!s)throw new Error("pas encore générées");return `générées le ${new Date(s.built).toLocaleString("fr-FR")}, ${s.meta?.duels||0} duels, ${(s.errors||[]).length} erreur(s)`}),
+    ()=>timed("Stats précalculées",async()=>{SJt=0;const s=await loadSJ();if(!s)throw new Error("pas encore générées");const st=Object.keys(s.stale||{});return `générées le ${new Date(s.built).toLocaleString("fr-FR")}, ${s.meta?.duels||0} duels, ${(s.errors||[]).length} erreur(s)${st.length?`, en retard : ${st.join(", ")}`:""}`}),
     ()=>timed("Leaguepedia",async()=>{const r=await cargo({tables:"Tournaments",fields:"Tournaments.Name=N",where:'Tournaments.OverviewPage LIKE "2026 Season World Championship%"',limit:"1"});return r.length?"réponse OK : "+r[0].N:"réponse vide"}),
     ()=>timed("Relais de la ligue",async()=>{const r=await fetch(NTFY+"iagames-worlds26-ping/json?poll=1&since=1m");if(!r.ok)throw new Error("HTTP "+r.status);return "joignable"}),
     ()=>timed("Data Dragon",async()=>{const r=await fetch("https://ddragon.leagueoflegends.com/api/versions.json");const v=(await r.json())[0];return "patch "+v}),
