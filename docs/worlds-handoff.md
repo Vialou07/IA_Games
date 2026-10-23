@@ -19,7 +19,7 @@ claude
 - Dépôt : `Vialou07/IA_Games`, publié par GitHub Pages (branche `main`, mode classique) sur https://vialou07.github.io/IA_Games/
 - L'appli : `worlds.html`, un seul fichier HTML (CSS et JS inclus), lien direct https://vialou07.github.io/IA_Games/worlds.html. Elle a une tuile « Worlds 2026 » en tête de `index.html` (le hub).
 - Utilisateurs : Thomas et un groupe de potes, sur Android (Chrome et navigateur intégré de Messenger), souvent en 5G.
-- Version actuelle : `APP_VERSION = "v9, 24/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
+- Version actuelle : `APP_VERSION = "v9.1, 24/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
 - Autres fichiers de l'appli :
   - `tools/build_stats.py` : le générateur de stats côté serveur (le « robot »), 100 % API officielle LoL Esports ;
   - `.github/workflows/stats.yml` : le workflow GitHub Actions qui le lance toutes les 30 minutes ;

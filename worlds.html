@@ -729,13 +729,16 @@ function imgTag(srcs,cls,mono,extraStyle=""){
   if(!srcs.length)return `<span class="mono" style="${ms}">${esc(mono.text)}</span>`;
   return `<img class="${cls}" style="${extraStyle}" src="${esc(srcs[0])}" data-alt="${esc(srcs.slice(1).join("|"))}" data-mt="${esc(mono.text)}" data-ms="${esc(ms)}" alt="" loading="lazy" decoding="async" onerror="imgFail(this)">`;
 }
+/* logos officiels LoL Esports au 24/10 : affichés dès le premier écran, sans passer par Leaguepedia */
+const LE_LOGO = {"GEN":"https://static.lolesports.com/teams/1773829250929_GENGLOGO_GOLD.png","HLE":"https://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png","T1":"https://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png","DK":"https://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png","AL":"https://static.lolesports.com/teams/1641199582689_.png","BLG":"https://static.lolesports.com/teams/1682322954525_Bilibili_Gaming_logo_20211.png","TES":"https://static.lolesports.com/teams/1592592064571_TopEsportsTES-01-FullonDark.png","IG":"https://static.lolesports.com/teams/1634762917340_300px-Invictus_Gaming_logo.png","G2":"https://static.lolesports.com/teams/G2-FullonDark.png","MKOI":"https://static.lolesports.com/teams/1734012609283_MKOI_FullColor_Blue.png","KC":"https://static.lolesports.com/teams/1704714951336_KC.png","TL":"https://static.lolesports.com/teams/1769357207762_TLAlienware_Minimal_Bug-White.png","LYON":"https://static.lolesports.com/teams/1743717443673_isotypelyon-03.png","TSW":"https://static.lolesports.com/teams/1774598000328_White_EyeText_600p.png","CFO":"https://static.lolesports.com/teams/1656307849320_CFO_Logo.png","LOS":"https://static.lolesports.com/teams/1784013312149_LOS-OLaranja.png","C9":"https://static.lolesports.com/teams/1736924120254_C9Kia_IconBlue_Transparent_2000x2000.png","FUR":"https://static.lolesports.com/teams/FURIA---black.png","MVK":"https://static.lolesports.com/teams/1767089709161_White_Logo.png"};
 const LIVE_LOGO = {};
 /* images LoL Esports : PNG de 400 à 600 Ko. On passe par wsrv.nl (vignette WebP de ~15 Ko, mise en cache un an), l'original reste en secours */
 const thumb=(u,w)=>u&&/^https?:\/\/static\.lolesports\.com\//.test(u)?`https://wsrv.nl/?url=${encodeURIComponent(u.replace(/^https?:\/\//,""))}&w=${w}&output=webp&q=80`:null;
 function logo(id,size=34){
   const t=T[id]; if(!t) return `<span class="mono" style="background:var(--panel2);width:${size}px;height:${size}px">?</span>`;
   const w=size>100?320:160;
-  return imgTag([thumb(LIVE_LOGO[id],w),LIVE_LOGO[id],t.lpImg,lpFile(t.lp+"logo square.png",w),lpFile(t.lp+"logo std.png",w)],"logo",{text:t.id,bg:t.color,w:size+"px",style:"font-size:"+Math.max(11,size/3)+"px"},`width:${size}px;height:${size}px`);
+  const le=LIVE_LOGO[id]||LE_LOGO[id];
+  return imgTag([thumb(le,w),le,t.lpImg,lpFile(t.lp+"logo square.png",w),lpFile(t.lp+"logo std.png",w)],"logo",{text:t.id,bg:t.color,w:size+"px",style:"font-size:"+Math.max(11,size/3)+"px"},`width:${size}px;height:${size}px`);
 }
 function photo(p,mode,size){
   const t=T[p.team], srcs=[p.photo,thumb(p.lePhoto,320),p.lePhoto,p.wikiPhoto], txt=p.id.slice(0,2).toUpperCase();
@@ -2129,7 +2132,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v9, 24/10/2026";
+const APP_VERSION="v9.1, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
