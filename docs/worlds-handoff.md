@@ -117,6 +117,16 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 - Fiches équipe et joueur : début de partie (premier sang, tours, dragons, âmes ; part des kills avant 15 min) depuis la clé `fl`.
 - **Robot en chaîne** : GitHub n'a lancé aucun passage programmé du 24/10 06:26 au soir. La dernière étape du workflow attend 8 min puis relance le robot (`gh workflow run`, branche main seulement, jusqu'au 16/11). Les créneaux programmés restent en secours. Pour arrêter la chaîne : désactiver le workflow dans l'onglet Actions ou retirer cette étape.
 
+**Soirée du 24/10 (v12.9 → v13.4)** :
+- Rang au poste partout (`rankTag`, bandeau `.rkbig` de la fiche joueur : place fixe, la fourchette en petit), probabilité de lane par poste (fiabilité réelle dans le « i » : 56 % aux internationaux).
+- Relecture complète (495 corrections, typographie française : U+00A0 avant « : », U+202F avant « % ; ? ! ») ; textes du robot aussi. Faits vérifiés un à un sur gol.gg : la portée des records est « parmi les joueurs/équipes des Worlds », et « compétitions suivies » quand l'API n'a pas tout (qualifs EWC, KeSPA 2025, académies).
+- Ordre des équipes figé d'une synchro à l'autre (`keepSides`) : l'API le permute parfois.
+- Direct : blocs `l2*` (le match bascule ?, fights, duels en direct, joueur du match, tableau du match), records en vue (`fun*`), draft réelle contre pronos (`d2*`, clé `gm` de draft.json, pronos de draft figés au coup d'envoi dans model_state), « Plus jouables dans cette série » (fearless vérifié sur 1 989 séries), HUD de partie et mini-HUD collé (`hud*`).
+- Podium de la soirée et badges de la ligue (Flair, Bat le robot, Audacieux, Devin, Série) ; clé `fu` (tools/fun_block.py).
+- Motion design (`/* >>> motion */`) : une seule fois par apparition, rien si animations réduites.
+- Passe du gardien UX (`ux*`, grille de règles dans le dossier de travail) : écrans 12 à 15 % plus courts, pas de défilement horizontal, zones tactiles ≥ 40 px.
+- Reste à faire : réorganiser le reste du direct sous le HUD et fusionner le « Tableau du match » avec la liste des joueurs (la boîte du direct fait encore ~2 écrans à 25 min).
+
 **Tests** (dossier de travail, Playwright en émulation Pixel 7) : parcours complet avec ligue à 3 téléphones, écrans clés avec données locales interceptées, direct rejoué sur de vraies parties. Toujours : préprod, tests, puis prod ; `node --check` sur le script extrait ; monter `APP_VERSION`.
 
 ## 3. Sources externes et ce qui est vérifié
