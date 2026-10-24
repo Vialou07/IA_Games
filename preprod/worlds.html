@@ -477,6 +477,10 @@ nav.tabs button{position:relative}
 .djx .chi{filter:grayscale(1);opacity:.4}.djw{font-size:12.5px;color:var(--muted);padding:6px 0 8px;line-height:1.45}
 .djm .djd>summary{display:grid;grid-template-columns:34px 1fr 70px 44px;padding:6px 8px;min-height:0}.djm .djd>summary::after{content:none}.djm:not(.all)>.x{display:none}.djm .djw{padding:6px 8px 8px}
 .djm .ct b{font-family:var(--disp);font-size:16px;text-align:right}
+.rresg{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px}
+.rres{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;padding:7px 6px;background:var(--panel);border:1px solid var(--line);border-left:3px solid transparent;border-radius:8px;font-size:12.5px}
+.rres span{display:flex;align-items:center;gap:4px;min-width:0}.rres span:last-child{justify-content:flex-end;flex-direction:row-reverse}.rres b{font-family:var(--disp);font-size:14px}
+.rres .lo{opacity:.45}.rres em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:14px;color:var(--gold2)}.rres.ok{border-left-color:var(--teal)}.rres.ko{border-left-color:var(--red)}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
@@ -1357,7 +1361,10 @@ function eveHTML(dk,full){
     if(S[0].p>0)bits.push(`Meilleure soirée : <b>${S.filter(x=>x.p===S[0].p).map(x=>x.u.me?"toi":esc(x.u.name)).join(" et ")}</b>, +${S[0].p}`)}
   const ttl=dk===dayKeyL(new Date())?"Bilan de la soirée":dk===dayKeyL(new Date(Date.now()-864e5))?"Hier soir":fmtDay(evDate(new Date(L[0].start)));
   const rows=`<div class="list">${L.map(matchRow).join("")}</div>`;
-  if(full)return `<h2>${ttl}</h2>${bits.length?`<p class="dbf">${bits.map(x=>`<span>${x}</span>`).join("<i>·</i>")}</p>`:""}${rows}`;
+  // bilan en tête de l'accueil : résultats compacts (2 par ligne), le gagnant en clair, ton prono en liseré ; toucher = la fiche du match
+  const res=x=>{const w=x.winner,pk=picks[x.key],sc=x.s1!=null?`${x.s1}-${x.s2}`:"–",side=t=>`<span class="${w&&w!==t?"lo":""}">${logo(t,18)}<b>${esc(T[t].id)}</b></span>`;
+    return `<button class="rres hx${pk&&w?(pk===w?" ok":" ko"):""}" data-m="${esc(x.id)}">${side(x.t1)}<em>${w?sc:fmtTime(new Date(x.start))}</em>${side(x.t2)}</button>`};
+  if(full)return `<h2>${ttl}</h2>${bits.length?`<p class="dbf">${bits.map(x=>`<span>${x}</span>`).join("<i>·</i>")}</p>`:""}<div class="rresg">${L.map(res).join("")}</div>`;
   return `<details class="moy frame hx" data-uo="home_eve"${amO("home_eve")}><summary><b>${ttl}</b><span>${[amPl(L.length,"résultat"),...bits].join(" · ")}</span></summary>${AM_OPEN.has("home_eve")?rows:""}</details>`;
 }
 /* listes repliées de l'accueil (hier soir, paris en attente) : construites seulement à l'ouverture */
@@ -4226,7 +4233,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="PRÉPROD v12.1, 24/10/2026";
+const APP_VERSION="PRÉPROD v12.2, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
