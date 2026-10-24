@@ -443,6 +443,11 @@ nav.tabs button{position:relative}
 .lgt{padding:8px 10px}.lgr{display:grid;grid-template-columns:150px 1fr 48px;align-items:center;gap:8px;padding:5px 0}.lgr b{font-size:13px}.lgr .br{height:8px;background:rgba(255,255,255,.05);border-radius:4px}.lgr .br i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--gold))}.lgr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .impt{display:flex;align-items:center;gap:12px;padding:10px 12px;margin-bottom:8px}.impt>b{font-family:var(--disp);font-size:30px;font-weight:800;background:linear-gradient(180deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
 .impt span{display:flex;flex-direction:column;font-size:13px}.impt small{font-size:11px;color:var(--muted)}
+.why{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.45}.why li{margin:3px 0}
+.fiab{padding:12px}.fiab .big{font-family:var(--disp);font-size:26px;color:var(--gold2)}.fbl{display:grid;gap:4px;margin:8px 0}
+.fbr{display:grid;grid-template-columns:48px 1fr auto 18px;gap:6px;align-items:center;font-size:12px;padding:5px 6px;background:rgba(5,11,24,.5);border-radius:6px;border-left:3px solid var(--muted)}
+.fbr.w{border-left-color:var(--teal)}.fbr.l{border-left-color:var(--red)}.fbr .tn{display:flex;align-items:center;gap:4px;min-width:0}.fbr .lead{color:var(--gold2)}.fbr i{font-style:normal;font-weight:800;text-align:center}.fbr.w i{color:var(--teal)}.fbr.l i{color:var(--red)}
+.lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
 .rc5.w{border-left-color:var(--teal)}.rc5.l{border-left-color:var(--red)}.rc5 .d{font-size:12px;font-weight:700;line-height:1.15;display:flex;flex-direction:column}.rc5 .d small{font-size:10px;color:var(--muted);font-weight:600}
 .rc5 .c{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-size:15px}.rc5 .c.r{justify-content:flex-end}.rc5 i{font-style:normal;font-family:var(--disp);font-weight:800;text-align:center}.rc5.w i{color:var(--teal)}.rc5.l i{color:var(--red)}
@@ -1052,7 +1057,7 @@ function renderSwiss(){
   let h=`<h2>Phase suisse</h2><p class="sub">16 équipes, 5 rondes. Trois victoires pour les quarts, trois défaites pour la sortie. Les matchs qualificatifs ou éliminatoires se jouent en Bo3.</p>
   <div class="legend"><span><i style="background:var(--teal)"></i>victoire</span><span><i style="background:var(--red)"></i>défaite</span>${fav?`<span><i style="background:var(--gold)"></i>parcours de ${esc(T[fav].id)}</span>`:`<span>Choisis ton équipe dans Direct pour tracer son parcours</span>`}</div>
   <div class="sw-scroll" id="swScroll"><div class="sw-board"><svg viewBox="0 0 930 620">${edges}${favPath}</svg>${nh}</div></div>`;
-  h+=simHTML();
+  h+=simHTML()+fiabHTML();
   const ko=MATCHES.filter(m=>["qf","sf","f"].includes(m.stage)&&(m.t1||m.t2));
   h+=`<h2>Phase finale</h2>`+(ko.length?`<div class="list">${ko.map(matchRow).join("")}</div>`:`<div class="note">Tirage des quarts le 31 octobre. Les deux équipes à 3-0 seront placées dans des moitiés de tableau opposées, face à des équipes à 3-2. Quarts du 3 au 6 novembre, demies les 7 et 8, finale le 14 au Barclays Center.</div>`);
   $("#v-swiss").innerHTML=h;
@@ -1557,18 +1562,41 @@ function champList(cs){return `<div class="clist">${cs.map(c=>`<div class="crow"
 /* ---- modèles du robot : note d'impact des joueurs, pronostics, simulation du tournoi ----
    Note d'impact : KDA, participation, or, CS et avance à 15 min, corrigés de la force des adversaires et de la ligue
    (testée à l'aveugle sur 343 parties internationales 2025-2026). Comparable seulement à poste égal. */
+/* ---- modèles du robot : SJ.m (notes E), SJ.lane (modèle D), SJ.sim (simulation) ----
+   Bloc à coller dans worlds.html (section 7, Stats). Testé par node test_helpers.js contre le Python du robot. */
+const sigm=x=>1/(1+Math.exp(-x));
+function Phi(x){const t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x/2);return x>=0?(1+y)/2:(1-y)/2}
+const GX=Array.from({length:49},(_,k)=>-6+.25*k),GW0=GX.map(x=>Math.exp(-x*x/2)),GWS=GW0.reduce((a,b)=>a+b,0),GW=GW0.map(w=>w/GWS);
+function firstTo(p,a,b){const q=1-p;let s=0,c=1;for(let k=0;k<b;k++){if(k)c=c*(a-1+k)/k;s+=c*q**k}return p**a*s}
+/* P(A gagne le match) : za = alpha×(force A − force B) ; a0 = avantage du côté bleu ; score en cours wa-wb ;
+   aBlue true/false/null (Bo1) ; h = jours avant le match ; v = [variance de série, dérive par jour] (SJ.sim.var). */
+function matchProb(za,bo,{a0=0,wa=0,wb=0,aBlue=null,h=0,v=[.4,.0093]}={}){
+  const k=Math.sqrt(1+Math.PI*v[0]/8),sd=Math.sqrt(v[0]+2*v[1]*h);
+  if(bo===1){const f=z=>GX.reduce((s,x,i)=>s+GW[i]*sigm(k*z+sd*x),0);return aBlue==null?(f(a0+za)+1-f(a0-za))/2:aBlue?f(a0+za):1-f(a0-za)}
+  const need=(bo>>1)+1;let num=0,den=0;
+  GX.forEach((x,i)=>{const p=sigm(k*za+sd*x),l=GW[i]*p**wa*(1-p)**wb;num+=l*firstTo(p,need-wa,need-wb);den+=l});return num/den;
+}
+/* force d'une équipe = somme des notes de ses 5 joueurs (SJ.sim.S pour les 16 des Worlds, sinon SJ.m.t) ; P(A bat B) pour un match quelconque */
+function teamProb(A,B,bo,o={}){const M=SJ.m,t=Object.assign({},M&&M.t,SJ.sim&&SJ.sim.S);if(!M||t[A]==null||t[B]==null)return null;
+  return matchProb(M.logit[1]*(t[A]-t[B]),bo,{a0:M.logit[0],v:(SJ.sim&&SJ.sim.var)||[.4,.0093],...o})}
+/* écart-type de la différence de deux notes (rééchantillonnages du robot), puis P(A mieux noté que B) */
+function pairSd(role,ka,kb){const P=SJ.m.pd&&SJ.m.pd[role];if(!P)return null;const o=P.o,n=o.length,i=o.indexOf(ka),j=o.indexOf(kb);
+  if(i<0||j<0||i===j)return null;const a=Math.min(i,j),b=Math.max(i,j);return P.s[a*n-a*(a+1)/2+(b-a-1)]/1000}
+function pBetter(ka,kb,role){const A=SJ.m.p[ka],B=SJ.m.p[kb];if(!A||!B)return null;const s=pairSd(role,ka,kb)||Math.hypot(A[1],B[1]);
+  return {d:A[0]-B[0],sd:s,p:Phi((A[0]-B[0])/s)}}
+/* duel de lane (modèle D) : écart attendu à 15 min pour A et P(A devant) ; cs=true : en CS, sinon en or */
+function laneDuel(ka,kb,role,cs){const L=SJ.lane,A=L&&L.p[ka],B=L&&L.p[kb];if(!A||!B)return null;const i=cs?0:2,g=L.sg[role];
+  const e=A[i]-B[i];return {e,p:Phi(e/Math.sqrt(g[cs?1:0]**2+A[i+1]**2+B[i+1]**2))}}
 const IMP=p=>SJ&&SJ.m&&SJ.m.p&&SJ.m.p[p.key];
 const PHI=x=>{const t=1/(1+.3275911*Math.abs(x)/Math.SQRT2),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x/2);return x>=0?(1+y)/2:(1-y)/2};
 const fxs=v=>(v>0?"+":"")+fx2(v);
-// probabilité que t1 gagne le match (série complète, score en cours compris) ; au-delà de 80 % le modèle est un peu trop sûr : on resserre
+// probabilité que t1 gagne le match (série complète, score en cours compris)
 function robotProb(m){
-  const s=SJ&&SJ.sim;if(!s||!m.t1||!m.t2)return null;
-  const x=(s.mt||[]).find(r=>"le"+r[0]===m.id||r[0]===m.id);
-  let p=x?(x[1]===m.t1?x[4]:x[2]===m.t1?1-x[4]:null):null;
-  if(p==null){const d=s.d&&s.d["bo"+(m.bo||1)];p=d&&d[m.t1]&&d[m.t1][m.t2]!=null?d[m.t1][m.t2]:null}
-  if(p==null)return null;
-  const q=Math.min(.999,Math.max(.001,p)),z=Math.log(q/(1-q)),zz=Math.abs(z)>1.386?Math.sign(z)*(1.386+(Math.abs(z)-1.386)*.85):z;
-  return 1/(1+Math.exp(-zz));
+  if(!SJ||!SJ.m||!m.t1||!m.t2)return null;
+  const x=SJ.sim&&(SJ.sim.mt||[]).find(r=>"le"+r[0]===m.id||r[0]===m.id);
+  if(x&&(x[1]===m.t1||x[2]===m.t1))return x[1]===m.t1?x[4]:1-x[4];
+  const h=Math.max(0,(new Date(m.start||Date.now())-Date.now())/864e5);
+  return teamProb(m.t1,m.t2,m.bo||1,{wa:m.s1||0,wb:m.s2||0,h});
 }
 function robotHTML(m){
   const p=robotProb(m);if(p==null)return"";
@@ -1576,7 +1604,7 @@ function robotHTML(m){
   return `<h2>Pronostic du robot</h2><div class="robot frame hx"><p class="rb-h">🤖 Le robot ${txt}${m.state==="live"&&(m.s1||m.s2)?` (score actuel ${m.s1}-${m.s2} compris)`:""}</p>
     <div class="wpbar big"><i style="width:${p*100}%;background:${col(m.t1)}"></i><i style="width:${(1-p)*100}%;background:${col(m.t2)}"></i></div>
     <p class="small wpl"><span><b>${Math.round(p*100)} %</b> ${esc(T[m.t1].id)}</span><span>chances de gagner ${m.bo>1?"la série":"le match"}</span><span>${esc(T[m.t2].id)} <b>${Math.round((1-p)*100)} %</b></span></p>
-    <details class="rb-d"><summary>Comment il calcule ?</summary><p class="small">Il additionne la note d’impact des 5 joueurs de chaque équipe, corrigée de la force des ligues, puis simule la suite du tournoi 20 000 fois. Testé à l’aveugle sur 343 parties internationales : il trouve le bon favori 2 fois sur 3. Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p></details></div>`;
+    <details class="rb-d"><summary>Comment il calcule ?</summary><p class="small">Il additionne la note d’impact des 5 joueurs de chaque équipe, corrigée de la force des ligues, puis simule la suite du tournoi 20 000 fois. Testé à l’aveugle sur 343 parties internationales : il trouve le bon favori 2 fois sur 3, et quand il annonce 75 %, l’équipe gagne environ 72 % du temps. Son bilan sur ces Worlds est dans l’onglet Suisse. Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p></details></div>`;
 }
 function robotHint(m){const p=robotProb(m);if(p==null)return"";const pf=Math.round(Math.max(p,1-p)*100);return `<small class="rbp" title="Favori du robot : ${esc(T[p>=.5?m.t1:m.t2].id)}">${p>=.5?"◀ ":""}🤖 ${pf} %${p<.5?" ▶":""}</small>`}
 function simHTML(){
@@ -1586,13 +1614,29 @@ function simHTML(){
    <div class="simt frame hx"><div class="simr hd"><span></span><span>Bilan</span><span>Quarts</span><span>Demies</span><span>Titre</span></div>${rows.map(([t,v])=>`<button class="simr${t===fav?" me":""}" data-t="${esc(t)}"><span class="tn">${logo(t,22)}<b>${esc(T[t]?T[t].id:t)}</b></span><span>${esc(v[0])}</span><span>${pc(v[7])} %</span><span>${pc(v[8])} %</span><span class="ti"><i style="width:${Math.min(100,v[10]*100*2)}%"></i><b>${pc(v[10])} %</b></span></button>`).join("")}</div>
    <p class="small" style="margin-top:6px">Probabilités du robot, pas des certitudes. ${s.modele&&/secours/.test(s.modele)?"Modèle de secours utilisé cette fois. ":""}Mis à jour ${s.maj?esc(new Date(s.maj).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})):""}.</p>`;
 }
+function fiabHTML(){
+  const F=SJ&&SJ.fiab;if(!F||!F.w26||!F.w26.m||!F.w26.m.length)return"";
+  const R=F.w26.m,ok=R.filter(r=>(r[5]>=.5)===!!r[6]).length,nm=c=>esc(T[c]?T[c].id:c),E=F.t&&F.t.E,L=F.t&&F.t.lig;
+  const cal=(F.cal||[]).filter(c=>c[2]>=30).map(c=>`quand il annonce ${Math.round(c[0]*100)} %, l’équipe gagne ${Math.round(c[1]*100)} % du temps`);
+  return `<h2>Le robot a-t-il vu juste ?</h2><div class="fiab frame hx"><p><b class="big">${ok}/${R.length}</b> bons favoris sur les matchs déjà joués de ces Worlds.</p>
+   <details class="rb-d"><summary>Match par match</summary><div class="fbl">${R.slice().reverse().map(r=>{const fa=r[5]>=.5,good=fa===!!r[6];
+     return `<div class="fbr ${good?"w":"l"}"><span>${esc(new Date(r[1]+"T12:00:00Z").toLocaleDateString("fr-FR",{day:"numeric",month:"short"}))}</span><span class="tn">${logo(r[2],16)}<b class="${r[6]?"lead":""}">${nm(r[2])}</b> – <b class="${r[6]?"":"lead"}">${nm(r[3])}</b>${logo(r[3],16)}</span><span>${nm(fa?r[2]:r[3])} ${Math.round(Math.max(r[5],1-r[5])*100)} %</span><i>${good?"✓":"✗"}</i></div>`}).join("")}</div>
+   <p class="small">${R.some(r=>r[7]==="g")?"Pronos figés au coup d’envoi. ":""}${R.some(r=>r[7]==="r")?"Les premiers matchs sont recalculés avec les seules données d’avant le match. ":""}Le gagnant est en or.</p></details>
+   ${E&&L?`<p class="small" style="margin-top:8px">Avant les Worlds, testé à l’aveugle sur ${E.g[0]} parties internationales : bon favori ${Math.round(E.g[3]*100)} % du temps, autant que la règle « la ligue la plus forte gagne » (${Math.round(L.g[3]*100)} %), mais avec des pourcentages plus justes${cal.length?" : "+cal.slice(-2).join(", "):""}.</p>`:""}</div>`;
+}
+function lgrHTML(NM){
+  const G=SJ.lgr&&(SJ.lgr["2025"]||SJ.lgr["2024"]);if(!G)return"";
+  const rows=Object.entries(G).filter(([k,v])=>k.split("|").every(l=>NM[l])&&v[0]+v[1]>=6).slice(0,8);if(!rows.length)return"";
+  return `<details class="rb-d"><summary>Leurs vrais face-à-face aux internationaux depuis 2025</summary><div class="fbl">${rows.map(([k,v])=>{const [a,b]=k.split("|"),[x,y]=v[0]>=v[1]?[a,b]:[b,a],[wx,wy]=v[0]>=v[1]?v:[v[1],v[0]];
+    return `<div class="lgv"><b>${esc(x)}</b><span>${wx} – ${wy}</span><b>${esc(y)}</b><small>${Math.round(wx/(wx+wy)*100)} % pour ${esc(x)}</small></div>`}).join("")}</div><p class="small">Parties gagnées entre équipes des deux ligues (Worlds, MSI, First Stand, EWC). Brut : ne tient pas compte de qui a été envoyé.</p></details>`;
+}
 function leaguesHTML(){
   const m=SJ&&SJ.m;if(!m||!m.lg)return"";
   const NM={LCK:"Corée (LCK)",LPL:"Chine (LPL)",LEC:"Europe (LEC)",LCS:"Amérique du Nord (LCS)",LCP:"Pacifique (LCP)",CBLOL:"Brésil (CBLOL)"};
   const L=Object.entries(m.lg).filter(([l])=>NM[l]).sort((a,b)=>b[1]-a[1]),mx=L[0][1],mn=L[L.length-1][1],al=(m.logit||[0,.64])[1];
   const vs=(a,b)=>Math.round(100/(1+Math.exp(-al*5*(a-b))));
   return `<h2>Force des ligues</h2><p class="sub">Mesurée sur les matchs internationaux depuis 2024, en comparant les performances des joueurs. C’est elle qui rend les ligues comparables.</p>
-   <div class="lgt frame hx">${L.map(([l,v])=>`<div class="lgr"><b>${esc(NM[l])}</b><span class="br"><i style="width:${(v-mn)/(mx-mn||1)*92+8}%"></i></span><em>${fxs(v)}</em></div>`).join("")}</div>
+   <div class="lgt frame hx">${L.map(([l,v])=>`<div class="lgr"><b>${esc(NM[l])}</b><span class="br"><i style="width:${(v-mn)/(mx-mn||1)*92+8}%"></i></span><em>${fxs(v)}</em></div>`).join("")}${lgrHTML(NM)}</div>
    <p class="small" style="margin-top:6px">Pour se faire une idée : une équipe LCK moyenne battrait une équipe LEC moyenne ${vs(m.lg.LCK,m.lg.LEC)} fois sur 100, et une équipe LEC moyenne une équipe CBLOL moyenne ${vs(m.lg.LEC,m.lg.CBLOL)} fois sur 100. Un même KDA ne vaut donc pas la même chose d’une ligue à l’autre.</p>`;
 }
 /* ---- stats 2026 par joueur : classements au poste et comparaison (robot, API LoL Esports) ---- */
@@ -1642,9 +1686,16 @@ function compareSheet(id,md){
   if(!SV2())h+=`<div class="note">Les stats 2026 arrivent dès que le robot a publié. Réessaie dans quelques minutes.</div>`;
   else if(!SA||!SB)h+=`<p class="small">Aucune partie 2026 recensée pour ${esc((!SA?a:b).id)}.</p>`;
   else{
-    const ia=IMP(a),ib=IMP(b),pb=ia&&ib?PHI((ia[0]-ib[0])/Math.sqrt((ia[1]||.08)**2+(ib[1]||.08)**2)):null;
-    if(pb!=null)h+=`<h2>Le plus fort, ligues comprises</h2><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Note d’impact",ia[0],ib[0],fxs,true,true)}</div>
-      <p class="small" style="margin-top:6px">${a.role===b.role?`Probabilité que ${esc((pb>=.5?a:b).id)} soit le meilleur des deux : <b>${Math.round(Math.max(pb,1-pb)*100)} %</b>. `:"Postes différents : comparaison indicative. "}Corrigée de la force des adversaires et de la ligue, contrairement aux stats brutes ci-dessous.</p>`;
+    const ia=IMP(a),ib=IMP(b),same=a.role===b.role,pb=ia&&ib?(same&&pBetter(a.key,b.key,a.role))||{d:ia[0]-ib[0],p:PHI((ia[0]-ib[0])/Math.hypot(ia[1]||.08,ib[1]||.08))}:null;
+    const la=ta.league,lb=tb.league,al=SJ.m&&SJ.m.logit?SJ.m.logit[1]:.64;
+    if(la!==lb)h+=`<div class="note">${esc(a.id)} joue en ${esc(la)}, ${esc(b.id)} en ${esc(lb)} : leurs stats brutes ont été faites contre des adversaires différents. La note d’impact, elle, corrige la force des ligues.</div>`;
+    if(pb){const W=pb.p>=.5?a:b,Lz=W===a?b:a,pw=Math.max(pb.p,1-pb.p),ld=same&&laneDuel(a.key,b.key,a.role,true),lg=same&&laneDuel(a.key,b.key,a.role,false);
+      h+=`<h2>Le plus fort, ligues comprises</h2><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Note d’impact",ia[0],ib[0],fxs,true,true)}</div>
+      <ul class="why">${same?`<li><b>${esc(W.id)}</b> est meilleur avec une probabilité de <b>${pw>.99?"plus de 99":Math.round(pw*100)} %</b>${pw>=.95?" (quasi certain)":pw>=.8?" (probable)":pw<.65?" : trop serré pour trancher":""}.</li>`:`<li>Postes différents : comparaison indicative.</li>`}
+      ${ia[6]!=null&&ib[6]!=null&&Math.abs(ia[6]-ib[6])>=.1?`<li>${esc((ia[6]>ib[6]?a:b).id)} a affronté des adversaires plus forts (adversité ${fxs(Math.max(ia[6],ib[6]))} contre ${fxs(Math.min(ia[6],ib[6]))}).</li>`:""}
+      ${same&&Math.abs(pb.d)>=.03?`<li>Dans une partie équilibrée, ${esc(W.id)} à la place de ${esc(Lz.id)} vaut environ <b>+${fx1(Math.abs(pb.d)*al*25)} points</b> de chances de victoire.</li>`:""}
+      ${ld?`<li>En lane, ${esc((ld.p>=.5?a:b).id)} finirait devant aux CS à 15 min dans <b>${Math.round(Math.max(ld.p,1-ld.p)*100)} %</b> des cas${lg&&Math.abs(lg.e)>=50?`, avec environ ${Math.round(Math.abs(lg.e))} d’or d’avance attendus`:""}.</li>`:""}</ul>
+      <p class="small" style="margin-top:6px">Corrigé de la force des adversaires et de la ligue, contrairement aux stats brutes ci-dessous.</p>`}
     h+=`<h2>Saison 2026</h2><div class="tapehd"><span>${esc(a.id)}</span><span>${esc(b.id)}</span></div><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Parties",SA.g,SB.g,v=>v)}`
       +PSTAT.map(([sid,l,f,fmt,hi])=>{const va=f(SA),vb=f(SB);return va==null||vb==null||!isFinite(va)||!isFinite(vb)?"":tape(l,va,vb,fmt,!!hi,sid==="gd15"||sid==="csd15")}).join("")+`</div>
       <p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Le chiffre en or est le meilleur des deux.</p>
@@ -2259,7 +2310,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v10, 24/10/2026";
+const APP_VERSION="v11, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
