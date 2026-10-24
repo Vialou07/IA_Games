@@ -2448,7 +2448,7 @@ function renderTeamSeason(id){return S=>{
   if(!S.g)return `<p class="small">Pas de parties 2026 recensées.</p>`;
   const dur=v=>Math.floor(v)+" min "+String(Math.round(v%1*60)).padStart(2,"0");
   const vs=Object.entries(S.vs).sort((x,y)=>(y[1].w+y[1].l)-(x[1].w+x[1].l));
-  return tiles([[`${S.sw}-${S.sl}`,"séries"],[pct(S.gw,S.g)+" %",`des ${S.g} parties`],[pct(S.bw,S.bn)+" %","côté bleu"],[pct(S.rw,S.rn)+" %","côté rouge"],[fx1(S.k),"kills par partie"],[fx1(S.dr),"dragons par partie"],[(S.gd>0?"+":"")+fx1(S.gd/1000)+" k","écart d’or final"],[dur(S.gl),"durée moyenne"]])
+  return tiles([[`${S.sw}-${S.sl}`,"séries"],[pct(S.gw,S.g)+" %",`des ${S.g} parties`],[pct(S.bw,S.bn)+" %",`de victoires côté bleu (${S.bn} parties)`],[pct(S.rw,S.rn)+" %",`de victoires côté rouge (${S.rn} parties)`],[fx1(S.k),"kills par partie"],[fx1(S.dr),"dragons par partie"],[(S.gd>0?"+":"")+fx1(S.gd/1000)+" k","écart d’or final"],[dur(S.gl),"durée moyenne"]])
    +`<h3 class="h3">10 dernières séries</h3><div class="fopp wide">${S.last.map(x=>`<span class="${x.won?"w":"l"}" title="${esc(tourName(x.op))}, ${esc(fmtShort(x.dt))}">${x.oid?logo(x.oid,16):""}${esc(x.oid?T[x.oid].id:String(x.opp).slice(0,12))} ${x.s}-${x.o}</span>`).join("")}</div>`
    +(vs.length?`<h3 class="h3">En 2026 contre les équipes de ces Worlds</h3><div class="vsl">${vs.map(([o,r])=>`<button class="vsr" data-t="${o}">${logo(o,24)}<span>${esc(T[o].id)}</span><b class="${r.w>r.l?"w":r.w<r.l?"l":""}">${r.w}-${r.l}</b></button>`).join("")}</div>`:"");
 }}
