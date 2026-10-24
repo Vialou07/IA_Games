@@ -537,11 +537,58 @@ def build(C, teams):
                "champs": sorted([dict(c=c, pr=(v["p"] / n * 100) if n else 0, **v) for c, v in chs.items()], key=lambda x: -x["pr"])[:15]}
     tourney["red"] = n - tourney["blue"]
 
+    model = impact_model(C, teams); sim = tournament_sim(C, teams)
     names = {t["id"]: sorted({t["lp"], t["name"], t["id"]} | {x[c] for mid in D for x in D[mid]["tm"] if our_team.get(x[0]) == t["id"] for c in (1, 2) if x[c]}) for t in teams}
     return {"v": 2, "src": "lolesports", "since": SINCE[:4], "teams": teams_out, "h2h": h2h, "duels": duels, "players": players, "tourney": tourney,
             "champs": champs, "mastery": mastery, "names": names, "logos": R["logos"], "pinfo": R["pinfo"],
             "dr": {k: sorted(v, key=lambda x: (x[0], x[1]), reverse=True)[:5] for k, v in recent.items()},
+            "m": model, "sim": sim,
             "cover": cover, "errors": [], "stale": {}}
+
+# ---------- modèle d'impact des joueurs (choisi par un juge sur les internationaux 2025-2026) ----------
+def impact_model(C, teams):
+    """Note de chaque titulaire corrigée de l'adversité et de la ligue (tools/model_e.py), en écarts-types d'une performance de partie.
+    Comparable seulement à poste égal. Sert aussi aux pronostics : P(partie) = sigmoïde(a0 [côté bleu] + alpha × écart des sommes)."""
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import model_e, types
+        R = model_e.ratings(C, boot=20, teams_path=os.path.join(ROOT, "data", "teams.json"), bs=types.SimpleNamespace(winners=winners))
+    except Exception as e:
+        log("modèle d'impact indisponible :", type(e).__name__, str(e)[:160]); return None
+    P = R["players"]; boots = R["_boots"]
+    by_role = {}
+    for k, v in P.items(): by_role.setdefault(v["role"], []).append(k)
+    out = {}
+    for role, ks in by_role.items():
+        ks.sort(key=lambda k: -P[k]["note"])
+        brk = {k: [] for k in ks}   # rangs dans chaque rééchantillonnage
+        for B in boots:
+            order = sorted(ks, key=lambda k: -(B["r"][P[k]["j"]] if B["r"][P[k]["j"]] is not None else P[k]["note"]))
+            for i, k in enumerate(order): brk[k].append(i + 1)
+        for i, k in enumerate(ks):
+            r = sorted(brk[k]); lo, hi = (r[int(.05 * (len(r) - 1))], r[int(.95 * (len(r) - 1))]) if r else (i + 1, i + 1)
+            out[k] = [round(P[k]["note"], 3), round(P[k]["sd"], 3) if P[k]["sd"] else None, i + 1, len(ks), lo, hi]
+    a0, al = R["logit"]
+    return {"p": out, "t": {t: round(v, 3) for t, v in R["teams"].items()}, "lg": {l: round(v, 3) for l, v in R["leagues"].items() if l != "AUTRE"},
+            "logit": [round(a0, 4), round(al, 4)]}
+
+def tournament_sim(C, teams):
+    """Suite des Worlds en Monte-Carlo (tools/worlds_sim.py) : 20 000 tirages avec le modèle d'impact, effet commun aux parties
+    d'une série et incertitude qui grandit avec l'éloignement du match. Secours automatique : modèle de domination (model_c.py)."""
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import worlds_sim, types
+        R = worlds_sim.run(C, teams, bs=types.SimpleNamespace(winners=winners, lean=lean))
+    except Exception as e:
+        log("simulation indisponible :", type(e).__name__, str(e)[:160]); return None
+    if not R.get("equipes"): log("simulation :", R.get("statut")); return None
+    log("simulation : %s, %s, %.1f s" % (R["statut"], R["modele"], sum(R["duree_s"].values())))
+    K = ("p_3_0", "p_3_1", "p_3_2", "p_2_3", "p_1_3", "p_0_3", "p_qualif", "p_demie", "p_finale", "p_titre")
+    return {"maj": R["maj"], "statut": R["statut"], "modele": R["modele"], "n": R["tirages"],
+            "eq": {t: [v["bilan"]] + [v[k] for k in K] for t, v in R["equipes"].items()},
+            "mt": [[m["match"], m["a"], m["b"], m["bo"], m["p_a"], m.get("score")] for m in R["matchs"] if m.get("a") and not m.get("vainqueur") and "p_a" in m],
+            "nx": {t: [[e["adversaire"], e["p_tirage"], e["p_victoire"], e["bo"]] for e in v] for t, v in R["prochaine_ronde"].items()},
+            "d": {bo: {a: {b: round(p, 3) for b, p in row.items()} for a, row in M.items()} for bo, M in R["duels"].items()}}
 
 # ---------- passage ----------
 def main():

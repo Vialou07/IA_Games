@@ -435,6 +435,14 @@ nav.tabs button{position:relative}
 .mch{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(200,170,110,.08);font-size:12.5px;min-width:0}
 .mch span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mch small{color:var(--muted);white-space:nowrap}
 .lane[data-cmp]{cursor:pointer}
+.robot{padding:12px}.rb-h{margin:0 0 8px;font-weight:600}.rb-d summary{cursor:pointer;font-size:12.5px;color:var(--gold);margin-top:6px}
+.rbp{display:block;font-family:var(--body,inherit);font-size:9.5px;color:var(--muted);font-weight:700;white-space:nowrap;margin-top:2px}
+.simt{padding:6px 8px}.simr{display:grid;grid-template-columns:1fr 44px 50px 50px 92px;align-items:center;gap:4px;width:100%;padding:6px 2px;border-top:1px solid rgba(200,170,110,.08);font-size:13px;text-align:right}
+.simr:first-child{border-top:0}.simr.hd{font-size:10.5px;color:var(--muted);font-weight:700}.simr .tn{display:flex;align-items:center;gap:6px;text-align:left}.simr .tn b{font-family:var(--disp);font-size:16px}
+.simr.me{background:rgba(200,170,110,.08);border-radius:6px}.simr .ti{position:relative;display:flex;justify-content:flex-end;align-items:center}.simr .ti i{position:absolute;left:0;top:50%;height:6px;transform:translateY(-50%);background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;opacity:.55}.simr .ti b{position:relative;font-family:var(--disp)}
+.lgt{padding:8px 10px}.lgr{display:grid;grid-template-columns:150px 1fr 48px;align-items:center;gap:8px;padding:5px 0}.lgr b{font-size:13px}.lgr .br{height:8px;background:rgba(255,255,255,.05);border-radius:4px}.lgr .br i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--gold))}.lgr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
+.impt{display:flex;align-items:center;gap:12px;padding:10px 12px;margin-bottom:8px}.impt>b{font-family:var(--disp);font-size:30px;font-weight:800;background:linear-gradient(180deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.impt span{display:flex;flex-direction:column;font-size:13px}.impt small{font-size:11px;color:var(--muted)}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
 .rc5.w{border-left-color:var(--teal)}.rc5.l{border-left-color:var(--red)}.rc5 .d{font-size:12px;font-weight:700;line-height:1.15;display:flex;flex-direction:column}.rc5 .d small{font-size:10px;color:var(--muted);font-weight:600}
 .rc5 .c{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-size:15px}.rc5 .c.r{justify-content:flex-end}.rc5 i{font-style:normal;font-family:var(--disp);font-weight:800;text-align:center}.rc5.w i{color:var(--teal)}.rc5.l i{color:var(--red)}
@@ -767,7 +775,7 @@ let MATCHES = [];
 let SOURCE = "embarquées";
 let lastSync = null;
 let picks = LS.get("picks",{}), manual = LS.get("manual",{}), fav = LS.get("fav",null), celebrated = LS.get("celebrated",{});
-const ui = {stage:"all",league:"all",role:"all",nat:null,q:"",counted:false,pview:"cards",pstat:"kda"};
+const ui = {stage:"all",league:"all",role:"all",nat:null,q:"",counted:false,pview:"cards",pstat:"imp"};
 
 /* clé de match stable : en suisse et en phase finale deux équipes ne se croisent qu'une fois */
 const mkey = m => {if(!(m.t1&&m.t2))return m.id;const t=[m.t1,m.t2].sort().join("_");return m.stage==="pi"?t+"_"+m.start.slice(0,10):t+"_"+m.stage};
@@ -994,7 +1002,7 @@ function renderHome(){
 /* ---- mes paris : à parier en un geste, en attente, derniers résultats ---- */
 function qbRow(m){const st=new Date(m.start),today=dayKeyL(st)===dayKeyL(new Date());
   const b=t=>`<button class="qbt hx" data-pick="${t}" data-mk="${esc(m.key)}" style="--c1:${col(t)}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,24)}${esc(T[t].id)}</button>`;
-  return `<div class="qb hx"><span class="tm">${today?"":`${esc(st.toLocaleDateString("fr-FR",{weekday:"short"}))}<br>`}${fmtTime(st)}</span>${b(m.t1)}<i>VS</i>${b(m.t2)}<button class="qi" data-m="${esc(m.id)}" aria-label="Détails du match">›</button></div>`}
+  return `<div class="qb hx"><span class="tm">${today?"":`${esc(st.toLocaleDateString("fr-FR",{weekday:"short"}))}<br>`}${fmtTime(st)}</span>${b(m.t1)}<i>VS${robotHint(m)}</i>${b(m.t2)}<button class="qi" data-m="${esc(m.id)}" aria-label="Détails du match">›</button></div>`}
 function betsHTML(){
   const todo=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]),pend=MATCHES.filter(x=>picks[x.key]&&!x.winner&&x.t1&&x.t2);
   const last=MATCHES.filter(x=>picks[x.key]&&x.winner).slice(-4).reverse();
@@ -1045,6 +1053,7 @@ function renderSwiss(){
   let h=`<h2>Phase suisse</h2><p class="sub">16 équipes, 5 rondes. Trois victoires pour les quarts, trois défaites pour la sortie. Les matchs qualificatifs ou éliminatoires se jouent en Bo3.</p>
   <div class="legend"><span><i style="background:var(--teal)"></i>victoire</span><span><i style="background:var(--red)"></i>défaite</span>${fav?`<span><i style="background:var(--gold)"></i>parcours de ${esc(T[fav].id)}</span>`:`<span>Choisis ton équipe dans Direct pour tracer son parcours</span>`}</div>
   <div class="sw-scroll" id="swScroll"><div class="sw-board"><svg viewBox="0 0 930 620">${edges}${favPath}</svg>${nh}</div></div>`;
+  h+=simHTML();
   const ko=MATCHES.filter(m=>["qf","sf","f"].includes(m.stage)&&(m.t1||m.t2));
   h+=`<h2>Phase finale</h2>`+(ko.length?`<div class="list">${ko.map(matchRow).join("")}</div>`:`<div class="note">Tirage des quarts le 31 octobre. Les deux équipes à 3-0 seront placées dans des moitiés de tableau opposées, face à des équipes à 3-2. Quarts du 3 au 6 novembre, demies les 7 et 8, finale le 14 au Barclays Center.</div>`);
   $("#v-swiss").innerHTML=h;
@@ -1178,6 +1187,7 @@ function matchSheet(id,quiet){
     <div class="mid"><span class="${sc==="VS"?"v":"score"}" style="${sc==="VS"?"font-size:30px":"font-size:40px"}">${sc}</span></div>
     <button class="side sR" data-t="${m.t2||""}">${m.t2?logo(m.t2,62):""}<span class="code">${esc(tname(m,"t2"))}</span></button></div>
     <div class="cd-date">${fmtDay(st)}, ${fmtTime(st)}<br>${esc(VENUES[m.stage])}</div></div></div>`;
+  if(m.state!=="done")h+=robotHTML(m);
   if(m.state==="live"&&m.t1&&m.t2)h+=`<h2>En direct</h2><div id="livebox" class="livebox frame hx" data-k="${esc(m.key)}">${liveBoxHTML(m)}</div>`;
   if(m.state!=="soon"&&m.t1&&m.t2&&/^le\d/.test(m.id)&&(m.state==="done"||(m.s1||0)+(m.s2||0)>0))
     h+=`<h2>Feuille de match</h2>`+ablock("games_"+m.key+"_"+((m.s1||0)+(m.s2||0)),()=>matchGames(m),renderGames(m),m.state==="done"?24:.03);
@@ -1545,10 +1555,51 @@ function renderLanes(m,P,flip){
 }
 function tiles(list){return `<div class="tiles">${list.map(([v,l])=>`<div class="tile hx"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`}
 function champList(cs){return `<div class="clist">${cs.map(c=>`<div class="crow">${champ(c.c,32)}<span class="cn">${esc(c.c)}<small>${c.g} partie${c.g>1?"s":""}, KDA ${fx1(kdaV(c.k,c.d,c.a))}</small></span><span class="cw"><i style="width:${pct(c.w,c.g)}%"></i></span><b>${pct(c.w,c.g)} %</b></div>`).join("")}</div>`}
+/* ---- modèles du robot : note d'impact des joueurs, pronostics, simulation du tournoi ----
+   Note d'impact : KDA, participation, or, CS et avance à 15 min, corrigés de la force des adversaires et de la ligue
+   (testée à l'aveugle sur 343 parties internationales 2025-2026). Comparable seulement à poste égal. */
+const IMP=p=>SJ&&SJ.m&&SJ.m.p&&SJ.m.p[p.key];
+const PHI=x=>{const t=1/(1+.3275911*Math.abs(x)/Math.SQRT2),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x/2);return x>=0?(1+y)/2:(1-y)/2};
+const fxs=v=>(v>0?"+":"")+fx2(v);
+// probabilité que t1 gagne le match (série complète, score en cours compris) ; au-delà de 80 % le modèle est un peu trop sûr : on resserre
+function robotProb(m){
+  const s=SJ&&SJ.sim;if(!s||!m.t1||!m.t2)return null;
+  const x=(s.mt||[]).find(r=>"le"+r[0]===m.id||r[0]===m.id);
+  let p=x?(x[1]===m.t1?x[4]:x[2]===m.t1?1-x[4]:null):null;
+  if(p==null){const d=s.d&&s.d["bo"+(m.bo||1)];p=d&&d[m.t1]&&d[m.t1][m.t2]!=null?d[m.t1][m.t2]:null}
+  if(p==null)return null;
+  const q=Math.min(.999,Math.max(.001,p)),z=Math.log(q/(1-q)),zz=Math.abs(z)>1.386?Math.sign(z)*(1.386+(Math.abs(z)-1.386)*.85):z;
+  return 1/(1+Math.exp(-zz));
+}
+function robotHTML(m){
+  const p=robotProb(m);if(p==null)return"";
+  const f=p>=.5?m.t1:m.t2,pf=Math.max(p,1-p),txt=pf<.56?"voit un match très serré":`voit <b>${esc(T[f].id)}</b> favori`;
+  return `<h2>Pronostic du robot</h2><div class="robot frame hx"><p class="rb-h">🤖 Le robot ${txt}${m.state==="live"&&(m.s1||m.s2)?` (score actuel ${m.s1}-${m.s2} compris)`:""}</p>
+    <div class="wpbar big"><i style="width:${p*100}%;background:${col(m.t1)}"></i><i style="width:${(1-p)*100}%;background:${col(m.t2)}"></i></div>
+    <p class="small wpl"><span><b>${Math.round(p*100)} %</b> ${esc(T[m.t1].id)}</span><span>chances de gagner ${m.bo>1?"la série":"le match"}</span><span>${esc(T[m.t2].id)} <b>${Math.round((1-p)*100)} %</b></span></p>
+    <details class="rb-d"><summary>Comment il calcule ?</summary><p class="small">Il additionne la note d’impact des 5 joueurs de chaque équipe, corrigée de la force des ligues, puis simule la suite du tournoi 20 000 fois. Testé à l’aveugle sur 343 parties internationales : il trouve le bon favori 2 fois sur 3. Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p></details></div>`;
+}
+function robotHint(m){const p=robotProb(m);if(p==null)return"";const pf=Math.round(Math.max(p,1-p)*100);return `<small class="rbp" title="Favori du robot : ${esc(T[p>=.5?m.t1:m.t2].id)}">${p>=.5?"◀ ":""}🤖 ${pf} %${p<.5?" ▶":""}</small>`}
+function simHTML(){
+  const s=SJ&&SJ.sim;if(!s||!s.eq)return"";
+  const rows=Object.entries(s.eq).sort((a,b)=>b[1][10]-a[1][10]||b[1][7]-a[1][7]),pc=v=>v>=.995?"99+":v<.005?(v>0?"<1":"0"):Math.round(v*100);
+  return `<h2>Qui va aller au bout ?</h2><p class="sub">Le robot rejoue la fin du tournoi 20 000 fois à chaque mise à jour, avec les vrais résultats déjà acquis.</p>
+   <div class="simt frame hx"><div class="simr hd"><span></span><span>Bilan</span><span>Quarts</span><span>Demies</span><span>Titre</span></div>${rows.map(([t,v])=>`<button class="simr${t===fav?" me":""}" data-t="${esc(t)}"><span class="tn">${logo(t,22)}<b>${esc(T[t]?T[t].id:t)}</b></span><span>${esc(v[0])}</span><span>${pc(v[7])} %</span><span>${pc(v[8])} %</span><span class="ti"><i style="width:${Math.min(100,v[10]*100*2)}%"></i><b>${pc(v[10])} %</b></span></button>`).join("")}</div>
+   <p class="small" style="margin-top:6px">Probabilités du robot, pas des certitudes. ${s.modele&&/secours/.test(s.modele)?"Modèle de secours utilisé cette fois. ":""}Mis à jour ${s.maj?esc(new Date(s.maj).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})):""}.</p>`;
+}
+function leaguesHTML(){
+  const m=SJ&&SJ.m;if(!m||!m.lg)return"";
+  const NM={LCK:"Corée (LCK)",LPL:"Chine (LPL)",LEC:"Europe (LEC)",LCS:"Amérique du Nord (LCS)",LCP:"Pacifique (LCP)",CBLOL:"Brésil (CBLOL)"};
+  const L=Object.entries(m.lg).filter(([l])=>NM[l]).sort((a,b)=>b[1]-a[1]),mx=L[0][1],mn=L[L.length-1][1],al=(m.logit||[0,.64])[1];
+  const vs=(a,b)=>Math.round(100/(1+Math.exp(-al*5*(a-b))));
+  return `<h2>Force des ligues</h2><p class="sub">Mesurée sur les matchs internationaux depuis 2024, en comparant les performances des joueurs. C’est elle qui rend les ligues comparables.</p>
+   <div class="lgt frame hx">${L.map(([l,v])=>`<div class="lgr"><b>${esc(NM[l])}</b><span class="br"><i style="width:${(v-mn)/(mx-mn||1)*92+8}%"></i></span><em>${fxs(v)}</em></div>`).join("")}</div>
+   <p class="small" style="margin-top:6px">Pour se faire une idée : une équipe LCK moyenne battrait une équipe LEC moyenne ${vs(m.lg.LCK,m.lg.LEC)} fois sur 100, et une équipe LEC moyenne une équipe CBLOL moyenne ${vs(m.lg.LEC,m.lg.CBLOL)} fois sur 100. Un même KDA ne vaut donc pas la même chose d’une ligue à l’autre.</p>`;
+}
 /* ---- stats 2026 par joueur : classements au poste et comparaison (robot, API LoL Esports) ---- */
 const SV2=()=>!!(SJ&&SJ.v>=2);
 // id, libellé, calcul sur la saison, format, plus haut = mieux
-const PSTAT=[["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","KDA",S=>kdaV(S.k,S.d,S.a),fx2,1],
+const PSTAT=[["imp","Note d’impact",S=>null,v=>fxs(v),1],["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","KDA",S=>kdaV(S.k,S.d,S.a),fx2,1],
   ["kpg","Kills par partie",S=>S.k/S.g,fx1,1],["dpg","Morts par partie",S=>S.d/S.g,fx1,0],["apg","Assists par partie",S=>S.a/S.g,fx1,1],
   ["kp","Participation aux kills",S=>S.kpn?S.kps/S.kpn*100:S.tk?(S.k+S.a)/S.tk*100:null,v=>Math.round(v)+" %",1],["dmg","Part des dégâts",S=>S.dsn?S.ds/S.dsn*100:null,v=>Math.round(v)+" %",1],
   ["csm","CS par minute",S=>S.cs/Math.max(1,S.min),fx1,1],["gpm","Or par minute",S=>S.gold/Math.max(1,S.min),v=>Math.round(v),1],
@@ -1557,15 +1608,17 @@ const PSTAT=[["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","
 const MINR=10;   // parties 2026 minimum pour être classé
 const ROLEP={TOP:"des tops",JGL:"des junglers",MID:"des mids",BOT:"des ADC",SUP:"des supports"};
 function seasonOf(p){const x=SV2()&&SJ.players&&SJ.players[p.key];return x&&x.S&&x.S.g?x.S:null}
-function statVal(p,id){const S=seasonOf(p),d=PSTAT.find(x=>x[0]===id);if(!S||!d)return null;const v=d[2](S);return v==null||!isFinite(v)?null:v}
+function statVal(p,id){if(id==="imp"){const x=IMP(p);return x?x[0]:null}const S=seasonOf(p),d=PSTAT.find(x=>x[0]===id);if(!S||!d)return null;const v=d[2](S);return v==null||!isFinite(v)?null:v}
 function ranking(id,filt){const d=PSTAT.find(x=>x[0]===id);return PLAYERS.filter(p=>filt(p)&&(seasonOf(p)||{}).g>=MINR&&statVal(p,id)!=null).map(p=>({p,v:statVal(p,id)})).sort((a,b)=>d[4]?b.v-a.v:a.v-b.v)}
 function rankOf(p,id){const r=ranking(id,x=>x.role===p.role),i=r.findIndex(x=>x.p===p);return i<0?null:{i:i+1,n:r.length}}
 const rkBadge=(p,id)=>{const r=rankOf(p,id);return r?`<i class="rkb${r.i>3?" lo":""}" title="${r.i}${r.i===1?"er":"e"} sur ${r.n} ${ROLEP[p.role]}">${r.i}${r.i===1?"er":"e"}/${r.n}</i>`:""};
 function season2Tiles(p,S){
   const t=id=>{const d=PSTAT.find(x=>x[0]===id),v=d[2](S);return v==null||!isFinite(v)?null:[d[3](v),d[1].toLowerCase()+rkBadge(p,id)]};
-  return tiles([[S.g,"parties"+(S.g<MINR?` <i class="rkb lo">non classé</i>`:"")],t("win"),t("kda"),[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
+  const im=IMP(p);
+  return (im?`<div class="impt frame hx"><b>${fxs(im[0])}</b><span>note d’impact ${rkBadge(p,"imp")}<small>${im[4]===im[5]?`${im[4]}${im[4]===1?"er":"e"} ${ROLEP[p.role]} à coup sûr`:`entre le ${im[4]}${im[4]===1?"er":"e"} et le ${im[5]}e ${ROLEP[p.role]}`}, marge ±${fx2(im[1]||0)}</small></span></div>`:"")
+   +tiles([[S.g,"parties"+(S.g<MINR?` <i class="rkb lo">non classé</i>`:"")],t("win"),t("kda"),[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
     t("csm"),t("gpm"),t("dmg"),t("kp"),t("gd15"),t("csd15"),t("wpg"),t("pool")].filter(Boolean))
-   +`<p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Rang parmi les titulaires des Worlds au même poste (${MINR} parties minimum). Écarts à 15 min face au joueur d’en face.</p>`;
+   +`<p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Rang parmi les titulaires des Worlds au même poste (${MINR} parties minimum). Écarts à 15 min face au joueur d’en face.${IMP(p)?" La note d’impact résume KDA, participation, or, CS et avance à 15 min, corrigés de la force des adversaires et de la ligue : c’est elle qui permet de comparer des joueurs de ligues différentes. Elle ne mesure ni le shotcalling ni la vision.":""}</p>`;
 }
 function bestFoe(p){const nm=MATCHES.find(m=>(m.t1===p.team||m.t2===p.team)&&m.t1&&m.t2&&m.state!=="done"),opp=nm&&(nm.t1===p.team?nm.t2:nm.t1);
   return PLAYERS.find(x=>x.team===opp&&x.role===p.role)||(ranking("kda",x=>x.role===p.role&&x!==p)[0]||{}).p||PLAYERS.find(x=>x.role===p.role&&x!==p)}
@@ -1590,6 +1643,9 @@ function compareSheet(id,md){
   if(!SV2())h+=`<div class="note">Les stats 2026 arrivent dès que le robot a publié. Réessaie dans quelques minutes.</div>`;
   else if(!SA||!SB)h+=`<p class="small">Aucune partie 2026 recensée pour ${esc((!SA?a:b).id)}.</p>`;
   else{
+    const ia=IMP(a),ib=IMP(b),pb=ia&&ib?PHI((ia[0]-ib[0])/Math.sqrt((ia[1]||.08)**2+(ib[1]||.08)**2)):null;
+    if(pb!=null)h+=`<h2>Le plus fort, ligues comprises</h2><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Note d’impact",ia[0],ib[0],fxs,true,true)}</div>
+      <p class="small" style="margin-top:6px">${a.role===b.role?`Probabilité que ${esc((pb>=.5?a:b).id)} soit le meilleur des deux : <b>${Math.round(Math.max(pb,1-pb)*100)} %</b>. `:"Postes différents : comparaison indicative. "}Corrigée de la force des adversaires et de la ligue, contrairement aux stats brutes ci-dessous.</p>`;
     h+=`<h2>Saison 2026</h2><div class="tapehd"><span>${esc(a.id)}</span><span>${esc(b.id)}</span></div><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Parties",SA.g,SB.g,v=>v)}`
       +PSTAT.map(([sid,l,f,fmt,hi])=>{const va=f(SA),vb=f(SB);return va==null||vb==null||!isFinite(va)||!isFinite(vb)?"":tape(l,va,vb,fmt,!!hi,sid==="gd15"||sid==="csd15")}).join("")+`</div>
       <p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Le chiffre en or est le meilleur des deux.</p>
@@ -1651,7 +1707,7 @@ function renderTourney(D){
     ${D.bloodiest?`<div class="tile hx"><b>${D.bloodiest.kills}</b><span>kills dans une partie, ${tn(D.bloodiest.b1)} contre ${tn(D.bloodiest.b2)}</span></div>`:""}</div>`;
 }
 function renderStats(){
-  $("#v-stats").innerHTML=`<h2>Worlds 2026 en stats</h2><p class="sub">${SV2()?"Calculé par notre robot depuis les données officielles LoL Esports, Play-In compris. Mis à jour toutes les 30 minutes.":"Calculé en direct depuis les feuilles de match Leaguepedia, Play-In compris."}</p>`+ablock("tourney",tourneyStats,renderTourney,.25);
+  $("#v-stats").innerHTML=`<h2>Worlds 2026 en stats</h2><p class="sub">${SV2()?"Calculé par notre robot depuis les données officielles LoL Esports, Play-In compris. Mis à jour toutes les 30 minutes.":"Calculé en direct depuis les feuilles de match Leaguepedia, Play-In compris."}</p>`+ablock("tourney",tourneyStats,renderTourney,.25)+leaguesHTML();
 }
 /* blocs prêts à insérer dans les fiches */
 function matchStatsHTML(m){
@@ -2204,7 +2260,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="PRÉPROD v9.3, 24/10/2026";
+const APP_VERSION="PRÉPROD v10, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
