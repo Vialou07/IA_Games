@@ -13,6 +13,7 @@ on:
     paths: ["tools/*.py", "data/teams.json", ".github/workflows/stats.yml"]
 permissions:
   contents: write
+  actions: write   # relance du passage suivant (workflow_dispatch)
 concurrency:
   group: stats-${{ github.ref_name }}
   cancel-in-progress: false
@@ -53,3 +54,13 @@ jobs:
           git -c user.name="stats-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "Stats Worlds : mise à jour auto"
           git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:$OUT_BRANCH"
           echo "publié sur $OUT_BRANCH : stats $(stat -c%s data/stats.json) octets, mémoire $(stat -c%s data/cache.json.gz) octets"
+      # GitHub saute parfois les passages programmés pendant des heures : chaque passage de main relance le suivant
+      # après une pause (8 min), jusqu'à la fin des Worlds. Un seul en attente à la fois (concurrency) : pas d'emballement.
+      - name: Relance le passage suivant
+        if: always() && github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$(date -u +%Y%m%d)" -gt 20261116 ]; then echo "Worlds terminés : pas de relance"; exit 0; fi
+          sleep 480
+          gh workflow run stats.yml --ref main --repo "$GITHUB_REPOSITORY" && echo "passage suivant demandé"
