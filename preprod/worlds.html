@@ -3484,7 +3484,7 @@ function playerSheet(key,quiet){
         return `<div class="lane"><span class="rl">${SV2()?"Depuis "+esc(String(SJ.since||"2024").slice(0,4)):"Carrière"}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(p.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${t.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${T[opp].color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(o.id)}</b>
         <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face, KDA ${fx2(kdaV(x.ka,x.da,x.aa))} contre ${fx2(kdaV(x.kb,x.db,x.ab))}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`},12)
         +rkExp1(p.key,o.key)+(typeof encHTML==="function"?ablock("enc_"+p.key+"_"+o.key,()=>encData(p,o),encHTML(p,o,true),3):"")}}
-  const h=`<div class="bigwrap sm"><div class="bigcard">${pcard(p)}</div></div>${rkBriefHTML(p)}${duel}${lsvSheet([p.key])}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}${typeof ficheDetailsHTML==="function"?ablock("fjd_"+p.key,()=>ficheData(p),ficheDetailsHTML(p),3):""}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
+  const h=`<div class="bigwrap sm"><div class="bigcard">${pcard(p)}</div></div>${rkBriefHTML(p)}${duel}${flPlayerHTML(p)}${lsvSheet([p.key])}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}${typeof ficheDetailsHTML==="function"?ablock("fjd_"+p.key,()=>ficheData(p),ficheDetailsHTML(p),3):""}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
   setSheet(h,quiet);
 }
 
@@ -4041,6 +4041,14 @@ function flTeamHTML(id){
   return `<details class="fltm frame hx"><summary><b>Début de partie</b><span>1er sang ${pc(fb,n)} · 1re tour ${pc(ft,n)} · 1er dragon ${pc(fd,n)}${so?` · âme ${so} fois`:""}</span></summary>
     <p class="small">Saison 2026, ${n} parties au flux complet. Quand ${esc(T[id].id)} fait le premier sang, elle gagne ${pc(fbw,fb)} de ces parties ; la première tour, ${pc(ftw,ft)} ; le premier dragon, ${pc(fdw,fd)}. Premier Baron dans ${pc(fn,nb)} des parties avec un Baron (${pc(fnw,fn)} gagnées). Âme du dragon : ${so} fois, ${sow} gagnées ; âme adverse : ${soa} fois.</p></details>`;
 }
+// fiche joueur : son début de partie en 2026 (flux du robot, fl.p), comparé aux joueurs du même poste (fl.r)
+function flPlayerHTML(p){
+  const F=SJ&&SJ.fl,x=F&&F.p&&F.p[p.key],R=F&&F.r&&F.r[p.role]&&F.r[p.role].all;if(!x||!R||x[0]<20)return"";
+  const [n,k15,d15,a15,kt,,at,lv,nf,fbk,fbd,fba]=x,sh=(k15+a15)/Math.max(1,kt+at),rs=(R[1]+R[3])/Math.max(1,R[4]+R[6]),de=d15/n,rd=R[2]/Math.max(1,R[0]);
+  const pc=v=>Math.round(v*100)+" %",tag=sh>=rs+.025?"Profil : plutôt début de partie":sh<=rs-.025?"Profil : plutôt fin de partie":"Début de partie";
+  return `<details class="fltm frame hx"><summary><b>${tag}</b><span>${pc(sh)} de ses kills et assists avant 15 min (moyenne ${ROLEP[p.role]} : ${pc(rs)})</span></summary>
+    <p class="small">Saison 2026, ${n} parties. Avant 15 min : ${fx2(de)} mort par partie (moyenne du poste : ${fx2(rd)}), écart de niveau ${lv>=0?"+":"−"}${fx2(Math.abs(lv/n))} face au vis-à-vis. Premier sang : ${fbk} fait${fbk>1?"s":""}, ${fba} en assistant, ${fbd} subi${fbd>1?"s":""} en ${nf} parties.</p></details>`;
+}
 function flLine(x){
   const F=SJ&&SJ.fl&&SJ.fl.w&&x.gid&&SJ.fl.w[x.gid];if(!F)return"";
   const [,,bc,rc,ws,,,,,pl,ob,cv]=F,tm=sd=>esc(sd?rc:bc),t=v=>Math.floor(v/60)+":"+String(Math.floor(v%60)).padStart(2,"0");
@@ -4240,7 +4248,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="PRÉPROD v12.6, 24/10/2026";
+const APP_VERSION="PRÉPROD v12.7, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
