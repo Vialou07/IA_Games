@@ -912,6 +912,87 @@ html.mv-on .rkhr em,html.mv-on .simr .ti b,html.mv-on .robot .wpl b,html.mv-on #
 .lbr.mv-up{position:relative;z-index:1}
 @media (prefers-reduced-motion:reduce){.mv-glint::after,.mv-hit::after{display:none}}
 /* <<< motion */
+/* >>> live2 */
+.l2{display:grid;gap:4px;margin:4px 0 8px}
+.l2r{background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--gold3);min-width:0}
+.l2s{display:grid;grid-template-columns:minmax(0,1fr) 16px;column-gap:6px;row-gap:0;align-items:center;padding:6px 8px 7px 10px;min-height:44px;box-sizing:border-box}
+.l2tap{cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none}
+.l2tap:focus-visible{box-shadow:inset 0 0 0 2px var(--teal);border-radius:8px}
+.l2s.l2tap::after{content:"›";grid-column:2;grid-row:1/span 4;justify-self:end;color:var(--gold);font-size:20px;line-height:1;transition:transform .2s}
+.l2r.on>.l2tap::after{transform:rotate(90deg)}
+.l2r:not(.on)>.l2b,.l2pl:not(.on)>.l2pd{display:none}
+.l2s>*{grid-column:1/-1}
+.l2h{grid-column:1;display:flex;align-items:center;gap:8px;height:20px;margin-bottom:1px;font-family:var(--title);font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--gold)}
+.l2h .ami{width:20px;height:20px;padding:0;box-sizing:border-box;font-size:11px;line-height:18px}
+.l2t{grid-column:1;display:block;font-size:13.5px;line-height:20px;color:var(--text);min-width:0}
+.l2t b{font-family:var(--disp);font-size:15.5px;font-weight:700}
+.l2one,.l2dl{height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l2t b,.l2tg{line-height:1}
+.l2mu{color:var(--muted);font-size:12.5px}
+.l2ls{grid-column:1;display:block;min-height:40px;min-width:0}
+.l2dl{display:flex}
+.l2nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.l2v{flex:none}
+.l2r b.l2g,.l2b b.l2g{color:var(--gold2)}
+.l2tg{color:var(--muted)}
+.l2tg.l2tx{color:var(--teal);font-weight:700}
+.l2tg.l2tp{color:var(--gold)}
+.l2pg{grid-column:1;display:flex;align-items:center;gap:7px;min-width:0;white-space:nowrap;height:24px}
+.l2t.l2pgh{height:24px;line-height:24px}
+.l2pg>b{font-family:var(--disp);font-size:16px;overflow:hidden;text-overflow:ellipsis}
+.l2pg small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis}
+.l2pg b.l2g{margin-left:auto;flex:none}
+.l2bs{border-left-color:var(--teal);margin:10px 0 2px}
+.l2b{padding:0 10px 8px;font-size:12.5px;color:var(--muted);min-width:0}
+.livebox .amip[data-amip^="l2"]{animation:none;margin:2px 0 6px}
+.l2b p{margin:6px 0 0;line-height:1.45}
+.l2lh{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;font-family:var(--disp);font-weight:700;font-size:13px;color:var(--text);padding:2px 0 4px}
+.l2lh span{display:flex;align-items:center;gap:4px}
+.l2lh span:nth-child(2){font-family:var(--body);font-weight:500;font-size:10.5px;color:var(--muted)}
+.l2lh span:last-child{justify-content:flex-end}
+.l2ln{display:grid;grid-template-columns:50px minmax(0,1fr) 58px minmax(0,1fr);column-gap:6px;align-items:center;padding:5px 0 4px;border-top:1px solid rgba(200,170,110,.1)}
+.l2ln>span{font-family:var(--disp);font-size:14.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l2ln>span.l2rt{text-align:right}
+.l2ln>span.l2w{color:var(--gold2);font-weight:800}
+.l2rl{font-style:normal;font-family:var(--title);font-size:9px;font-weight:700;color:var(--gold);letter-spacing:0;overflow:hidden}
+.l2gd{display:flex;flex-direction:column;align-items:center;gap:2px}
+.l2gd b{font-family:var(--disp);font-size:14.5px;color:var(--text);font-variant-numeric:tabular-nums}
+.l2gd i{position:relative;display:block;width:100%;height:4px;border-radius:2px;background:rgba(240,230,210,.08)}
+.l2gd s{position:absolute;top:0;bottom:0;border-radius:2px}
+.l2ln small{grid-column:2/-1;font-size:11px;color:var(--muted);text-align:center;margin-top:1px}
+.l2pr{display:grid;grid-template-columns:14px 24px minmax(0,1fr) auto;gap:7px;align-items:center;padding:6px 0;border-top:1px solid rgba(200,170,110,.1)}
+.l2pr:first-child{border-top:0}
+.l2n{font-family:var(--disp);font-weight:800;color:var(--gold);font-size:14px}
+.l2nm2{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.l2nm2 b{font-family:var(--disp);font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l2nm2 small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l2nm2 small.l2bd{white-space:normal}
+.l2pr>b.l2g{font-family:var(--disp);font-size:17px}
+.l2fg{padding:6px 0 2px;border-top:1px solid rgba(200,170,110,.1)}
+.l2fg:first-child{border-top:0}
+.l2fh{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px;margin-bottom:4px;color:var(--text);font-size:13px}
+.l2fh>b{font-family:var(--disp);font-size:15px;color:var(--gold2)}
+.l2fh small{flex-basis:100%;font-size:11px;color:var(--muted)}
+.l2kr{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:baseline;padding:2px 0 2px 8px;border-left:3px solid var(--c,var(--line));margin:0 0 2px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l2kr time{font-family:var(--disp);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.l2kr b{font-family:var(--disp);font-size:14.5px;color:var(--text)}
+.l2kr small{font-size:11px}
+.l2kr span{overflow:hidden;text-overflow:ellipsis}
+.l2jg{color:var(--text)}
+.l2jg b{font-family:var(--disp);font-size:14.5px;color:var(--gold2)}
+.l2th{display:grid;grid-template-columns:16px auto minmax(0,1fr) 50px 34px 36px;column-gap:5px;align-items:center;margin:10px 0 2px;font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--text)}
+.l2th small{font-family:var(--body);font-weight:500;font-size:10.5px;color:var(--muted)}
+.l2th span{font-family:var(--body);font-weight:500;font-size:10px;color:var(--muted);text-align:right}
+.l2ps{display:grid;grid-template-columns:24px minmax(0,1fr) 50px 34px 36px;column-gap:5px;align-items:center;min-height:36px;padding:4px 0;border-top:1px solid rgba(200,170,110,.1)}
+.l2pl.on>.l2ps{background:rgba(200,170,110,.05)}
+.l2pn{font-family:var(--disp);font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l2c{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--text);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.l2pd{padding:0 0 8px 29px;font-size:12px;color:var(--muted)}
+.l2pd p{margin:4px 0 0}
+.l2it{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.l2ic{width:22px;height:22px;border-radius:4px;box-shadow:0 0 0 1px rgba(200,170,110,.35);background:var(--panel2)}
+.l2bw{margin-top:8px}
+/* <<< live2 */
 </style>
 </head>
 <body>
@@ -3825,6 +3906,225 @@ function watchLive(m){
   run();
 }
 function stopLiveGame(){LV.watch=null;clearTimeout(LV.timer)}
+/* >>> live2 */
+/* ===================== DIRECT : fights, duels, « le match bascule ? », joueur du match, tableau du match =====================
+   Sources : l'image courante du flux (L.frame, lue par liveTick toutes les 10 s : or, K/D/A, CS, niveau), le fil du match
+   (L.kf : qui a tué qui), les mesures d'écart d'or du direct (L.samples), les données d'avant-match (SJ.lane : modèle de
+   lane ; robotProb/gameProbE : prono du robot pour la partie), et le flux détaillé (feedDetails : part des dégâts,
+   balises, objets), lu au plus une fois toutes les 30 s, direct affiché et onglet visible (l2Det).
+   État par partie dans L.l2 : ce qui est affiché (lanes retenues, joueur du match, bascule) ne change qu'avec une marge,
+   pour que rien ne saute au rafraîchissement de 10 s. Rendu protégé : en cas de souci, le bloc ne s'affiche pas. */
+const L2R={top:"TOP",jungle:"JGL",mid:"MID",bottom:"BOT",support:"SUP"};
+const l2k=v=>fx1(Math.abs(v)/1000)+" k";
+const l2pc=v=>Math.round(v*100)+" %";
+const l2sd=n=>n?amTid(n):"";
+const l2Safe=(fn,...a)=>{try{return fn(...a)}catch(e){console.warn("live2",e);return""}};
+/* flux détaillé (part des dégâts, balises, objets) : lu depuis le rendu du direct, donc seulement quand le direct est affiché,
+   onglet visible, au plus une fois toutes les 30 s ; fenêtre de 10 s finissant à l'image courante (déjà servie par le flux,
+   donc jamais refusée même si l'horloge du téléphone avance) ; on garde la dernière image */
+function l2Det(L,m){try{
+  const f=L.frame,gid=L.gid;if(!f||!gid||document.hidden||typeof feedDetails!=="function")return;
+  const D=L.l2d&&L.l2d.gid===gid?L.l2d:(L.l2d={gid,t:0,busy:false,f:null});
+  if(D.busy||Date.now()-D.t<30000)return;
+  D.busy=true;D.t=Date.now();const first=!D.f;
+  feedDetails(gid,Date.parse(f.rfc460Timestamp)-10000).then(j=>{const fr=j&&j.frames;if(fr&&fr.length&&L.l2d===D)D.f=fr[fr.length-1]})
+    .catch(()=>{}).finally(()=>{D.busy=false;if(first&&D.f&&L.l2d===D&&typeof paintLive==="function")paintLive(m)});
+}catch(e){console.warn("live2 details",e)}}
+/* état de la partie ; joueurs (nom, poste, champion) lus une fois par partie dans L.meta */
+function l2St(L){
+  if(!L.l2||L.l2.gid!==L.gid)L.l2={gid:L.gid,id:null,lanes:[],pog:null,bs:null};
+  const S=L.l2,md=L.meta;
+  if(!S.id&&md){const id={};
+    [[md.blueTeamMetadata,L.blue,0],[md.redTeamMetadata,L.red,1]].forEach(([tm,our,side])=>((tm&&tm.participantMetadata)||[]).forEach((pm,j)=>{
+      const pl=playerFromSummoner(pm.summonerName,our);
+      id[pm.participantId]={pid:pm.participantId,side,team:our,role:L2R[pm.role]||ROLE_ORDER[j],pl,c:pm.championId,
+        n:pl?pl.id:String(pm.summonerName||"").split(" ").slice(1).join(" ")||pm.summonerName||"?"}}));
+    if(Object.keys(id).length===10)S.id=id}
+  return S;
+}
+/* les 10 joueurs avec leurs chiffres : image courante (s) et, si lue, dernière image détaillée (dd) */
+function l2Rows(L){const S=l2St(L),f=L.frame;if(!S.id||!f)return null;
+  const D=L.l2d&&L.l2d.gid===L.gid&&L.l2d.f,dp=D?D.participants||[]:[];
+  const P=[...(f.blueTeam.participants||[]),...(f.redTeam.participants||[])],R=P.map(s=>S.id[s.participantId]?Object.assign({s,dd:dp.find(x=>x.participantId===s.participantId)||null},S.id[s.participantId]):null).filter(Boolean);
+  return R.length===10?R:null}
+/* vainqueur d'une partie finie : le camp qui a détruit le plus de tours et d'inhibiteurs (tours du Nexus comprises) */
+function l2Win(f){const b=f.blueTeam,r=f.redTeam,x=(b.towers||0)+(b.inhibitors||0)-(r.towers||0)-(r.inhibitors||0);return x>0?0:x<0?1:null}
+
+/* ---- les fights : kills du fil du match espacés de moins de 20 s, 2 kills au moins ---- */
+function l2Fights(L){const K=L.kf;if(!K||!K.ev||!K.ev.length)return [];const out=[];let cur=null;
+  for(const e of K.ev){if(e.k!=="kill")continue;
+    if(cur&&e.ms-cur.ms1<20000){cur.e.push(e);cur.ms1=e.ms}else out.push(cur={e:[e],ms0:e.ms,ms1:e.ms,t0:e.t})}
+  return out.filter(x=>x.e.length>=2).map(x=>{const n=[0,0];x.e.forEach(e=>n[e.a>=0?(e.a<5?0:1):(e.v<5?1:0)]++);x.n=n;return x})}
+/* écart d'or (bleu − rouge) mesuré par le direct juste avant / juste après un instant du flux (null si pas de mesure proche) */
+function l2Gd(L,ms,dir){const S=L.samples;if(!L.first||!S||!S.length)return null;let best=null;
+  for(const s of S){const t=L.first+s.t*60000;if(dir<0?(t<=ms-1000&&ms-t<=45000):(t>=ms+3000&&t-ms<=60000))if(!best||(dir<0?t>best.t:t<best.t))best={t,gd:s.gd}}
+  return best}
+const l2Side=(L,s)=>s?L.red:L.blue;
+function l2FightTxt(L,x){const w=x.n[0]>x.n[1]?0:x.n[1]>x.n[0]?1:-1;
+  return w<0?`égalité ${x.n[0]} à ${x.n[1]}`:`<b>${l2sd(l2Side(L,w))}</b> gagne ${x.n[w]} à ${x.n[1-w]}`}
+
+/* ---- les duels : écart d'or entre vis-à-vis, comparé au modèle de lane ramené au temps de jeu ---- */
+function l2Lanes(R,t){
+  const Ln=SJ&&SJ.lane,k=t/15,ks=Math.max(k,Math.sqrt(k));
+  return ROLE_ORDER.map(r=>{const a=R.find(x=>x.side===0&&x.role===r),b=R.find(x=>x.side===1&&x.role===r);if(!a||!b)return null;
+    const ld=a.pl&&b.pl?amFn(typeof laneDuel==="function"?laneDuel:null,a.pl.key,b.pl.key,r,false):null;
+    const A=ld&&Ln.p[a.pl.key],B=ld&&Ln.p[b.pl.key],g=Ln&&Ln.sg&&Ln.sg[r];
+    const d=(a.s.totalGold||0)-(b.s.totalGold||0),x=ld?ld.e*k:0,sd=Math.sqrt((g?g[0]:800)**2+(A?A[3]**2:0)+(B?B[3]**2:0))*ks;
+    const up=d>=0,dl=Math.abs(d),z=(dl-(up?x:-x))/sd,pw=ld?(up?ld.p:1-ld.p):null;
+    // « inattendu » : celui qui mène n'était pas attendu devant (ou duel annoncé serré) et mène nettement au-delà du prévu
+    const tag=dl<300||pw==null?"":(pw<.45&&z>=1)||(pw<.55&&z>=1.5)?"inattendu":pw>=.55?(z>=1.5?"plus que prévu":z>=-1?"comme prévu":""):"";
+    return {r,a,b,d,x,ld,w:up?a:b,l:up?b:a,dl,tag,sc:(dl+Math.abs(d-x))/sd}});
+}
+/* lanes du niveau 1 : les 2 plus marquantes (écart et surprise) parmi celles à 0,5 k d'or ou plus ; celles déjà affichées
+   gardent l'avantage (seuil de sortie à 0,4 k, bonus de 25 %) ; affichées dans l'ordre des postes, jamais re-triées */
+function l2Pick(S,lanes){const pv=S.lanes||[],was=r=>pv.includes(r);
+  const c=lanes.filter(l=>l&&l.dl>=(was(l.r)?400:500)).map(l=>({l,v:l.sc*(was(l.r)?1.25:1)})).sort((p,q)=>q.v-p.v);
+  const sel=c.slice(0,2);
+  S.lanes=sel.map(x=>x.l.r);return lanes.filter(l=>l&&S.lanes.includes(l.r))}
+const l2Verb=(dl,t)=>{const v=dl*15/Math.max(t,5);return v>=1600?"surclasse":v>=900?"domine":"devance"};
+const l2Tag=t=>t?`, <span class="l2tg${t==="inattendu"?" l2tx":t==="plus que prévu"?" l2tp":""}">${t}</span>`:"";
+
+/* ---- joueur du match : 3 points par kill, 2 par assistance, −3 par mort, + la moitié de sa part de l'or de l'équipe (en %),
+   + la moitié de sa part des dégâts de l'équipe (en %, quand le flux détaillé est lu). Au moins un kill ou une assistance. ---- */
+function l2Score(x,f){const s=x.s,tg=(x.side?f.redTeam:f.blueTeam).totalGold||0,g=tg>0?Math.round((s.totalGold||0)/tg*100):0;
+  const dm=x.dd&&typeof x.dd.championDamageShare==="number"?Math.round(x.dd.championDamageShare*100):null;
+  const k=3*(s.kills||0),a=2*(s.assists||0),d=3*(s.deaths||0),go=Math.round(g/2),dmo=dm==null?0:Math.round(dm/2);
+  return {k,a,d,g,go,dm,dmo,v:k+a-d+go+dmo}}
+function l2Pog(L,R,f,fin){const S=L.l2,ws=fin?l2Win(f):null,key=x=>x.pl?x.pl.key:x.side+x.n;
+  const el=R.filter(x=>(x.s.kills||0)+(x.s.assists||0)>0),pool=(el.length?el:R).filter(x=>ws==null||x.side===ws).map(x=>Object.assign({},x,{sc:l2Score(x,f)}));
+  if(!pool.length)return null;
+  pool.sort((p,q)=>q.sc.v-p.sc.v||(p.s.deaths||0)-(q.s.deaths||0)||(q.s.totalGold||0)-(p.s.totalGold||0));
+  let top=pool[0];
+  // en cours de partie, le premier ne change que s'il est dépassé d'au moins 3 points (un kill)
+  if(!fin&&S.pog){const inc=pool.find(x=>key(x)===S.pog);if(inc&&top.sc.v-inc.sc.v<3)top=inc}
+  S.pog=key(top);return {top,rest:pool.filter(x=>x!==top).slice(0,2),ws}}
+const l2Kda=s=>`${s.kills||0}/${s.deaths||0}/${s.assists||0}`;
+
+/* ---- le match bascule ? prono du robot pour cette partie (P(bleu)) : celui affiché dans « Draft » (avant / après) ---- */
+function l2Pre(L,m){const bl=L.blue,D=L.amd&&!L.amd.err&&L.amd.blue===bl?L.amd:null,lgt=x=>{const q=Math.min(.999,Math.max(.001,x));return Math.log(q/(1-q))};
+  const rp=m&&m.bo===1&&(bl===m.t1||bl===m.t2)?amFn(typeof robotProb==="function"?robotProb:null,m):null;
+  const pE=rp!=null?(bl===m.t1?rp:1-rp):D&&D.pE!=null?D.pE:amFn(typeof gameProbE==="function"?gameProbE:null,L.blue,L.red);
+  const pD=pE!=null&&D&&D.p!=null&&D.pE!=null?sigm(lgt(pE)+lgt(D.p)-lgt(D.pE)):null;
+  return {pE,pD}}
+/* état : « s » l'outsider du robot mène (60 % ou plus ; sortie sous 55 %), « e » le favori a perdu 25 points (sortie sous 20),
+   « w » partie finie gagnée par l'outsider. Rien si le robot voyait un match serré (moins de 55 %) ni avant 5 min. */
+function l2Bas(L,m,t,fin,f){const S=L.l2,P=l2Pre(L,m),pE=P.pE;if(pE==null)return null;
+  const fb=pE>=.5?0:1,pf=Math.max(pE,1-pE),o={fb,pf,pD:P.pD==null?null:fb?1-P.pD:P.pD,fav:fb?L.red:L.blue,und:fb?L.blue:L.red};
+  if(pf<.55){S.bs=null;return null}
+  if(fin){const ws=l2Win(f);S.bs=ws!=null&&ws!==fb?"w":null;return S.bs?Object.assign(o,{k:"w"}):null}
+  if(t<5)return null;
+  const pl=winProb(f,t),lf=fb?1-pl:pl;
+  const k=lf<=.40||(S.bs==="s"&&lf<=.45)?"s":pf-lf>=.25||(S.bs&&pf-lf>=.20)?"e":null;
+  S.bs=k;return k?Object.assign(o,{k,lf}):null}
+
+/* ---- kills avec le jungler avant 15 min (à la place des ganks, que le flux ne donne pas) : kills de l'équipe où son jungler
+   a tué ou aidé, avant 15:00 de jeu ; seulement si le fil est lu sans trou jusque-là (sinon null) ---- */
+function l2Jg(L,R){const K=L.kf;if(!K||!K.orgOk)return null;
+  if(K.ev.some(e=>e.k==="gap"&&e.t<900))return null;
+  const jg=[0,1].map(s=>{const x=R.find(y=>y.side===s&&y.role==="JGL");return x?x.pid-1:-1});if(jg.some(i=>i<0))return null;
+  const n=[0,0];K.ev.forEach(e=>{if(e.k!=="kill"||e.t>=900||e.a<0)return;const s=e.a<5?0:1;if(e.a===jg[s]||(e.as||[]).includes(jg[s]))n[s]++});return n}
+
+/* ---- rendu ---- */
+/* bloc repliable maison (pas de balise details : moins coûteux à reconstruire à chaque rafraîchissement) ; ouvert ou fermé
+   gardé dans AM_OPEN comme les autres blocs de la fiche ; le contenu n'est construit que s'il est ouvert, sinon à l'ouverture */
+const L2B=new Map();
+function l2Row(id,head,fn,cls,hc,bc){const on=AM_OPEN.has(id);if(!on){if(L2B.size>300)L2B.clear();L2B.set(id,fn)}
+  return `<div class="${cls||"l2r"}${on?" on":""}" data-l2o="${esc(id)}"><div class="${hc||"l2s"} l2tap" role="button" tabindex="0" aria-expanded="${on}">${head}</div><div class="${bc||"l2b"}">${on?l2Safe(fn):""}</div></div>`}
+function l2Tog(h){const r=h.closest("[data-l2o]");if(!r)return;const id=r.dataset.l2o,on=!AM_OPEN.has(id),b=r.lastElementChild;
+  if(on)AM_OPEN.add(id);else AM_OPEN.delete(id);r.classList.toggle("on",on);h.setAttribute("aria-expanded",String(on));
+  if(on&&b&&!b.firstChild){const fn=L2B.get(id);if(fn)b.innerHTML=l2Safe(fn)}}
+if(typeof document!=="undefined"){
+  document.addEventListener("click",e=>{const t=e.target;if(!t||!t.closest||t.closest("[data-ami]"))return;const h=t.closest(".l2tap");if(h)l2Tog(h)});
+  document.addEventListener("keydown",e=>{const t=e.target;if((e.key==="Enter"||e.key===" ")&&t&&t.classList&&t.classList.contains("l2tap")){e.preventDefault();l2Tog(t)}});
+}
+
+function l2BasHTML(L,m){try{
+  const f=L&&L.frame;if(!f||!L.meta||!L.blue||!L.red)return"";l2St(L);
+  const fin=f.gameState==="finished",t=gameMins(L),B=l2Bas(L,m,t,fin,f);if(!B)return"";
+  const id="l2b_"+L.gid,fv=`<b>${l2sd(B.fav)}</b>`,un=`<b>${l2sd(B.und)}</b>`,mn=Math.floor(t);
+  const line=B.k==="w"?`${fv} était favori à ${l2pc(B.pf)} ; ${un} a gagné : surprise`
+    :B.k==="s"?`${fv} était favori à ${l2pc(B.pf)} ; à ${mn} min, ${un} a <b class="l2g">${l2pc(1-B.lf)}</b> : surprise en vue`
+    :`${fv} était favori à ${l2pc(B.pf)} ; à ${mn} min, il n’a plus que <b class="l2g">${l2pc(B.lf)}</b> : rien n’est joué`;
+  const det=()=>`<p>Prono du robot pour cette partie, avant le début : ${l2sd(B.fav)} ${l2pc(B.pf)}${B.pD!=null?`, puis ${l2pc(B.pD)} après la draft`:""} (note des joueurs, côté).</p>
+    ${B.k==="w"?"":`<p>Chances de victoire du direct à ${mn} min : ${l2sd(B.fav)} ${l2pc(B.lf)}, ${l2sd(B.und)} ${l2pc(1-B.lf)} (or, tours, dragons, Barons, inhibiteurs).</p>`}
+    <p>Cette ligne n’apparaît que si l’écart avec le prono est net : l’outsider à 60 % ou plus, ou le favori qui a perdu 25 points.</p>`;
+  return l2Row(id,`<span class="l2h">Le match bascule ?</span><span class="l2t">${line}</span>`,det,"l2r l2bs");
+}catch(e){console.warn("live2 bascule",e);return""}}
+
+function l2KillRow(L,e){const v=kfWho(L,e.v),s=e.a>=0?(e.a<5?0:1):(e.v<5?1:0);
+  return `<div class="l2kr" style="--c:${col(l2Side(L,s))}"><time>${kfMS(e.t)}</time><span>${e.a>=0?`<b>${esc(kfWho(L,e.a).n)}</b> › ${esc(v.n)}${e.as&&e.as.length?` <small>+${e.as.length}</small>`:""}`:`<b>${esc(v.n)}</b> <small>exécuté</small>`}</span></div>`}
+function l2FightsHTML(L,f,t){
+  const F=l2Fights(L),id="l2f_"+L.gid,last=F[F.length-1],now=Date.parse(f.rfc460Timestamp);
+  if(!last)return `<div class="l2r"><div class="l2s"><span class="l2h">Les fights</span><span class="l2t l2one l2mu">Pas encore de fight (2 kills ou plus en moins de 20 s)</span></div></div>`;
+  const sw=x=>{const a=l2Gd(L,x.ms0,-1),b=l2Gd(L,x.ms1,1);return a&&b?{a:a.gd,b:b.gd}:null};
+  const gdt=v=>Math.abs(v)<100?"égalité":`${l2sd(v>0?L.blue:L.red)} +${l2k(v)}`;
+  const s1=sw(last),w=last.n[0]>last.n[1]?0:last.n[1]>last.n[0]?1:-1,live=f.gameState!=="finished"&&now-last.ms1<20000;
+  const swing=s1&&w>=0?(s1.b-s1.a)*(w?-1:1):null;
+  const line=`<span class="l2t l2one"><b>${kfMS(last.t0)}</b> · ${l2FightTxt(L,last)}${swing!=null&&Math.abs(swing)>=100?`, ${swing>0?"+":"−"}${l2k(swing)} d’or`:""}${live?` <span class="l2tg l2tx">en cours</span>`:""}</span>`;
+  const body=()=>F.slice().reverse().slice(0,8).map(x=>{const s=sw(x);
+    return `<div class="l2fg"><div class="l2fh"><b>${kfMS(x.t0)}</b><span>${l2FightTxt(L,x)}</span><small>${s?`or : ${gdt(s.a)} → ${gdt(s.b)}`:"écart d’or : pas mesuré"}</small></div>${x.e.map(e=>l2KillRow(L,e)).join("")}</div>`}).join("")
+    +(F.length>8?`<p class="small">Les ${F.length-8} premiers fights sont dans « Tout le fil ».</p>`:"");
+  return `${l2Row(id,`<span class="l2h">Les fights${amI(id)}</span>${line}`,body)}
+    ${amIP(id,`<p>Un fight : au moins 2 kills espacés de moins de 20 s, lus dans le fil du match ; le bilan compte les kills de chaque équipe. Écart d’or avant et après : mesures du direct (une toutes les 10 s), seulement si l’appli suivait la partie à ce moment-là.</p>`)}`;
+}
+
+function l2TabHTML(L,R,t,f){
+  const id="l2t_"+L.gid,D=L.l2d&&L.l2d.gid===L.gid&&L.l2d.f;
+  const top=D?R.filter(x=>x.dd&&typeof x.dd.championDamageShare==="number").sort((p,q)=>q.dd.championDamageShare-p.dd.championDamageShare)[0]:null;
+  const line=top?`<span class="l2t l2one">Le plus de dégâts : <b>${esc(top.n)}</b>, ${l2pc(top.dd.championDamageShare)} de ${l2sd(top.team)}</span>`
+    :`<span class="l2t l2one l2mu">K/D/A, CS, or et objets des 10 joueurs</span>`;
+  const body=()=>{
+    const md=L.meta||{},pv=/^(\d+)\.(\d+)/.exec(md.patchVersion||""),ver=pv?pv[1]+"."+pv[2]+".1":(CH&&CH.v)||"",fb=CH&&CH.v&&CH.v!==ver?CH.v:"";
+    const ico=i=>`<img class="l2ic" src="https://ddragon.leagueoflegends.com/cdn/${ver}/img/item/${i}.png" alt="" loading="lazy" width="22" height="22"${fb?` onerror="this.onerror=null;this.src='https://ddragon.leagueoflegends.com/cdn/${fb}/img/item/${i}.png'"`:""}>`;
+    const tk=[f.blueTeam.totalKills||0,f.redTeam.totalKills||0],jg=l2Jg(L,R);
+    const row=x=>{const s=x.s,d=x.dd,k="l2j_"+L.gid+"_"+x.pid;
+      const pd=()=>{const kp=tk[x.side]?Math.round(((s.kills||0)+(s.assists||0))/tk[x.side]*100):0,it=d&&d.items?d.items.filter(i=>i>0):[];
+        return `<p>${esc(ROLES[x.role]||"")} · niveau ${s.level||0} · CS ${s.creepScore||0} (${fx1(t>0?(s.creepScore||0)/t:0)}/min) · participation aux kills ${kp} %</p>
+        ${d?`<p>Balises : ${d.wardsPlaced||0} posées, ${d.wardsDestroyed||0} détruites${typeof d.championDamageShare==="number"?` · ${l2pc(d.championDamageShare)} des dégâts de ${l2sd(x.team)}`:""}</p>${it.length?`<div class="l2it">${it.map(ico).join("")}</div>`:""}`:`<p>Dégâts, balises et objets : en attente du flux détaillé (lu toutes les 30 s).</p>`}`};
+      return l2Row(k,`${champ(x.c,22)}<b class="l2pn">${esc(x.n)}</b><span class="l2c">${l2Kda(s)}</span><span class="l2c">${l2k(s.totalGold||0)}</span><span class="l2c">${d&&typeof d.championDamageShare==="number"?l2pc(d.championDamageShare):"–"}</span>`,pd,"l2pl","l2ps","l2pd")};
+    const team=s=>`<div class="l2th">${logo(l2Side(L,s),16)}<b>${l2sd(l2Side(L,s))}</b><small>${s?"rouge":"bleu"}</small><span>K/D/A</span><span>or</span><span>dégâts</span></div>${R.filter(x=>x.side===s).map(row).join("")}`;
+    const jgl=jg?`<p class="l2jg">Kills avec le jungler avant 15 min${t<15?" (jusqu’ici)":""} : <b>${l2sd(L.blue)} ${jg[0]}</b> · <b>${l2sd(L.red)} ${jg[1]}</b></p>`:"";
+    return `${jgl}${team(0)}${team(1)}<p class="small">Touche un joueur pour le détail.</p>`};
+  return `${l2Row(id,`<span class="l2h">Tableau du match${amI(id)}</span>${line}`,body)}
+    ${amIP(id,`<p>Ce que donne le flux officiel : K/D/A, CS, or et niveau (toutes les 10 s) ; part des dégâts de l’équipe, balises posées et détruites, objets (flux détaillé, lu au plus une fois toutes les 30 s, donc parfois en retard de quelques dizaines de secondes).</p><p>Ce qu’il ne donne pas : les dégâts totaux, le score de vision, les ganks, la position des joueurs. À la place des ganks : « kills avec le jungler avant 15 min », les kills de l’équipe où son jungler a tué ou aidé avant 15:00 de jeu, lus dans le fil du match ; affiché seulement quand le fil est lu sans trou.</p>`)}`;
+}
+
+function l2BoxHTML(L,m){try{
+  const f=L&&L.frame;if(!f||!L.meta)return"";l2Det(L,m);const R=l2Rows(L);if(!R)return"";
+  const S=L.l2,fin=f.gameState==="finished",t=gameMins(L),g=L.gid,idD="l2d_"+g,idP="l2p_"+g,lb=x=>esc(ROLES[x]||x);
+  // duels
+  let duel;
+  if(t<5&&!fin)duel=`<div class="l2r"><div class="l2s"><span class="l2h">Les duels, écart d’or</span><span class="l2ls"><span class="l2t l2one l2mu">Verdict à partir de 5 min de jeu</span></span></div></div>`;
+  else{const lanes=l2Lanes(R,t),sel=l2Pick(S,lanes);
+    const sum=sel.length?sel.map(l=>`<span class="l2t l2dl"><span class="l2nm"><b>${esc(l.w.n)}</b> ${l2Verb(l.dl,t)} ${esc(l.l.n)}</span><span class="l2v"> : <b class="l2g">+${l2k(l.dl)}</b>${l2Tag(l.tag)}</span></span>`).join("")
+      +(sel.length===1?`<span class="l2t l2mu l2one">Autres lanes à moins de 0,5 k</span>`:"")
+      :`<span class="l2t l2one l2mu">Aucun écart marquant</span><span class="l2t l2mu l2one">toutes les lanes à moins de 0,5 k d’or</span>`;
+    const body=()=>{const mx=Math.max(1500,...lanes.filter(Boolean).map(l=>l.dl));
+      return `<div class="l2lh"><span>${logo(L.blue,16)}${l2sd(L.blue)}</span><span>écart d’or</span><span>${l2sd(L.red)}${logo(L.red,16)}</span></div>`+lanes.map(l=>{if(!l)return"";const bw=l.d>=0,w=Math.min(50,l.dl/mx*50).toFixed(1),eq=l.dl<300;
+        const pr=!l.ld?"pas de prévision":Math.abs(l.x)<100?"prévu : égalité":`prévu : ${esc((l.x>=0?l.a:l.b).n)} +${l2k(l.x)}`;
+        return `<div class="l2ln"><i class="l2rl">${lb(l.r)}</i><span class="${!eq&&bw?"l2w":""}">${esc(l.a.n)}</span><span class="l2gd"><b>${l.dl<50?"=":l2k(l.dl)}</b><i><s style="${bw?"right":"left"}:50%;width:${w}%;background:${col(bw?L.blue:L.red)}"></s></i></span><span class="l2rt${!eq&&!bw?" l2w":""}">${esc(l.b.n)}</span><small>${pr}${l.tag?" · "+l.tag:""}</small></div>`}).join("")};
+    duel=`${l2Row(idD,`<span class="l2h">Les duels, écart d’or${amI(idD)}</span><span class="l2ls">${sum}</span>`,body)}
+      ${amIP(idD,`<p>Écart d’or actuel entre les deux joueurs du même poste. Prévu : modèle de lane du robot (écart d’or attendu à 15 min entre ces deux joueurs, ligues comprises), au prorata du temps de jeu ; sans modèle pour l’un des deux, prévu = 0.</p><p>« Inattendu » : celui qui mène n’était pas attendu devant, ou le duel était annoncé serré, et l’écart dépasse nettement l’habituel. Jungle et support n’ont pas de vraie lane : l’écart y dit surtout qui profite le plus de la partie. Rien avant 5 min de jeu.</p>`)}`}
+  // joueur du match
+  const nk=(f.blueTeam.totalKills||0)+(f.redTeam.totalKills||0),lab=fin?"Joueur du match":"Joueur du match (provisoire)",P=!fin&&(t<10||!nk)?null:l2Pog(L,R,f,fin);
+  let pog;
+  if(!P)pog=`<div class="l2r"><div class="l2s"><span class="l2h">${lab}</span><span class="l2t l2one l2mu l2pgh">À partir de 10 min de jeu</span></div></div>`;
+  else{const x=P.top,dm=R.some(y=>y.dd&&typeof y.dd.championDamageShare==="number");
+    const bd=y=>`+${y.sc.k} kills, +${y.sc.a} assist., −${y.sc.d} morts, +${y.sc.go} or (${y.sc.g} %)${y.sc.dm!=null?`, +${y.sc.dmo} dégâts (${y.sc.dm} %)`:""}`;
+    const body=()=>[x,...P.rest].map((y,i)=>`<div class="l2pr"><span class="l2n">${i+1}</span>${champ(y.c,24)}<span class="l2nm2"><b>${esc(y.n)}</b><small>${l2sd(y.team)} · ${lb(y.role)} · ${l2Kda(y.s)}</small><small class="l2bd">${bd(y)}</small></span><b class="l2g">${y.sc.v}</b></div>`).join("")
+      +(fin&&P.ws!=null?`<p class="small">Choisi dans l’équipe gagnante.</p>`:"");
+    pog=`${l2Row(idP,`<span class="l2h">${lab}${amI(idP)}</span><span class="l2pg">${champ(x.c,24)}<b>${esc(x.n)}</b><small>${l2sd(x.team)} · ${l2Kda(x.s)}</small><b class="l2g">${x.sc.v} pts</b></span>`,body)}
+      ${amIP(idP,`<p>Score simple, recalculé à chaque mise à jour du direct : 3 points par kill, 2 par assistance, −3 par mort, plus la moitié de sa part de l’or de l’équipe en % (26 % de l’or = 13 points), plus la moitié de sa part des dégâts de l’équipe en % quand le flux détaillé est lu${dm?"":" (pas encore lu : pas comptée pour l’instant)"}. Il faut au moins un kill ou une assistance.</p><p>En cours de partie, le premier ne change que s’il est dépassé d’au moins 3 points (un kill). À la fin, il est choisi dans l’équipe gagnante. Ce n’est pas le titre officiel.</p>`)}`}
+  return `<div class="l2">${l2Safe(l2FightsHTML,L,f,t)}${duel}${pog}${l2Safe(l2TabHTML,L,R,t,f)}</div>`;
+}catch(e){console.warn("live2",e);return""}}
+
+/* entre deux parties d'une série : joueur du match de la partie qui vient de finir (dernière image lue : « finished ») */
+function l2BetweenHTML(m,L){try{
+  const f=L&&L.frame;if(!f||f.gameState!=="finished"||!L.meta)return"";const R=l2Rows(L);if(!R)return"";
+  const P=l2Pog(L,R,f,true);if(!P)return"";const x=P.top;
+  return `<div class="l2 l2bw"><div class="l2r"><div class="l2s"><span class="l2h">Partie ${esc(L.num||"")} · joueur du match</span><span class="l2pg">${champ(x.c,24)}<b>${esc(x.n)}</b><small>${l2sd(x.team)} · ${l2Kda(x.s)}</small><b class="l2g">${x.sc.v} pts</b></span></div></div></div>`;
+}catch(e){console.warn("live2 entre deux parties",e);return""}}
+/* <<< live2 */
 function paintLive(m){
   const b=$("#livebox");if(b&&b.dataset.k===m.key)b.innerHTML=liveBoxHTML(m);
   const h=$("#herolive");if(h&&h.dataset.k===m.key)h.innerHTML=heroLiveHTML(m);
@@ -3865,7 +4165,7 @@ function liveBoxHTML(m){
   if(!L)return skel(2);
   if(L.status==="nolive")return `<p class="small">Flux en direct introuvable pour ce match.</p>`;
   if(L.status==="waiting"||L.status==="starting")return `<div class="note">La partie n’a pas encore commencé. Le direct démarre dès son lancement.</div>`+amLiveWaitHTML(m,L);
-  if(L.status==="between")return `<div class="note">Pause entre deux parties. Série : ${L.teams.map(t=>`${esc(T[t.our]?.id||"")} ${t.w??0}`).join(" - ")}.</div>`+amBetweenHTML(m,L);
+  if(L.status==="between")return `<div class="note">Pause entre deux parties. Série : ${L.teams.map(t=>`${esc(T[t.our]?.id||"")} ${t.w??0}`).join(" - ")}.</div>`+/* >>> live2 */l2BetweenHTML(m,L)+/* <<< live2 */amBetweenHTML(m,L);
   if(!L.frame)return LV.err?`<div class="aerr">Flux LoL Esports injoignable (${esc(LV.err)}). Nouvel essai dans 10 s.</div>`:skel(2);
   const f=L.frame,B=f.blueTeam,R=f.redTeam,mins=gameMins(L),p=winProb(f,mins);
   const md=L.meta||{},bp=(md.blueTeamMetadata?.participantMetadata)||[],rp=(md.redTeamMetadata?.participantMetadata)||[];
@@ -3878,7 +4178,7 @@ function liveBoxHTML(m){
    <div class="lvsc"><div class="lvt">${logo(L.blue,40)}<b>${esc(T[L.blue]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${B.totalKills}</b><i>kills</i><b>${R.totalKills}</b></div><div class="lvt">${logo(L.red,40)}<b>${esc(T[L.red]?.id||"")}</b><span class="side r">rouge</span></div></div>
    <div class="wpbar big"><i style="width:${p*100}%;background:${col(L.blue)}"></i><i style="width:${(1-p)*100}%;background:${col(L.red)}"></i></div>
    <p class="small wpl"><span><b>${Math.round(p*100)} %</b></span><span>chances de victoire ${amI("lvwp")}</span><span><b>${Math.round((1-p)*100)} %</b></span></p>${amIP("lvwp",`<p>Estimation maison à partir de l’écart d’or, des tours, inhibiteurs, barons et dragons (âme comprise), ajustée selon la durée de la partie. Ce n’est pas un chiffre officiel.</p>`)}
-   ${kfHTML(L,m.key)}
+   ${/* >>> live2 */l2BasHTML(L,m)/* <<< live2 */}${kfHTML(L,m.key)}${/* >>> live2 */l2BoxHTML(L,m)/* <<< live2 */}
    <div class="lvobj">
      ${[["Or",fx1(B.totalGold/1000)+" k",fx1(R.totalGold/1000)+" k"],["Tours",B.towers,R.towers],["Dragons",`${(B.dragons||[]).length} ${drg(B.dragons)}${kfSoulTag(B.dragons)}`,`${kfSoulTag(R.dragons)}${drg(R.dragons)} ${(R.dragons||[]).length}`],["Barons",B.barons,R.barons],["Inhibiteurs",B.inhibitors,R.inhibitors]]
        .map(([l,a,b])=>`<div><span>${a}</span><em>${l}</em><span>${b}</span></div>`).join("")}</div>
@@ -4292,7 +4592,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.13, 24/10/2026";
+const APP_VERSION="v13, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
