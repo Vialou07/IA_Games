@@ -175,7 +175,7 @@ nav.tabs button{position:relative}
 .fact{padding:14px}
 .fact b{display:block;font-family:var(--disp);font-weight:800;font-size:38px;line-height:1;background:linear-gradient(180deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
 .fact p{margin:4px 0 0;font-size:13px;color:var(--muted)}
-.fact .fl{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.fact .fl{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}.fl .x{display:none}.fl.all .x{display:inline-flex}
 .fact.wide{grid-column:1/-1}
 .pron{display:flex;align-items:center;gap:16px;padding:14px}
 .ring{width:92px;height:92px;flex:none;position:relative}
@@ -975,7 +975,8 @@ function renderHome(){
   h+=duelHome();
   const ref=m?new Date(m.start):new Date(), dk=dayKeyL(ref);
   const today=MATCHES.filter(x=>dayKeyL(new Date(x.start))===dk);
-  if(today.length) h+=`<h2>${dayKeyL(new Date())===dk?"Aujourd’hui":fmtDay(evDate(ref))}</h2><div class="list">${today.map(matchRow).join("")}</div>`;
+  const bet=x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key];
+  if(today.length) h+=`<h2>${dayKeyL(new Date())===dk?"Aujourd’hui":fmtDay(evDate(ref))}</h2>${today.some(bet)?`<p class="small" style="margin:0 0 2px">Touche l’équipe que tu vois gagner.</p>`:""}<div class="list">${today.map(x=>bet(x)?qbRow(x):matchRow(x)).join("")}</div>`;
   const done=MATCHES.filter(x=>x.winner&&picks[x.key]), good=done.filter(x=>picks[x.key]===x.winner).length;
   const open=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]).length;
   const pct=done.length?good/done.length:0, C=2*Math.PI*40;
@@ -985,20 +986,20 @@ function renderHome(){
       <defs><linearGradient id="rg"><stop offset="0" stop-color="#0AC8B9"/><stop offset="1" stop-color="#F0E6D2"/></linearGradient></defs></svg>
       <span class="rv">${done.length?Math.round(pct*100)+"%":"–"}</span></div>
     <div class="tx"><b>${good}/${done.length}</b> <span class="small">gagnés</span><p>${open?`${open} ${open>1?"matchs attendent":"match attend"} ton prono.`:"Tous les matchs connus sont pronostiqués."}</p>
-      <button class="btn" id="share">Partager mes pronos</button></div></div>`+betsHTML();
+      <button class="btn" id="share">Partager mes pronos</button></div></div>`+betsHTML(dk);
   h+=`<h2>Mon équipe</h2><p class="sub">Ses matchs sont surlignés partout, et son parcours est tracé dans l’onglet Suisse.</p><div class="favs">${TEAMS.map(t=>`<button data-fav="${t.id}" aria-pressed="${fav===t.id}" aria-label="${esc(t.name)}">${logo(t.id,34)}</button>`).join("")}</div>`;
   if(fav){const fm=MATCHES.filter(x=>x.t1===fav||x.t2===fav), st=status(fav,R);
     h+=`<div class="list" style="margin-top:6px"><button class="mrow hx" data-t="${fav}" style="--c1:${col(fav)};--c2:${col(fav)};grid-template-columns:auto 1fr auto">${logo(fav,32)}<b style="font-family:var(--disp);font-size:20px">${esc(T[fav].name)}</b><span class="st ${st.k}">${esc(st.txt)}</span></button>${fm.slice(-4).map(matchRow).join("")}</div>`}
   const nats={};PLAYERS.forEach(p=>nats[p.cc]=(nats[p.cc]||0)+1);
   const krAbroad=PLAYERS.filter(p=>p.cc==="kr"&&T[p.team].league!=="LCK"), fr=PLAYERS.filter(p=>p.cc==="fr"), legends=PLAYERS.filter(p=>p.titles.length);
   const alive=TEAMS.filter(t=>status(t.id,R).k!=="out").length, titles=legends.reduce((a,p)=>a+p.titles.length,0);
-  const chip=p=>`<button class="chip" data-p="${p.key}">${logo(p.team,16)}${esc(p.id)}</button>`;
+  const chips=L=>L.slice(0,5).map(p=>`<button class="chip" data-p="${p.key}">${logo(p.team,16)}${esc(p.id)}</button>`).join("")+(L.length>5?`<button class="chip" data-more>+${L.length-5}</button>`+L.slice(5).map(p=>`<button class="chip x" data-p="${p.key}">${logo(p.team,16)}${esc(p.id)}</button>`).join(""):"");
   h+=`<h2>Ces Worlds en chiffres</h2><div class="facts" id="facts">
     <div class="fact frame hx"><b data-to="${alive}">${alive}</b><p>équipes encore en lice sur 19</p></div>
     <div class="fact frame hx"><b data-to="${Object.keys(nats).length}">${Object.keys(nats).length}</b><p>nationalités chez les titulaires</p></div>
-    <div class="fact frame hx wide"><b data-to="${legends.length}">${legends.length}</b><p>champions du monde sur le terrain, ${titles} titres à eux tous</p><div class="fl">${legends.map(chip).join("")}</div></div>
-    <div class="fact frame hx wide"><b data-to="${krAbroad.length}">${krAbroad.length}</b><p>Coréens jouent hors de la LCK</p><div class="fl">${krAbroad.map(chip).join("")}</div></div>
-    <div class="fact frame hx wide"><b>${fr.length} ${flag("fr")}</b><p>Français titulaires</p><div class="fl">${fr.map(chip).join("")}</div></div></div>
+    <div class="fact frame hx wide"><b data-to="${legends.length}">${legends.length}</b><p>champions du monde sur le terrain, ${titles} titres à eux tous</p><div class="fl">${chips(legends)}</div></div>
+    <div class="fact frame hx wide"><b data-to="${krAbroad.length}">${krAbroad.length}</b><p>Coréens jouent hors de la LCK</p><div class="fl">${chips(krAbroad)}</div></div>
+    <div class="fact frame hx wide"><b>${fr.length} ${flag("fr")}</b><p>Français titulaires</p><div class="fl">${chips(fr)}</div></div></div>
   <p class="small" style="margin-top:14px">Données ${SOURCE==="embarquées"?"embarquées du 23/10/2026 (sources en direct injoignables)":"synchronisées via "+esc(SOURCE)}${lastSync?" à "+fmtTime(lastSync):""}. Horaires en ${tzLabel}.</p>`;
   $("#v-home").innerHTML=h;betBadge();
   if(m) requestAnimationFrame(()=>{startBeam();applyTilt()});
@@ -1010,11 +1011,11 @@ function renderHome(){
 function qbRow(m){const st=new Date(m.start),today=dayKeyL(st)===dayKeyL(new Date());
   const b=t=>`<button class="qbt hx" data-pick="${t}" data-mk="${esc(m.key)}" style="--c1:${col(t)}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,24)}${esc(T[t].id)}</button>`;
   return `<div class="qb hx"><span class="tm">${today?"":`${esc(st.toLocaleDateString("fr-FR",{weekday:"short"}))}<br>`}${fmtTime(st)}</span>${b(m.t1)}<i>VS${robotHint(m)}</i>${b(m.t2)}<button class="qi" data-m="${esc(m.id)}" aria-label="Détails du match">›</button></div>`}
-function betsHTML(){
-  const todo=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]),pend=MATCHES.filter(x=>picks[x.key]&&!x.winner&&x.t1&&x.t2);
+function betsHTML(skipDay){
+  const todo=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]&&dayKeyL(new Date(x.start))!==skipDay),pend=MATCHES.filter(x=>picks[x.key]&&!x.winner&&x.t1&&x.t2);
   const last=MATCHES.filter(x=>picks[x.key]&&x.winner).slice(-4).reverse();
   let h="";
-  if(todo.length)h+=`<h3 class="h3">À parier (${todo.length})</h3><p class="small" style="margin:0 0 2px">Touche l’équipe que tu vois gagner.</p>${todo.slice(0,6).map(qbRow).join("")}${todo.length>6?`<p class="small" style="margin-top:6px">Et ${todo.length-6} autre${todo.length-6>1?"s":""} dans l’onglet Matchs.</p>`:""}`;
+  if(todo.length)h+=`<h3 class="h3">À parier les jours suivants (${todo.length})</h3>${todo.slice(0,6).map(qbRow).join("")}${todo.length>6?`<p class="small" style="margin-top:6px">Et ${todo.length-6} autre${todo.length-6>1?"s":""} dans l’onglet Matchs.</p>`:""}`;
   if(pend.length)h+=`<h3 class="h3">En attente du résultat (${pend.length})</h3><div class="list">${pend.map(matchRow).join("")}</div>`;
   if(last.length)h+=`<h3 class="h3">Derniers résultats</h3><div class="list">${last.map(matchRow).join("")}</div>`;
   return h;
@@ -1267,6 +1268,7 @@ async function sharePicks(){
 /* ===================== interactions ===================== */
 const TABS=["home","matchs","swiss","stats","teams","players"];let statsOpen=false;
 document.addEventListener("click",e=>{
+  const mo=e.target.closest("[data-more]");if(mo){mo.parentElement.classList.add("all");mo.remove();return}
   askGyro();
   const tab=e.target.closest("nav.tabs button");
   if(tab){showTab(tab.dataset.v);return}
