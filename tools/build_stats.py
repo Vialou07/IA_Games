@@ -962,6 +962,11 @@ def main():
         last = max((s["s"] for s in C["games"].values() if "s" in s), default=None)
         out["fx"] = FX.facts_block(FLAT, teams, MS.setdefault("fx", {}), last, C=C, log=log)
     except Exception as e: log("faits indisponibles :", type(e).__name__, str(e)[:160])
+    try:   # records d'une partie (direct : « records en vue ») et feuilles des dernières soirées (podium) : clé compacte « fu », ≈ 6 Ko
+        import fun_block
+        fu = fun_block.fun_block(FLAT, teams, C, log=log)
+        if fu: out["fu"] = fu
+    except Exception as e: log("records et soirées indisponibles :", type(e).__name__, str(e)[:160])
     for name, blk in aux_blocks(C, teams, now_iso).items():
         if blk is None: continue
         with open(os.path.join(ROOT, "data", name + ".json"), "w", encoding="utf-8") as f: json.dump(blk, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
