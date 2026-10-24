@@ -889,6 +889,7 @@ details.amk[open]>summary::after{transform:rotate(90deg)}
 .rkhr em{font-style:normal;text-align:right;font-family:var(--disp);font-weight:800;font-size:19px;color:var(--gold2)}
 .rkhr>i{position:absolute;left:0;bottom:2px;height:2px;border-radius:1px;background:linear-gradient(90deg,var(--gold),rgba(200,170,110,.25));animation:grow 1s cubic-bezier(.2,.9,.3,1) backwards}
 .rkhome>p.small{margin:4px 0 0;font-size:11.5px}
+.ami::after,.qi::after,.lsv-i::after,.lsv-nx::after{content:"";position:absolute;inset:-9px}.qi,.lsv-i,.lsv-nx{position:relative}
 </style>
 </head>
 <body>
@@ -1160,7 +1161,7 @@ function finalize(list){
     const now=Date.now(), st=new Date(m.start).getTime();
     if(m.winner) m.state="done";
     else if(m.apiLive) m.state="live";
-    else m.state=(now>st && now<st+m.bo*55*60e3)?"live":(now>=st+m.bo*55*60e3?"wait":"soon");
+    else m.state=(now>st && (m.unst||now<st+m.bo*55*60e3))?"live":(now>=st+m.bo*55*60e3?"wait":"soon");
   });
   if(migrated){LS.set("picks",picks);LS.set("manual",manual);LS.set("celebrated",celebrated);if(typeof scores!=="undefined")LS.set("scores",scores);if(typeof lg!=="undefined"&&lg)LS.set("league",lg)}
   list.sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
@@ -1370,7 +1371,7 @@ function moStrip(m){
     const b=t=>`<button class="qbt hx" data-pick="${t}" data-mk="${esc(m.key)}" aria-pressed="${me===t}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,26)}${esc(T[t].id)}</button>`,k=moKey(m);
     let f="";
     if(L){const O=L.filter(u=>!u.me),n=O.filter(u=>u.p[m.key]).length;
-      f=`<div class="mol">${O.map(u=>who(u,u.p[m.key]?`<i class="ok">✓</i>`:"")).join("")}<small>${n===O.length?"Tout le monde a parié":`${n} sur ${O.length} ${n>1?"ont":"a"} parié`}, choix révélés au coup d’envoi.</small></div>`}
+      f=`<div class="mol">${O.map(u=>who(u,u.p[m.key]?`<i class="ok">✓</i>`:"")).join("")}<small>${n===O.length?(O.length>1?"Tes potes ont tous parié":"Ton pote a parié"):`${n} sur ${O.length} ${n>1?"ont":"a"} parié`}, choix révélés au coup d’envoi.</small></div>`}
     return `<div class="mo frame hx"><div class="moh"><b>Ton prono</b><span>${me?"modifiable jusqu’au coup d’envoi":"avant "+fmtTime(new Date(m.start))}</span></div><div class="mop">${b(m.t1)}<i>VS</i>${b(m.t2)}</div>${k?`<button class="mok" data-m="${esc(m.id)}">${BOT}${k}</button>`:""}${f}</div>`;
   }
   if(m.state!=="live"&&m.state!=="wait")return"";
@@ -1401,7 +1402,7 @@ const rkRoles=()=>`<div class="chips mor"><span>Classements</span>${ROLE_ORDER.m
 function renderHome(){
   const M=homeMoment(),m=M.m||nextMatch(),R=records(),S={};HM=M;
   const strip=m&&M.k!=="after"&&M.k!=="rest"?moStrip(m):"";
-  S.hero=(m?heroBlock(m):`<div class="note">Aucun match programmé pour l’instant. Les affiches de la ronde suivante apparaissent dès le tirage.</div>`)+strip;
+  S.hero=(m?heroBlock(m):(nx=>`<div class="note">${nx?`Prochain match ${dayKeyL(new Date(nx.start))===dayKeyL(new Date())?"ce soir":fmtDay(evDate(new Date(nx.start))).toLowerCase()} à ${fmtTime(new Date(nx.start))}. `:"Aucun match programmé pour l’instant. "}Les affiches apparaissent dès le tirage de la ronde.</div>`)(MATCHES.find(x=>x.state==="soon")))+strip;
   const ref=m?new Date(m.start):new Date(), dk=dayKeyL(ref);
   const today=MATCHES.filter(x=>dayKeyL(new Date(x.start))===dk);
   const bet=x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]&&!(strip&&x===m);
@@ -1581,7 +1582,7 @@ function renderSwiss(){
 function tform(id){const L=MATCHES.filter(m=>m.winner&&(m.t1===id||m.t2===id)).sort((a,b)=>a.start.localeCompare(b.start)).slice(-5);
   return L.length?`<div class="ln tf">${L.map(m=>`<i class="${m.winner===id?"w":"l"}" title="${esc(T[m.t1===id?m.t2:m.t1].id)}">${m.winner===id?"V":"D"}</i>`).join("")}</div>`:""}
 function tnext(id){const m=MATCHES.find(m=>!m.winner&&m.state!=="done"&&m.t1&&m.t2&&(m.t1===id||m.t2===id));if(!m)return"";const o=m.t1===id?m.t2:m.t1,d=new Date(m.start);
-  return `<div class="ln tn2">${m.state==="live"?`<em class="lv">EN DIRECT</em>`:esc(d.toDateString()===new Date().toDateString()?"ce soir "+fmtTime(d):d.toLocaleDateString("fr-FR",{weekday:"short"})+" "+fmtTime(d))} contre ${logo(o,16)}<b>${esc(T[o].id)}</b></div>`}
+  return `<div class="ln tn2">${m.state==="live"?`<em class="lv">EN DIRECT</em>`:esc(dayKeyL(d)===dayKeyL(new Date())?(d.getHours()<6?"cette nuit ":"ce soir ")+fmtTime(d):d.toLocaleDateString("fr-FR",{weekday:"short"})+" "+fmtTime(d))} contre ${logo(o,16)}<b>${esc(T[o].id)}</b></div>`}
 function renderTeams(){
   const R=records(),f=ui.league;
   const chip=(k,l)=>`<button class="chip" data-league="${k}" aria-pressed="${f===k}">${l}</button>`;
@@ -1772,9 +1773,9 @@ document.addEventListener("click",e=>{
   const rt=e.target.closest("[data-retry]");if(rt){const k=rt.dataset.retry;if(AK[k]){document.querySelectorAll(`[data-ak="${CSS.escape(k)}"]`).forEach(el=>el.innerHTML=skel());runAk(k)}return}
   if(e.target.closest("#reloadPh")){PHOTO_LOG.lp=PHOTO_LOG.le=PHOTO_LOG.wk="en cours…";renderPlayers();loadPhotos(true);return}
   const pk=e.target.closest("[data-pick]");
-  if(pk){const k=pk.dataset.mk,v=pk.dataset.pick;if(picks[k]===v)delete picks[k];else{picks[k]=v;const b=pk.getBoundingClientRect();confetti(b.left+b.width/2,b.top+b.height/2,[T[v].color,"#C8AA6E","#F0E6D2"],45);vib(20)}
+  if(pk){const k=pk.dataset.mk,v=pk.dataset.pick,pm=MATCHES.find(x=>x.key===k);if(pm&&(pm.state!=="soon"||Date.now()>=new Date(pm.start).getTime())){MATCHES=finalize(MATCHES);toast("Paris fermés : le match a commencé");renderLive();return}if(picks[k]===v)delete picks[k];else{picks[k]=v;const b=pk.getBoundingClientRect();confetti(b.left+b.width/2,b.top+b.height/2,[T[v].color,"#C8AA6E","#F0E6D2"],45);vib(20)}
     if(!picks[k])delete scores[k];LS.set("picks",picks);LS.set("scores",scores);duelPickChanged(k);renderLive();return}
-  const so=e.target.closest("[data-score]");if(so){const k=so.dataset.mk;if(scores[k]===so.dataset.score)delete scores[k];else scores[k]=so.dataset.score;LS.set("scores",scores);duelPickChanged(k);vib(10);refreshSheet(true);renderHome();return}
+  const so=e.target.closest("[data-score]");if(so){const k=so.dataset.mk,sm=MATCHES.find(x=>x.key===k);if(sm&&(sm.state!=="soon"||Date.now()>=new Date(sm.start).getTime())){MATCHES=finalize(MATCHES);toast("Paris fermés : le match a commencé");renderLive();return}if(scores[k]===so.dataset.score)delete scores[k];else scores[k]=so.dataset.score;LS.set("scores",scores);duelPickChanged(k);vib(10);refreshSheet(true);renderHome();return}
   const du=e.target.closest("[data-duel]");if(du){duelAction(du.dataset.duel);return}
   const dg=e.target.closest("[data-diag]");if(dg){diagAction(dg.dataset.diag);return}
   const wn=e.target.closest("[data-win]");
@@ -1798,7 +1799,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
 $("#sync").addEventListener("click",()=>diagSheet());
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&lastSync&&Date.now()-lastSync>60e3)sync(false)});
 setInterval(()=>{const c=$("#cd"),m=nextMatch();if(!c||!m||m.state!=="soon")return;const ms=new Date(m.start)-Date.now();
-  if(ms<0){MATCHES=finalize(MATCHES);renderHome();return}
+  if(ms<0){MATCHES=finalize(MATCHES);renderLive();return}
   const parts=cdParts(ms),nums=c.querySelectorAll(".num");
   if(nums.length!==parts.length){c.innerHTML=cdHTML(ms);return}
   parts.forEach(([k,v],i)=>{const el=nums[i];if(el.textContent!==v){el.textContent=v;if(!RM){el.classList.remove("flip");void el.offsetWidth;el.classList.add("flip")}}});
@@ -2072,7 +2073,7 @@ function metaHTML(kind=DJK,D=DJ){
   const row=(x,i)=>`<details class="djd${i>=10?" x":""}"><summary class="ct">${champ(D.ch[x[0]],34)}<span class="cn">${esc(D.ch[x[0]])}<small>${djS(x[3],"ban","bans")}, ${djS(x[1],"pick","picks")}${x[1]>=5?`, ${djS(x[2],"victoire","victoires")}`:""}</small></span><span class="cw"><i style="width:${Math.min(100,f(x)/N*100)}%"></i></span><b>${Math.round(f(x)/N*100)} %</b></summary><p class="djw">${det(x)}</p></details>`;
   const links=(M.tn||[]).map(t=>`<a href="https://gol.gg/tournament/tournament-picksandbans/${encodeURIComponent(t)}/" target="_blank" rel="noopener">${esc(t)}</a>`).join(" et ");
   return `<div class="djmeta djb"><h3 class="h3">Champions des Worlds</h3>${djInfo(`<p>Sur les ${djS(N,"partie","parties")} dont la draft est publiée par gol.gg${M.att?` (${M.att} en attente de publication)`:""}. Bans : gol.gg ; picks et vainqueurs : API LoL Esports, identiques à gol.gg sur ces parties. Victoires affichées à partir de 5 picks.</p>${fs[0]?`<p>Premier choix : depuis 2026 (« First Selection »), l’équipe prioritaire choisit soit son côté, soit le premier pick. Sur ${fs[0]} parties où l’ordre des picks est connu, l’équipe qui a choisi en premier était côté rouge ${fs[2]} fois.</p>`:""}${bl[0]?`<p>Côté bleu : ${bl[1]} victoires sur ${bl[0]} parties.</p>`:""}${links?`<p>À vérifier sur gol.gg : ${links}.</p>`:""}`)}
-    <p class="djw" style="padding-top:0">${esc(D.ch[top[0]])} : ${lab} dans ${f(top)} parties sur ${N} (${Math.round(f(top)/N*100)} %).${fs[0]?` L’équipe qui choisit en premier a gagné ${fs[1]} parties sur ${fs[0]}.`:""}</p>
+    <p class="djw" style="padding-top:0">${esc(D.ch[top[0]])} : ${lab} dans ${f(top)} parties sur ${N} (${Math.round(f(top)/N*100)} %).${fs[0]?` Tous champions confondus, l’équipe qui fait le premier pick a gagné ${fs[1]} des ${fs[0]} parties où l’ordre des picks est connu.`:""}</p>
     <div class="chips">${[["pres","Présence"],["ban","Bannis"],["pick","Joués"]].map(([v,l])=>`<button class="chip" data-djm="${v}" aria-pressed="${kind===v}">${l}</button>`).join("")}</div>
     <div class="ctab djm">${rows.map(row).join("")}${rows.length>10?`<button class="chip" data-more style="align-self:center">Voir les ${rows.length-10} autres</button>`:""}</div></div>`;
 }
@@ -2323,7 +2324,7 @@ function robotHTML(m){
   return `<h2>Pronostic du robot</h2><div class="robot frame hx"><p class="rb-h">${BOT} Le robot ${txt}${m.state==="live"&&(m.s1||m.s2)?` (score actuel ${m.s1}-${m.s2} compris)`:""}</p>
     <div class="wpbar big"><i style="width:${p*100}%;background:${col(m.t1)}"></i><i style="width:${(1-p)*100}%;background:${col(m.t2)}"></i></div>
     <p class="small wpl"><span><b>${Math.round(p*100)} %</b> ${esc(T[m.t1].id)}</span><span>chances de gagner ${m.bo>1?"la série":"le match"}</span><span>${esc(T[m.t2].id)} <b>${Math.round((1-p)*100)} %</b></span></p>
-    <details class="rb-d"><summary>Comment il calcule ?</summary><p class="small">Il additionne la note d’impact des 5 joueurs de chaque équipe, corrigée de la force des ligues, puis simule la suite du tournoi 20 000 fois. Testé à l’aveugle sur 343 parties internationales : il trouve le bon favori 2 fois sur 3, et quand il annonce 75 %, l’équipe gagne environ 72 % du temps. Son bilan sur ces Worlds est dans l’onglet Suisse. Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p></details></div>`;
+    <details class="rb-d"><summary>Comment il calcule ?</summary><p class="small">Il additionne la note d’impact des 5 joueurs de chaque équipe, corrigée de la force des ligues, puis simule la suite du tournoi 20 000 fois. Testé à l’aveugle sur 343 parties internationales : il trouve le bon favori 2 fois sur 3, et quand il annonce 75 %, l’équipe gagne environ 72 % du temps. Son bilan sur ces Worlds est dans l’onglet Suisse. Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p></details></div>`;
 }
 function robotHint(m){const p=robotProb(m);if(p==null)return"";const pf=Math.round(Math.max(p,1-p)*100);return `<small class="rbp" title="Favori du robot : ${esc(T[p>=.5?m.t1:m.t2].id)}">${p>=.5?"◀ ":""}${BOT}${pf} %${p<.5?" ▶":""}</small>`}
 function fiabHTML(){
@@ -2380,7 +2381,7 @@ function season2Tiles(p,S){
   return (im?`<div class="impt frame hx"><b>${fxs(im[0])}</b><span>note d’impact ${rkBadge(p,"imp")}<small>${im[4]===im[5]?`${im[4]}${im[4]===1?"er":"e"} ${ROLEP[p.role]} à coup sûr`:`entre le ${im[4]}${im[4]===1?"er":"e"} et le ${im[5]}e ${ROLEP[p.role]}`}, marge ±${fx2(im[1]||0)}</small></span></div>`:"")
    +tiles([[S.g,"parties"+(S.g<MINR?` <i class="rkb lo">non classé</i>`:"")],t("win"),t("kda"),[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
     t("csm"),t("gpm"),t("dmg"),t("kp"),t("gd15"),t("csd15"),t("wpg"),t("pool")].filter(Boolean))
-   +`<p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Rang brut parmi les titulaires des Worlds au même poste, ligues mélangées (${MINR} parties minimum), sauf la note d’impact. Écarts à 15 min face au joueur d’en face.${IMP(p)?" La note d’impact résume KDA, participation, or, CS et avance à 15 min, corrigés de la force des adversaires et de la ligue : c’est elle qui permet de comparer des joueurs de ligues différentes. Elle ne mesure ni le shotcalling ni la vision.":""}</p>`;
+   +`<p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC ; gol.gg, saison S16, compte aussi la KeSPA Cup de décembre 2025). Rang brut parmi les titulaires des Worlds au même poste, ligues mélangées (${MINR} parties minimum), sauf la note d’impact. Écarts à 15 min face au joueur d’en face.${IMP(p)?" La note d’impact résume KDA, participation, or, CS et avance à 15 min, corrigés de la force des adversaires et de la ligue : c’est elle qui permet de comparer des joueurs de ligues différentes. Elle ne mesure ni le shotcalling ni la vision.":""}</p>`;
 }
 function bestFoe(p){const nm=MATCHES.find(m=>(m.t1===p.team||m.t2===p.team)&&m.t1&&m.t2&&m.state!=="done"),opp=nm&&(nm.t1===p.team?nm.t2:nm.t1);
   return PLAYERS.find(x=>x.team===opp&&x.role===p.role)||(ranking("kda",x=>x.role===p.role&&x!==p)[0]||{}).p||PLAYERS.find(x=>x.role===p.role&&x!==p)}
@@ -2418,7 +2419,7 @@ function compareSheet(id,md){
       <p class="small" style="margin-top:6px">Corrigé de la force des adversaires et de la ligue, contrairement aux stats brutes ci-dessous.</p>`}
     h+=`<h2>Saison 2026</h2><div class="tapehd"><span>${esc(a.id)}</span><span>${esc(b.id)}</span></div><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Parties",SA.g,SB.g,v=>v)}`
       +PSTAT.map(([sid,l,f,fmt,hi])=>{const va=f(SA),vb=f(SB);return va==null||vb==null||!isFinite(va)||!isFinite(vb)?"":tape(l,va,vb,fmt,!!hi,sid==="gd15"||sid==="csd15")}).join("")+`</div>
-      <p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Le chiffre en or est le meilleur des deux.</p>
+      <p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC ; gol.gg, saison S16, compte aussi la KeSPA Cup de décembre 2025). Le chiffre en or est le meilleur des deux.</p>
       <h2>Champions 2026</h2><div class="cmpc"><div>${miniChamps(SA.champs)}</div><div>${miniChamps(SB.champs)}</div></div>`;
     const x=SJ.duels&&SJ.duels[norm(a.id)+"|"+norm(b.id)],d1=rkDuel1HTML(a,b);
     h+=`<h2>Duels directs</h2>`+d1+(typeof encHTML==="function"?ablock("enc_"+a.key+"_"+b.key,()=>encData(a,b),D=>encHTML(a,b)(d1&&!D.missing?{...D,pair:null}:D),3):recentDuels(a,b))+(d1?"":!x?`<p class="small">Jamais face à face en lane depuis ${esc(String(SJ.since||"2024").slice(0,4))}.</p>`:
@@ -2457,7 +2458,7 @@ function renderTourney(D){
   // repli tant que draft.json (bans gol.gg) n'est pas publié : picks seuls
   const oldCh=`<p class="sub">Présence = parties où le champion a été choisi.</p><div class="ctab">${D.champs.map(c=>`<div class="ct">${champ(c.c,34)}<span class="cn">${esc(c.c)}<small>${c.p} pick${c.p>1?"s":""}${D.nobans?"":`, ${c.b} ban${c.b>1?"s":""}`}${c.p?`, ${pct(c.w,c.p)} % de victoires`:""}</small></span><span class="cw"><i style="width:${Math.min(100,c.pr)}%"></i></span><b>${Math.round(c.pr)} %</b></div>`).join("")}</div>`;
   const PH=[["main","Phase principale"],["pi","Play-In"]].filter(([k])=>D.lead2&&D.lead2[k]),ph=PH.some(([k])=>k===ui.leadPh)?ui.leadPh:PH.length?(D.lead2.main&&D.lead2.main.n>=4?"main":PH[PH.length-1][0]):null,L=ph?D.lead2[ph]:D.lead;
-  return `${tiles([[D.n,"parties jouées"],[dur(D.avg),"durée moyenne"],[pct(D.blue,D.n)+" %","victoires côté bleu"],[D.champs.length?esc(D.champs[0].c):"–","champion le plus présent"]])}
+  return `${tiles([[D.n,"parties jouées"],[dur(D.avg),"durée moyenne"],[pct(D.blue,D.n)+" %","victoires côté bleu"],[D.champs.length?esc(D.champs[0].c):"–",D.nobans?"champion le plus joué":"champion le plus présent"]])}
    <div class="split big" style="margin-top:10px"><i style="width:${D.blue/D.n*100}%;background:#2F7CF6"></i><i style="width:${D.red/D.n*100}%;background:#E84057"></i></div><p class="small" style="display:flex;justify-content:space-between;margin:4px 0 0"><span>Bleu ${D.blue}</span><span>Rouge ${D.red}</span></p>
    <h2>Les leaders</h2>${PH.length>1?`<div class="chips">${PH.map(([k,l])=>`<button class="chip" data-leadph="${k}" aria-pressed="${k===ph}">${l} (${D.lead2[k].n} parties)</button>`).join("")}</div>`:""}
    <div class="leads">${lb("KDA",L.kda,fx2)}${lb("Kills",L.kills,v=>v)}${lb("CS par minute",L.csm,fx1)}${L.dmg?lb("Part des dégâts",L.dmg,v=>Math.round(v)+" %"):lb("Dégâts par minute",L.dpm,v=>Math.round(v))}${lb("Participation aux kills",L.kp,v=>Math.round(v)+" %")}</div>
@@ -2897,10 +2898,10 @@ function amKeysHTML(m){try{
   const L=K.filter(k=>k!==best).map(k=>{const x=keyLine(k,row);if(x&&x.r&&x.tag!=="on"){const s=k[0]+"|"+x.r.slice(0,12);if(seen.has(s))x.r="";seen.add(s)}return x}).filter(Boolean);
   const rk=x=>x.tag==="on"?0:x.tag==="w"?1:2;L.sort((a,b)=>rk(a)-rk(b));
   const nTop=why?2:3,top=L.slice(0,nTop),rest=L.slice(nTop),cal=calTxt(row[6]);
-  const tag=x=>x.tag==="on"?`<span class="kt on">compte</span>`:x.tag==="w"?`<span class="kt w">à surveiller</span>`:`<span class="kt">déjà compté</span>`;
+  const tag=x=>x.tag==="on"?`<span class="kt on">pèse</span>`:x.tag==="w"?`<span class="kt w">à surveiller</span>`:`<span class="kt">pour info</span>`;
   const line=(x,i)=>{const id="k_"+m.key+"_"+i;return x.r?`<details class="amk" data-uo="${esc(id)}"${amO(id)}><summary>${tag(x)}${x.h}</summary><p>${x.r}</p></details>`:`<div class="amk">${tag(x)}${x.h}</div>`};
   const C=SJ.pm.ref&&SJ.pm.ref.cal,nAll=C&&C.tout?C.tout.n:5810,nInt=C&&C.intl?C.intl.n:396;
-  const info=`<p>Chaque fait a été rejoué sur les ${amNf(nAll)} parties pro de 2025-2026 (dont ${amNf(nInt)} internationales), avec seulement ce qui était connu avant le match. « Compte » : change vraiment les chances (note d’impact des joueurs, côté). « Déjà compté » : va dans le même sens que la note, sans rien ajouter. « À surveiller » : piste vue aux internationales sur trop peu de séries pour conclure.</p><p>Testés et sans effet : forme des joueurs, picks préférés, expérience des Worlds, joueurs qui « se transforment » aux internationales.</p>${cal?`<p>${cal}</p>`:""}${refTable()}`;
+  const info=`<p>Chaque fait a été rejoué sur les ${amNf(nAll)} parties pro de 2025-2026 (dont ${amNf(nInt)} internationales), avec seulement ce qui était connu avant le match. « Pèse » : change vraiment les chances (note d’impact des joueurs, côté). « Pour info » : va dans le même sens que la note, sans rien ajouter. « À surveiller » : piste vue aux internationales sur trop peu de séries pour conclure.</p><p>Testés et sans effet : forme des joueurs, picks préférés, expérience des Worlds, joueurs qui « se transforment » aux internationales.</p>${cal?`<p>${cal}</p>`:""}${refTable()}`;
   const id="keys_"+m.key;
   return `<div class="amkeys frame hx"><div class="amhd"><b>Les clés du match</b>${amI(id)}</div>${amIP(id,info)}
     ${why?`<p class="amwhy">${why}</p>`:""}${top.map((x,i)=>line(x,i)).join("")}
@@ -2964,7 +2965,7 @@ function amRolesHTML(m){try{
     <p>Pastilles : leurs 5 dernières rencontres, la plus récente à gauche ; « + » quand le joueur de gauche était devant à l’or à 15 min, « − » quand il était derrière, « · » écart non mesuré. Dessous : l’écart médian sur ces parties (une partie extrême ne fait pas le chiffre). Victoires et défaites partie par partie : dans le duel détaillé.</p>
     <p>Nom en or : le mieux noté des deux (note d’impact du robot, corrigée de la force des adversaires et des ligues, au moins 60 % de chances d’être le meilleur). Avec le côté, c’est le seul signal d’avant-match qui prédit le vainqueur (testé sur 2025-2026).${du?` Avoir dominé ses derniers duels n’ajoute rien : ${amPc(du[1]/du[0])} de victoires sur ${amNf(du[0])} parties, ${amPc(du[2]/du[0])} prévus par la note.`:""}</p>
     <p>KDA récent : sur ses 10 dernières parties de ${new Date().getFullYear()} ; la flèche n’apparaît que si ses victoires et son or à 15 min s’écartent nettement de sa saison. La forme décrit le passé et ne prédit presque rien (corrélation 0,05 entre deux séries de 10 parties). Icônes : ses 3 picks les plus probables (90 derniers jours), champions déjà joués dans la série retirés.</p>`;
-  return amH2("Duels par poste",id,info)+`<p class="sub">En or, le mieux noté. Touche un poste pour le duel détaillé.</p>`
+  return amH2("Duels par poste",id,info)+`<p class="sub">Au centre : bilan depuis 2024, puis leurs 5 derniers duels à 15 min (+ : celui de gauche devant) et l’écart médian. Nom en or : le mieux noté. Touche un poste pour le détail.</p>`
     +ablock("amr_"+m.t1+"_"+m.t2,()=>amRolesData(m),amRolesRender(m),3);
 }catch(e){console.warn("postes",e);return""}}
 
@@ -3033,7 +3034,7 @@ function amVsRender(a,b){return D=>{
   const CO=D.common||[];
   if(CO.length){const better=CO.filter(o=>o.A[1]/o.A[0]>o.B[1]/o.B[0]).length,worse=CO.filter(o=>o.A[1]/o.A[0]<o.B[1]/o.B[0]).length,id="vc_"+a.key+"_"+b.key;
     const cell=(s,me)=>`<em class="${me?"ld":""}">${s[1]}-${s[0]-s[1]}<small>${s[3]>=3?amSg(s[2]/s[3])+" à 15′":amPl(s[0],"partie")}</small></em>`;
-    h+=`<details class="amsec" data-uo="${esc(id)}"${amO(id)}><summary><b>Vis-à-vis communs</b><span>${amPl(CO.length,"adversaire")} affronté${CO.length>1?"s":""} par les deux depuis ${esc(D.since)} : meilleur bilan pour ${A} contre ${better}, pour ${Bn} contre ${worse}</span></summary>
+    h+=`<details class="amsec" data-uo="${esc(id)}"${amO(id)}><summary><b>Vis-à-vis communs</b><span>${amPl(CO.length,"adversaire")} affronté${CO.length>1?"s":""} par les deux depuis ${esc(D.since)}  : ${A} fait mieux contre ${better||"aucun"}, ${Bn} contre ${worse||"aucun"}</span></summary>
       <div><div class="amco hd"><span></span><em>${A}</em><em>${Bn}</em></div>${CO.map(o=>{const ra=o.A[1]/o.A[0],rb=o.B[1]/o.B[0],pl=o.key&&amP(o.key);
         return `<div class="amco"><span>${pl?`<button data-p="${esc(pl.key)}">${logo(pl.team,14)} <b>${esc(o.nm)}</b></button>`:`<b>${esc(o.nm)}</b> <small>${esc(o.tm)}</small>`}</span>${cell(o.A,ra>rb)}${cell(o.B,rb>ra)}</div>`}).join("")}
       <p class="small" style="margin-top:6px">Victoires et défaites de leur équipe quand ils étaient face à cet adversaire en lane, puis l’or à 15 min moyen (3 parties mesurées au moins). Le bilan dépend surtout de la force des équipes.</p></div></details>`}
@@ -3144,8 +3145,8 @@ function amLiveDraftHTML(L,m){try{
     return `<details class="amlr" data-uo="${esc(k)}"${amO(k)}><summary>${x.b?champ(x.b.c,28):"<span></span>"}${tag(x.b,false)}<span class="mid"><i class="rl">${esc(ROLES[x.r])}</i><em class="${mu&&mu.net?(mu.gd>0?"up":"dn"):""}">${mu?esc(mu.l):"–"}</em><small>${mu&&mu.g?amPl(mu.g,"partie"):"pas de duel"}</small></span>${tag(x.d,true)}${x.d?champ(x.d.c,28):"<span></span>"}</summary>
       <div>${mu?`<p>${esc(mu.t)}</p>`:""}${det(x.b)}${det(x.d)}</div></details>`}).join("");
   let top="";
-  if(D.p!=null&&D.pE!=null){const bl=D.blue,diff=Math.round(D.p*100)-Math.round(D.pE*100);
-    top=`<div class="amadj">${logo(bl,22)}<span>${amTid(bl)} avant la draft</span><b>${amPc(D.pE)}</b><span>après</span><b>${amPc(D.p)}</b>${diff?`<small>${diff>0?"+":"−"}${Math.abs(diff)} pt${Math.abs(diff)>1?"s":""}</small>`:""}</div>
+  if(D.p!=null&&D.pE!=null){const bl=D.blue,lgt=x=>{const q=Math.min(.999,Math.max(.001,x));return Math.log(q/(1-q))},rp=m&&m.bo===1&&(bl===m.t1||bl===m.t2)?amFn(robotProb,m):null,pE=rp!=null?(bl===m.t1?rp:1-rp):D.pE,pD=rp!=null?sigm(lgt(pE)+lgt(D.p)-lgt(D.pE)):D.p,diff=Math.round(pD*100)-Math.round(pE*100);
+    top=`<div class="amadj">${logo(bl,22)}<span>${amTid(bl)} avant la draft</span><b>${amPc(pE)}</b><span>après</span><b>${amPc(pD)}</b>${diff?`<small>${diff>0?"+":"−"}${Math.abs(diff)} pt${Math.abs(diff)>1?"s":""}</small>`:""}</div>
       ${D.news.length?`<p class="small" style="margin:0 0 4px">${D.news.slice(0,2).map(z=>`${esc(z[0])} sur ${esc(z[1])} : jamais joué en pro depuis 2025.`).join(" ")}</p>`:""}`}
   return amH2(`Draft${D.num?", partie "+D.num:""}`,id,info)+top
     +`<div class="amlh"><span>${logo(D.blue,18)}${amTid(D.blue)} <small>bleu</small></span><span>expérience · duel · expérience</span><span><small>rouge</small> ${amTid(D.red)}${logo(D.red,18)}</span></div><div class="amld">${rows}</div>
@@ -3233,7 +3234,7 @@ function rkTag(x,i,strong,brut){const s=x.s,r=x.rk,o=k=>rkOrd(k)+(brut?" brut":"
     case "farm":return x.role==="SUP"?(s[5]==null?"":`${Math.round(s[5])} or/min (${o(r[3])})`):(s[4]==null?"":`${fx2(s[4])} CS/min (${o(r[2])})`);
     case "kda":return s[6]==null?"":`KDA ${fx1(s[6])} (${o(r[4])})`;
     case "kp":return s[7]==null?"":`${Math.round(s[7])} % aux kills (${o(r[5])})`;
-    case "adv":return strong?`adversité ${rkLg(x.key)} (${rkOrd(r[6])})`:`adversité ${rkLg(x.key)} plus faible (${rkOrd(r[6])})`}
+    case "adv":return strong?`adversaires ${rkLg(x.key)} (${rkOrd(r[6])})`:`adversaires ${rkLg(x.key)} plus faibles (${rkOrd(r[6])})`}
   return""}
 function rkLine(x){const p=x.fs.map(i=>rkTag(x,i,true)).filter(Boolean),w=x.wk>=0?rkTag(x,x.wk,false):"";
   return esc(p.join(" · ")+(w?(p.length?" · ":"")+"faible : "+w:""))}
@@ -3252,17 +3253,17 @@ function rkDetail(key,self){const x=rkFind(key),R=RKX();if(!x)return"";
   const s=x.s,r=x.rk,st=[[s[2]!=null,`or à 15 min ${rkSg(s[2])}`,r[0]],[s[3]!=null,`CS à 15 min ${rkSg(s[3],fx1)}`,r[1]],[x.role!=="SUP"&&s[4]!=null,`${fx2(s[4]||0)} CS/min`,r[2]],
     [s[5]!=null,`${Math.round(s[5]||0)} or/min`,r[3]],[s[6]!=null,`KDA ${fx1(s[6]||0)}`,r[4]],[s[7]!=null,`${Math.round(s[7]||0)} % aux kills`,r[5]]].filter(z=>z[0]);
   const L=R.P[x.role].r,j=x.i>1?L[x.i-2][0]:(L[1]||[])[0];   // comparaison : le joueur juste devant (le 2e pour le 1er)
-  return `<div class="rkx"><p>Écart au ${RK_ROLE1[x.role]} moyen des Worlds : <b>${rkPt(tot)}</b> de chances de victoire dans une partie équilibrée. D’où il vient :</p>
+  return `<div class="rkx"><p>Écart ${{TOP:"au top",JGL:"au jungler",MID:"au mid",BOT:"à l’ADC",SUP:"au support"}[x.role]} moyen des Worlds : <b>${rkPt(tot)}</b> de chances de victoire dans une partie équilibrée. D’où il vient :</p>
     ${[0,1,2,3,4,5].map(bar).join("")}
     <p>Saison ${esc(R.y)} : ${s[0]} parties, ${Math.round(s[1]/Math.max(1,s[0])*100)} % de victoires. ${st.map((z,i)=>`${esc(i?z[1]:z[1].charAt(0).toUpperCase()+z[1].slice(1))} <i class="rkb${z[2]>3?" lo":""}">${rkOrd(z[2])}</i>`).join(" · ")}. Rangs bruts sur ${x.n}.</p>
     <p class="rkbt">${self?`<button class="btn" data-rkrole="${x.role}">Classement des ${RK_ROLEN[x.role]}</button>`:`<button class="btn" data-p="${esc(key)}">Fiche de ${esc(rkNm(key))}</button>`}${j?`<button class="btn" data-cmp="${esc(key)}|${esc(j)}">Comparer avec ${esc(rkNm(j))}</button>`:""}</p></div>`}
 function rkMethod(){const R=RKX(),c=R&&R.pc;
   return `<p>Note d’impact du robot : 6 stats par partie (KDA, participation aux kills, or et CS par minute, écarts d’or et de CS à 15 min face au vis-à-vis), comparées aux autres joueurs du même poste, plus le niveau des 5 adversaires de chaque partie. C’est ce dernier point qui rend la LCK et la CBLOL comparables. Les parties récentes comptent plus (une partie de 4 mois compte moitié). La part des dégâts, la vision et le shotcalling n’y entrent pas.</p>
     <p>Barres : part exacte de chaque axe dans l’écart à la moyenne du poste, en points de chances de victoire (écart de note × ${fx2(rkAl())} × 25). « Ajustement du modèle » : prudence sur les petits échantillons et rappel vers la ligue.${c?` Les deux raisons couvrent en médiane ${Math.round(c.cov*100)} % de l’écart des joueurs au-dessus de la moyenne ; entre deux voisins du classement, l’axe qui les sépare le plus est une raison du premier ou la faiblesse du second dans ${c.adj[0]} cas sur ${c.adj[1]}. Une raison n’est affichée que si la stat de saison va dans le même sens (${c.skip} remplacements sur ${c.n} joueurs).`:""}</p>
-    <p>Fourchette : rangs plausibles d’après les rééchantillonnages du robot. Stats de saison : nos parties ${esc(R?R.y:"")} (LoL Esports), à 1 place près des rangs de gol.gg dans 7 cas sur 10 ; qualifications EWC et une partie de la KeSPA Cup absentes.</p>`}
+    <p>Fourchette : rangs plausibles d’après les rééchantillonnages du robot. Stats de saison : nos parties ${esc(R?R.y:"")} (LoL Esports), à 1 place près des rangs de gol.gg dans 7 cas sur 10 ; qualifications EWC absentes ; gol.gg (saison S16) compte en plus la KeSPA Cup de décembre 2025.</p>`}
 
 /* ---------- 1. classement par poste (Joueurs › Classement 2026) ---------- */
-function rkRow(x,o={}){const p=rkP(x.key),rg=x.lo!=null&&x.lo!==x.hi?`<small>${x.lo}-${x.hi}</small>`:"";
+function rkRow(x,o={}){const p=rkP(x.key),rg=x.lo!=null&&x.lo!==x.hi?`<small>${x.lo}–${x.hi}e</small>`:"";
   return `<details class="rkd"><summary class="lrow rkr"><span class="rk">${x.i}${rg}</span>${p?photo(p,"ava",34):""}<span class="ln2"><b>${esc(rkNm(x.key))}</b><small>${esc(rkTm(x.key))}${o.role?` · ${rkOrd(x.i)} des ${RK_ROLEN[x.role]}`:""} · ${rkLine(x)}</small></span><em>${fxs(x.note)}</em></summary>${rkDetail(x.key)}</details>`}
 function rkBest1(role){const R=RKX(),r=R.P[role].r,x=rkFind(r[0][0]),co=r.filter(z=>z[2]===1).map(z=>z[0]);
   const nm=k=>`<b>${esc(rkNm(k))}</b>`,why=x.fs.map(i=>rkReason(x,i,true,true)).filter(Boolean);
@@ -3284,7 +3285,7 @@ function rkRankView(){
     h+=`<p class="rk1">${leg?"Les champions du monde en lice, et leur rang à leur poste.":`${L.length} joueur${L.length>1?"s":""} trouvé${L.length>1?"s":""}.`}</p>${sw}<div class="lead hx">${L.map(x=>rkRow(x,{role:1})).join("")||`<p class="small">Aucun joueur.</p>`}</div>`}
   else h+=`<p class="rk1">Le meilleur à chaque poste, ligues comprises. Touche un joueur pour voir pourquoi.</p>${sw}`
     +ROLE_ORDER.map(r=>`<div class="lead hx rkpos"><h4>${ROLES[r]}</h4>${R.P[r].r.slice(0,3).map(z=>rkRow(rkFind(z[0]))).join("")}<button class="rkmore" data-role="${r}">Les ${R.P[r].r.length} ${RK_ROLEN[r]} ›</button></div>`).join("");
-  return h+`<div class="small rkleg">Note d’impact du robot, niveau des adversaires compris. Entre parenthèses : rang parmi les 19 titulaires du poste sur la stat brute de la saison ${esc(R.y)}, ligues mélangées. Sous le rang : fourchette plausible.${rkInfoIn(rkMethod())}</div>`}
+  return h+`<div class="small rkleg">Note d’impact du robot, niveau des adversaires compris. Entre parenthèses : rang parmi les 19 titulaires du poste sur la stat brute de la saison ${esc(R.y)}, ligues mélangées. Sous le rang : places possibles vu l’incertitude (1–3e : entre 1er et 3e).${rkInfoIn(rkMethod())}</div>`}
 /* stats brutes : l'ancien classement, avec le mot « brut » partout où des ligues différentes sont mélangées */
 function rkRawView(){
   const d=PSTAT.find(x=>x[0]===ui.pstat)||PSTAT[1],role=ROLES[ui.role]?ui.role:null,leg=ui.role==="LEG",q=norm(ui.q),raw=d[0]!=="imp";
@@ -3295,7 +3296,7 @@ function rkRawView(){
    +(raw?`<p class="rk1">Classement <b>brut</b> : ${esc(/^[A-Z]{2}/.test(d[1])?d[1]:d[1].charAt(0).toLowerCase()+d[1].slice(1))} sur la saison, ligues mélangées. Un même chiffre ne vaut pas autant en LCK qu’en CBLOL ; la note d’impact, elle, en tient compte.</p>`:"")
    +(!role&&!leg?`<p class="small" style="margin:0 0 8px">Choisis un poste juste au-dessus pour comparer à armes égales.</p>`:"")
    +`<div class="lead hx">${rows.map(x=>`<button class="lrow" data-p="${x.p.key}"><span class="rk">${x.i}</span>${photo(x.p,"ava",34)}<span class="ln2"><b>${esc(x.p.id)}</b><small>${esc(T[x.p.team].id)}, ${ROLES[x.p.role]}, ${seasonOf(x.p).g} parties</small></span><em>${d[3](x.v)}</em></button>`).join("")||`<p class="small">Aucun joueur.</p>`}</div>
-   <p class="small" style="margin-top:8px">${raw?"Rang brut. ":""}Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC), ${MINR} parties minimum${out.length?`. Pas assez de parties : ${out.map(p=>esc(p.id)).join(", ")}`:""}. Touche un joueur pour sa fiche, puis « Comparer ».</p>`}
+   <p class="small" style="margin-top:8px">${raw?"Rang brut. ":""}Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC ; gol.gg compte aussi la KeSPA Cup de décembre 2025), ${MINR} parties minimum${out.length?`. Pas assez de parties : ${out.map(p=>esc(p.id)).join(", ")}`:""}. Touche un joueur pour sa fiche, puis « Comparer ».</p>`}
 
 /* ---------- qui domine qui au même poste (SJ.rk.D) ---------- */
 // duel entre deux titulaires du même poste, vu de ka : {n, w, e, gd, n15, z, n26, w26}
@@ -3464,7 +3465,7 @@ function rkBriefHTML(p){
   const id=[a!=null?a+" ans":null,t.league,wy.length?(wy.length===1?"premiers Worlds":wy.length+"e Worlds"):null,p.titles.length?`${p.titles.length} titre${p.titles.length>1?"s":""}`:null].filter(Boolean).join(" · ");
   let h=rkBl("Profil",esc(id),rkIdDetail(p));
   if(x){const fs=x.fs.map(i=>rkTag(x,i,true,true)).filter(Boolean),wk=x.wk>=0?rkTag(x,x.wk,false,true):"";
-    h+=rkBl("Rang",`${rkOrd(x.i)} des ${x.n} ${RK_ROLEN[x.role]}${x.lo!==x.hi?` <em>(${x.lo}e à ${x.hi}e)</em>`:""}<small>${esc([fs.length?"Atout"+(fs.length>1?"s":"")+" : "+fs.join(", "):"",wk?"Faible : "+wk:""].filter(Boolean).join(". "))}</small>`,`<p>${rkWhy(x)}</p>`+rkDetail(p.key,true))}
+    h+=rkBl("Rang",`${rkOrd(x.i)} des ${x.n} ${RK_ROLEN[x.role]}${x.lo!==x.hi?` <em>(${rkOrd(x.lo)} à ${rkOrd(x.hi)})</em>`:""}<small>${esc([fs.length?"Atout"+(fs.length>1?"s":"")+" : "+fs.join(", "):"",wk?"Faible : "+wk:""].filter(Boolean).join(". "))}</small>`,`<p>${rkWhy(x)}</p>`+rkDetail(p.key,true))}
   h+=ablock("pbf_"+p.key,()=>rkFicheData(p),rkFicheLines(p),3);
   if(R&&R.I){const w=rkWorldsP1(p.key,true);h+=rkBl("Worlds",`${w[0]}${w[1]?`<small>${w[1]}</small>`:""}`,rkWorldsP2(p.key))}
   return rkH2("En bref",`<p>Profil : identité Leaguepedia et Liquipedia croisées. Rang : note d’impact du robot parmi les 19 titulaires du poste${R?` (stats.json du ${esc(String(R.asof||"").slice(0,10).split("-").reverse().join("/"))})`:""} ; entre parenthèses, la fourchette plausible.</p><p>Signature : son champion le plus joué de l’année. Némésis : au moins 8 duels en lane, au plus 40 % de victoires et 5 défaites ; victoires attendues d’après la force des deux équipes partie par partie (fiche.json, parties officielles LoL Esports depuis 2024).</p><p>Worlds : ses stats aux internationaux comparées à sa note d’avant chaque tournoi, depuis 2024 ; « nettement » au-delà de 2 erreurs types et dans le même sens deux années de suite.</p><p>Rangs « brut » : stat de la saison parmi les 19 titulaires du poste, ligues mélangées.</p>`,"","tight")
@@ -3819,7 +3820,7 @@ function liveBoxHTML(m){
   const L=LV.games[m.key];
   if(!L)return skel(2);
   if(L.status==="nolive")return `<p class="small">Flux en direct introuvable pour ce match.</p>`;
-  if(L.status==="waiting"||L.status==="starting")return `<div class="note">La partie n’a pas encore commencé. Le score s’affiche dès le premier sang.</div>`+amLiveWaitHTML(m,L);
+  if(L.status==="waiting"||L.status==="starting")return `<div class="note">La partie n’a pas encore commencé. Le direct démarre dès son lancement.</div>`+amLiveWaitHTML(m,L);
   if(L.status==="between")return `<div class="note">Pause entre deux parties. Série : ${L.teams.map(t=>`${esc(T[t.our]?.id||"")} ${t.w??0}`).join(" - ")}.</div>`+amBetweenHTML(m,L);
   if(!L.frame)return LV.err?`<div class="aerr">Flux LoL Esports injoignable (${esc(LV.err)}). Nouvel essai dans 10 s.</div>`:skel(2);
   const f=L.frame,B=f.blueTeam,R=f.redTeam,mins=gameMins(L),p=winProb(f,mins);
@@ -3849,7 +3850,7 @@ function liveBoxHTML(m){
    Ouverture en cours de partie ou onglet en arrière-plan : les trous sont comblés par dichotomie sur les fenêtres de 10 s,
    l'origine d'abord puis les plus récents, 48 fenêtres au plus par passage (environ 130 pour rattraper 20 min de jeu, 3 Ko chacune).
    Tant que l'origine ou une pause possible n'est pas établie, l'heure est précédée de « ≈ » (origine provisoire : première image du flux). */
-const KF_DR={ocean:"Océan",infernal:"Infernal",mountain:"Montagne",cloud:"Nuages",hextech:"Hextech",chemtech:"Chemtech",elder:"Ancestral"};
+const KF_DR={ocean:"Océan",infernal:"Infernal",mountain:"Montagne",cloud:"Nuages",hextech:"Hextech",chemtech:"Chimtech",elder:"Ancestral"};
 const KF_BUDGET=48, KF_PAR=6;   // fenêtres par passage, requêtes en parallèle
 const kf10=ms=>Math.floor(ms/1e4)*1e4;
 // image compacte : heure, pause, compteurs (K/D/A/niveau ×10, puis tours/inhibiteurs/Barons bleus et rouges), dragons, or
@@ -4093,7 +4094,7 @@ async function fromLolEsports(){
       n1:a.name,n2:b.name,s1:a.result?.gameWins??null,s2:b.result?.gameWins??null};
     if(ev.state==="completed"){if(a.result?.outcome==="win")m.winner=t1;else if(b.result?.outcome==="win")m.winner=t2}
     if(ev.state==="inProgress")m.apiLive=true;
-    if(ev.state==="unstarted"){m.s1=null;m.s2=null}
+    if(ev.state==="unstarted"){m.s1=null;m.s2=null;m.unst=true}
     out.push(m);
   });
   if(out.filter(m=>m.t1&&m.t2).length<6)throw new Error("planning incomplet");
@@ -4228,7 +4229,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.4, 24/10/2026";
+const APP_VERSION="v12.5, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
