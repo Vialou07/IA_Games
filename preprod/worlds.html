@@ -453,6 +453,9 @@ nav.tabs button{position:relative}
 .tcard .tf{display:flex;gap:3px}.tcard .tf i{font-style:normal;font-size:10px;font-weight:800;width:16px;height:16px;display:grid;place-items:center;border-radius:4px;background:rgba(10,200,185,.18);color:var(--teal)}.tcard .tf i.l{background:rgba(232,64,87,.16);color:var(--red)}
 .tcard .tn2{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}.tcard .tn2 b{color:var(--text,#F0E6D2);font-size:12.5px}.tcard .lv{font-style:normal;color:var(--red);font-weight:800}
 .lvhd .vod{margin-left:auto;font-size:12px;font-weight:700;color:var(--teal);border:1px solid rgba(10,200,185,.35);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.pips{display:inline-flex;gap:3px;margin-right:6px;vertical-align:middle}.pips i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--gold);opacity:.45}.pips i.on{background:var(--gold);opacity:1}
+.tcard .lvs{font-size:11.5px;color:var(--muted);display:flex;align-items:center}
+.stake{margin-top:6px;font-size:12.5px;font-weight:700;letter-spacing:.02em;color:var(--gold2);text-align:center}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
@@ -981,6 +984,20 @@ function cdParts(ms){
   return out.map(([k,v,l])=>[k,String(v).padStart(2,"0"),l]);
 }
 function cdHTML(ms){return cdParts(ms).map(([k,v,l])=>`<div class="seg"><span class="num" data-k="${k}">${v}</span><small>${l}</small></div>`).join("")}
+// sursis avant l'élimination : défaites encore permises selon la phase (suisse : 3 défaites et dehors ; phase finale : élimination directe)
+function lives(id,R){
+  R=R||records();const st=status(id,R);if(!T[id]||st.k==="out"||/Champion/.test(st.txt))return null;const r=R[id];
+  if(r.ko.w>0||r.sw.w>=3)return {n:1,ko:true,txt:"élimination directe"};
+  if(T[id].entry==="pi"&&!r.sw.w&&!r.sw.l&&piWinner()!==id)return null;
+  const n=3-r.sw.l;return {n,txt:n===1?"plus droit à l’erreur":`${n-1} défaite${n-1>1?"s":""} de sursis`};
+}
+const pips=L=>L?`<span class="pips" title="${esc(L.txt)}">${[0,1].map(i=>`<i class="${i<L.n-1?"on":""}"></i>`).join("")}</span>`:"";
+function stakeLine(m){
+  if(!m.t1||!m.t2||m.winner)return"";const R=records(),a=lives(m.t1,R),b=lives(m.t2,R);if(!a||!b)return"";
+  if(a.ko)return `<div class="stake">Élimination directe : le perdant rentre à la maison</div>`;
+  const out=[a.n===1?T[m.t1].id:null,b.n===1?T[m.t2].id:null].filter(Boolean);
+  return out.length?`<div class="stake">${out.length===2?"Match couperet : le perdant est éliminé":`Match à élimination pour ${esc(out[0])}`}</div>`:"";
+}
 function heroBlock(m,big){
   const st=new Date(m.start), live=m.state==="live", wait=m.state==="wait";
   return `<div class="hero${live?" is-live":""}"><div class="hero-3d frame hx" id="hero3d"><div class="hero-card" style="--c1:${col(m.t1)};--c2:${col(m.t2)}">
@@ -995,7 +1012,7 @@ function heroBlock(m,big){
         <button class="side" data-t="${m.t2||""}">${m.t2?logo(m.t2,76):""}<span class="code">${esc(tname(m,"t2"))}</span><span class="nm">${m.t2?esc(T[m.t2].name):""}</span></button>
       </div>
       ${live?`<div class="cd-big">Match en cours</div>`:wait?`<div class="cd-big">En attente du résultat</div>`:`<div class="cd" id="cd">${cdHTML(st-Date.now())}</div>`}
-      <div class="cd-date">${fmtDay(st)}, ${fmtTime(st)} (${tzLabel})</div>
+      <div class="cd-date">${fmtDay(st)}, ${fmtTime(st)} (${tzLabel})</div>${stakeLine(m)}
       ${live?`<div id="herolive" data-k="${esc(m.key)}">${heroLiveHTML(m)}</div>`:""}
       <div class="acts"><button class="btn gold" data-m="${esc(m.id)}">${live?"Suivre en direct":"Voir le face-à-face"}</button><a class="btn" href="https://www.twitch.tv/otplol_" target="_blank" rel="noopener">Regarder en VF</a><a class="btn" href="https://lolesports.com/fr-FR/" target="_blank" rel="noopener">LoL Esports</a></div>
     </div></div></div></div>`;
@@ -1141,7 +1158,7 @@ function roundHTML(P){
   const L=MATCHES.filter(m=>m.stage==="sw"&&!m.winner&&m.t1&&m.t2);if(!L.length)return"";
   const rec=id=>{const p=P[id]||[[0,0]];return p[p.length-1].join("-")},G={};
   L.forEach(m=>{const k=rec(m.t1);(G[k]=G[k]||[]).push(m)});
-  const stake=k=>({"2-0":"le vainqueur est en quarts","0-2":"le perdant est éliminé","2-2":"le vainqueur est en quarts, le perdant éliminé","2-1":"le vainqueur est en quarts","1-2":"le perdant est éliminé"})[k]||"";
+  const stake=k=>({"2-0":"le vainqueur est en quarts","0-2":"le perdant est éliminé","2-2":"le vainqueur est en quarts, le perdant éliminé","2-1":"le vainqueur est en quarts","1-2":"le perdant est éliminé"})[k]||({"0":"chacun peut encore perdre deux fois","1":"chacun peut encore perdre une fois"})[k.split("-")[1]]||"";
   return `<h3 class="h3">Ronde en cours</h3><div class="rnd">${Object.keys(G).sort((a,b)=>b.split("-")[0]-a.split("-")[0]||a.split("-")[1]-b.split("-")[1]).map(k=>`<div class="rg"><b>${k}</b>${stake(k)?`<small>${stake(k)}</small>`:""}</div>${G[k].sort((a,b)=>a.start.localeCompare(b.start)).map(m=>`<button class="rr hx" data-m="${esc(m.id)}"><span>${logo(m.t1,20)}<b>${esc(T[m.t1].id)}</b></span><i>${m.state==="live"?`<em class="lv">EN DIRECT</em>`:`Bo${m.bo} · ${fmtTime(new Date(m.start))}`}</i><span class="r"><b>${esc(T[m.t2].id)}</b>${logo(m.t2,20)}</span></button>`).join("")}`).join("")}</div>`;
 }
 function renderSwiss(){
@@ -1186,7 +1203,7 @@ function renderTeams(){
      <span class="wm">${logo(t.id,120)}</span><div class="hd">${logo(t.id,42)}<b>${esc(t.name)}</b></div>
      <div class="ln">${flag(t.cc)}${esc(t.seed)}${teamPlayers(t.id).some(p=>p.titles.length)?" 🏆":""}</div>
      ${new Set(teamPlayers(t.id).map(p=>p.cc)).size>1?`<div class="ln"><span class="fls">${teamPlayers(t.id).map(p=>flag(p.cc)).join("")}</span></div>`:""}
-     ${tform(t.id)}${tnext(t.id)}
+     ${tform(t.id)}${(L=>L?`<div class="ln lvs">${pips(L)}${esc(L.txt)}</div>`:"")(lives(t.id,R))}${tnext(t.id)}
      <span class="st ${st.k}" style="align-self:flex-start">${esc(st.txt)}</span></button>`}).join("")}</div>`;
   $("#v-teams").innerHTML=h;
 }
@@ -2469,7 +2486,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="PRÉPROD v11.4, 24/10/2026";
+const APP_VERSION="PRÉPROD v11.5, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
