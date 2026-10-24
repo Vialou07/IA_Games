@@ -69,6 +69,22 @@ def _lean(s):
 def _unit(n, u):
     if n == 1: w = u.split(" ", 1); return w[0][:-1] + ((" " + w[1]) if len(w) > 1 else "") if w[0].endswith("s") else u
     return u
+def _typo(s):
+    """Typographie française du texte publié, comme dans l'appli : apostrophe typographique, espace insécable avant « : »,
+    espace fine insécable avant ; ? ! % » et après «, et dans les milliers (2 500). Appliquée à la sortie seulement :
+    l'empreinte des faits (règle des 2 passages, « nouveau ») reste calculée sur le texte brut, rien n'est republié."""
+    s = re.sub(r"(?<=[A-Za-zÀ-ÿ])'(?=[A-Za-zÀ-ÿ])", "\u2019", s)
+    s = re.sub(r" (?=:(\s|$))", "\u00a0", s)
+    s = re.sub(r" (?=[;?!»%])", "\u202f", s)
+    s = s.replace("« ", "«\u202f")
+    return re.sub(r"(?<=\d) (?=\d{3}(?!\d))", "\u202f", s)
+BN = {"Play-Ins": "Play-In", "Play In Knockouts": "Play-In", "Swiss": "phase suisse", "Knockouts": "phase finale", "Groups": "groupes",
+      "Finals": "finale", "Semifinals": "demi-finale", "Quarterfinals": "quart de finale", "Regional Qualifier": "qualification",
+      "Regular Season": "saison", "Playoffs": "playoffs", "Promotion": "promotion"}
+def _bn(s):
+    """nom de phase de LoL Esports en français (même table que fjPhase dans l'appli)"""
+    s = str(s or ""); m = re.match(r"(Week|Round) (\d+)$", s)
+    return BN.get(s) or ((("semaine " if m.group(1) == "Week" else "tour ") + m.group(2)) if m else s)
 
 
 # ---------- table des parties ----------
@@ -292,7 +308,7 @@ def _generate(P, Y, state):
             txt = "%s reste sur %d victoires de suite, toutes compétitions suivies confondues." % (tn(t), n)
             if not P.full: return hold("w.encours." + t, txt, "sans la mémoire du robot (C), une série absente du flux ne se voit pas")
             fact("w.encours." + t, "serie", Y, txt,
-                 "Parties de %s en %s dans l'ordre (avec au moins 3 titulaires actuels) ; la série démarre le %s (%s %s)." % (t, Y, dfr(seq[-n][0]), LS.get(seq[-n][2]["l"], seq[-n][2]["l"]), seq[-n][2]["bn"]),
+                 "Parties de %s en %s dans l'ordre (avec au moins 3 titulaires actuels) ; la série démarre le %s (%s %s)." % (t, Y, dfr(seq[-n][0]), LS.get(seq[-n][2]["l"], seq[-n][2]["l"]), _bn(seq[-n][2]["bn"])),
                  "série d'au moins 6 ; aucune partie officielle manquante dans la fenêtre", n, 4, "A", [t])
 
     @section
@@ -303,7 +319,7 @@ def _generate(P, Y, state):
         if best and best[0][0] >= 0.75:
             r, w, n, t = best[0]
             fact("w.bilan." + t, "worlds", WY, "%s : %d victoires en %d parties à ces Worlds, le meilleur bilan du tournoi." % (tn(t), w, n),
-                 "Toutes les parties des %s (play-in + phase suisse) de %s." % (WY, t), "au moins 5 parties ; pas de taux affiché en dessous", n, 3, "B", [t])
+                 "Toutes les parties des %s (Play-In + phase suisse) de %s." % (WY, t), "au moins 5 parties ; pas de taux affiché en dessous", n, 3, "B", [t])
 
     @section
     def w_records():  # 1d. records de parties (temps de jeu mesuré, pauses retirées)
@@ -397,7 +413,7 @@ def _generate(P, Y, state):
         y0 = min(g["y"] for g in G if g["l"] == "worlds")
         k, n = wg.most_common(1)[0]; ties = sorted((pid(x) for x, m in wg.items() if m == n), key=lambda x: x != "Faker")
         fact("w.veteran", "joueurs", "Worlds %s-%s" % (y0, Y), "%s : %d parties de Worlds depuis %s (%d victoires), le plus gros total des titulaires." % (" , ".join(ties).replace(" ,", ","), n, y0, ww[k]),
-             "Parties des Worlds %s à %s (play-in compris)." % (y0, Y), "horizon des données : %s" % y0, n, 2, "A", [x for x, m in wg.items() if m == n])
+             "Parties des Worlds %s à %s (Play-In compris)." % (y0, Y), "horizon des données : %s" % y0, n, 2, "A", [x for x, m in wg.items() if m == n])
         k, n = wk.most_common(1)[0]
         fact("w.tueur", "joueurs", "Worlds %s-%s" % (y0, Y), "%s a fait %d kills aux Worlds depuis %s, plus que tout autre titulaire." % (pid(k), n, y0), "Somme des kills.", "horizon %s" % y0, wg[k], 3, "A", [k])
 
@@ -445,7 +461,7 @@ def _generate(P, Y, state):
             _, (a, b) = runs(SEQ[t], val)
             ties = [x for m, x in best if m == n and x != t]
             fid = "s.serie.%s.%s" % ("v" if val else "d", t)
-            txt = "Plus longue série de %s en %s : %s, %d parties d'affilée (du %s au %s)%s." % (
+            txt = "Plus longue série de %s des équipes des Worlds en %s : %s, %d parties d'affilée (du %s au %s)%s." % (
                 lab, Y, tn(t), n, dfr(a[0]), dfr(b[0]), (", à égalité avec " + ", ".join(tn(x) for x in ties)) if ties else "")
             if not P.full: hold(fid, txt, "sans la mémoire du robot (C), une série absente du flux ne se voit pas"); continue
             fact(fid, "serie", Y, txt, "Parties %s dans l'ordre chronologique, comptées seulement avec au moins 3 titulaires actuels ; une partie sans données coupe la série." % Y,
@@ -486,7 +502,7 @@ def _generate(P, Y, state):
         sides.sort(reverse=True)
         if sides and sides[0][0] >= 2.5:
             _, t, bw, nb, rw, nr, z = sides[0]; good, bad = ("bleu", "rouge") if z > 0 else ("rouge", "bleu")
-            fact("s.cote." + t, "intelligence", Y, "%s est une autre équipe côté %s : %s de victoires (%d/%d), contre %s côté %s (%d/%d)." % (
+            fact("s.cote." + t, "intelligence", Y, "%s est une autre équipe côté %s : %s de victoires (%d/%d), contre %s côté %s (%d/%d), compétitions suivies." % (
                 tn(t), good, pct(bw if z > 0 else rw, nb if z > 0 else nr), bw if z > 0 else rw, nb if z > 0 else nr, pct(rw if z > 0 else bw, nr if z > 0 else nb), bad, rw if z > 0 else bw, nr if z > 0 else nb),
                  "Taux de victoire par côté, test d'écart entre deux proportions (z = %s)." % fr(z, 1), "au moins 25 parties de chaque côté ET z ≥ 2,5", nb + nr, 4, "A", [t])
 
@@ -556,7 +572,7 @@ def _generate(P, Y, state):
         cand = [(t, sd, g) for t, sd, g in TG if g["win"] == sd and fin(g)]
         if cand:
             t, sd, g = min(cand, key=lambda x: (x[2]["k"][x[1]], x[2]["k"][opp(x[1])]))
-            fact("s.radin." + t, "kills", Y, "Gagner sans tuer : %s a battu %s avec seulement %d kills (%d en face), %s %s." % (tn(t), tn(vs(g, t)), g["k"][sd], g["k"][opp(sd)], LS.get(g["l"], g["l"]), dfr(g["t"])),
+            fact("s.radin." + t, "kills", Y, "Gagner sans tuer : %s a battu %s avec seulement %d kill%s (%d en face), %s %s." % (tn(t), tn(vs(g, t)), g["k"][sd], "s" if g["k"][sd] > 1 else "", g["k"][opp(sd)], LS.get(g["l"], g["l"]), dfr(g["t"])),
                  "Kills de l'équipe gagnante.", "flux complet", len(TG), 3, "A", [t, vs(g, t)])
         cand = [(t, sd, g) for t, sd, g in TG if g["win"] != sd and fin(g) and certain(g)]
         if cand:
@@ -566,7 +582,7 @@ def _generate(P, Y, state):
         cbk = [(-gd(g, sd), t, sd, g) for t, sd, g in TG if g["ok15"] and g["win"] == sd and fin(g) and certain(g)]
         if cbk:
             d, t, sd, g = max(cbk, key=lambda x: (x[0], x[3]["t"]))
-            fact("s.remontee." + t, "remontee", Y, "Remontée de l'année : %s, mené de %s or à 15 minutes contre %s, a gagné (%s, %s)." % (tn(t), sp(d), tn(vs(g, t)), LS.get(g["l"], g["l"]), dfr(g["t"])),
+            fact("s.remontee." + t, "remontee", Y, "Plus belle remontée des équipes des Worlds : %s, mené de %s or à 15 minutes contre %s, a gagné (%s, %s)." % (tn(t), sp(d), tn(vs(g, t)), LS.get(g["l"], g["l"]), dfr(g["t"])),
                  "Or d'équipe à la 15e minute de jeu.", "image de 15 min plausible ; vainqueur net", len(cbk), 4, "B", [t, vs(g, t)])
 
     @section
@@ -591,7 +607,7 @@ def _generate(P, Y, state):
             wa = sum(1 for s in v if (s["A"] if s["sa"] > s["sb"] else s["B"]) == a)
             if len(v) >= 10: dom.append((max(wa, len(v) - wa) / len(v), len(v), a if wa >= len(v) - wa else b, b if wa >= len(v) - wa else a, max(wa, len(v) - wa), min(wa, len(v) - wa)))
         for r, n, x, y, w, l in sorted(dom, key=lambda d: (-(d[4] - d[5]), -d[0], -d[1], d[2], d[3]))[:4]:
-            if r >= 0.7: fact("h.dom.%s.%s" % (x, y), "duel_equipes", "depuis %s" % y0, "%s domine %s : %d séries gagnées, %d perdues depuis %s." % (tn(x), tn(y), w, l, y0),
+            if r >= 0.7: fact("h.dom.%s.%s" % (x, y), "duel_equipes", "depuis %s" % y0, "%s domine %s : %d séries gagnées, %d perdues depuis %s (compétitions suivies)." % (tn(x), tn(y), w, l, y0),
                               "Toutes les séries officielles entre les deux équipes depuis janvier %s." % y0, "au moins 10 séries ; ≥ 70 %", n, 3, "A", [x, y], "séries")
         cs_ = []
         for (a, b), v in hh.items():
@@ -637,7 +653,7 @@ def _generate(P, Y, state):
                  "Séries internationales officielles.", "au moins 6 manches", r[2], 4, "A", [me, ot], "manches")
         r = rec.get(("LCK", "LPL"))
         if r and r[0] + r[1] >= 5:
-            fact("l.lcklpl", "ligues", Y, "LCK contre LPL en %s : %d séries à %d, %d manches à %d." % (Y, r[0], r[1], r[2], r[3]), "Séries internationales officielles.", "au moins 5 séries", r[0] + r[1], 3, "A", ["LCK", "LPL"], "séries")
+            fact("l.lcklpl", "ligues", Y, "LCK contre LPL en %s (First Stand, MSI, EWC, Worlds) : %d séries à %d, %d manches à %d." % (Y, r[0], r[1], r[2], r[3]), "Séries internationales officielles.", "au moins 5 séries", r[0] + r[1], 3, "A", ["LCK", "LPL"], "séries")
 
     @section
     def styles():
@@ -678,15 +694,15 @@ def _generate(P, Y, state):
             if not P.full: hold(fid, fid, "sans C : flux complet inconnu")
             return
         v, p, g = max(c, key=lambda x: (x[0], x[2]["t"]))
-        fact(fid, "record", Y, txt(v, p, g), "Maximum sur %d lignes joueur-partie de %s (nos 95 titulaires)." % (len(c), Y), cond, len(c), 4, "A", [p["key"]], "lignes joueur-partie")
+        fact(fid, "record", Y, txt(v, p, g), "Maximum sur %s lignes joueur-partie de %s (nos 95 titulaires)." % (sp(len(c)), Y), cond, len(c), 4, "A", [p["key"]], "lignes joueur-partie")
 
     @section
     def p_records():
-        rec1("p.kills", lambda v, p, g: "Record de kills de l'année : %s, %d/%d/%d sur %s contre %s (%s, %s)." % (pid(p["key"]), p["k"], p["d"], p["a"], p["C"], tn(vs(g, p["team"])), LS.get(g["l"], g["l"]), dfr(g["t"])), lambda p, g: p["k"], 5)
+        rec1("p.kills", lambda v, p, g: "Record de kills parmi les joueurs des Worlds : %s, %d/%d/%d sur %s contre %s (%s, %s)." % (pid(p["key"]), p["k"], p["d"], p["a"], p["C"], tn(vs(g, p["team"])), LS.get(g["l"], g["l"]), dfr(g["t"])), lambda p, g: p["k"], 5)
         rec1("p.parfait", lambda v, p, g: "Partie parfaite : %s, %d/0/%d sur %s contre %s (%s)." % (pid(p["key"]), p["k"], p["a"], p["C"], tn(vs(g, p["team"])), dfr(g["t"])), lambda p, g: p["k"] + p["a"] if p["d"] == 0 else None, 3)
-        rec1("p.degats", lambda v, p, g: "%s a infligé %s des dégâts de son équipe sur %s (%s, %s), record de l'année." % (pid(p["key"]), pct(v, 1), p["C"], LS.get(g["l"], g["l"]), dfr(g["t"])), lambda p, g: p["ds"], 3)
+        rec1("p.degats", lambda v, p, g: "%s a infligé %s des dégâts de son équipe sur %s (%s, %s), record parmi les joueurs des Worlds." % (pid(p["key"]), pct(v, 1), p["C"], LS.get(g["l"], g["l"]), dfr(g["t"])), lambda p, g: p["ds"], 3)
         rec1("p.balises", lambda v, p, g: "%s a posé %d balises dans une seule partie (%s, %s de jeu)." % (pid(p["key"]), v, p["C"], mmss(g["min"])), lambda p, g: p["wp"], 3)
-        rec1("p.csmin", lambda v, p, g: "Farm record : %s, %s CS par minute sur %s (%s de jeu, %s)." % (pid(p["key"]), fr(v, 2), p["C"], mmss(g["min"]), dfr(g["t"])), lambda p, g: p["cs"] / g["min"],
+        rec1("p.csmin", lambda v, p, g: "Meilleur farm parmi les joueurs des Worlds : %s, %s CS par minute sur %s (%s de jeu, %s)." % (pid(p["key"]), fr(v, 2), p["C"], mmss(g["min"]), dfr(g["t"])), lambda p, g: p["cs"] / g["min"],
              3, "temps de jeu mesuré ; au moins 25 min", lambda p, g: g["tv"] and g["min"] >= 25)
         rec1("p.kp", lambda v, p, g: "%s a participé aux %d kills de son équipe dans la même partie (%d/%d/%d sur %s)." % (pid(p["key"]), v, p["k"], p["d"], p["a"], p["C"]),
              lambda p, g: p["tk"] if p["tk"] >= 15 and p["k"] + p["a"] == p["tk"] else None, 3, "au moins 15 kills d'équipe")
@@ -706,16 +722,16 @@ def _generate(P, Y, state):
         ks = [k for k in A if A[k]["g"] >= 40]
         if ks:
             k = max(ks, key=lambda k: (A[k]["k"] + A[k]["a"]) / max(1, A[k]["d"]))
-            fact("p.kda." + k, "joueurs", Y, "Meilleur KDA de l'année : %s, %s sur %d parties." % (pid(k), fr((A[k]["k"] + A[k]["a"]) / max(1, A[k]["d"]), 2), A[k]["g"]), "(kills + assists) / morts, sommes de l'année.", "au moins 40 parties", A[k]["g"], 3, "A", [k])
+            fact("p.kda." + k, "joueurs", Y, "Meilleur KDA de l'année (compétitions suivies) : %s, %s sur %d parties." % (pid(k), fr((A[k]["k"] + A[k]["a"]) / max(1, A[k]["d"]), 2), A[k]["g"]), "(kills + assists) / morts, sommes de l'année.", "au moins 40 parties", A[k]["g"], 3, "A", [k])
         k = max(A, key=lambda k: (len(CH[k]), -A[k]["g"]))
         ties = [x for x in A if len(CH[x]) == len(CH[k]) and x != k]
-        fact("p.pool." + k, "joueurs", Y, "Le joueur le plus imprévisible : %s a joué %d champions différents en %s%s." % (pid(k), len(CH[k]), Y, (" (comme " + ", ".join(pid(x) for x in ties) + ")") if ties else ""),
+        fact("p.pool." + k, "joueurs", Y, "Le joueur le plus imprévisible : %s a joué %d champions différents en %s dans les compétitions suivies%s." % (pid(k), len(CH[k]), Y, (" (comme " + ", ".join(pid(x) for x in ties) + ")") if ties else ""),
              "Champions distincts par joueur.", "aucune", A[k]["g"], 3, "A", [k] + ties)
         ks = [k for k in A if A[k]["g"] >= 60]
         if ks:
             k = max(ks, key=lambda k: CH[k].most_common(1)[0][1])
             c, n = CH[k].most_common(1)[0]
-            fact("p.signature." + k, "joueurs", Y, "Champion signature : %s a joué %s %d fois en %s (%d victoires)." % (pid(k), c, n, Y, CW[k][c]), "Parties par couple joueur-champion.", "au moins 60 parties pour le joueur", n, 3, "A", [k, c])
+            fact("p.signature." + k, "joueurs", Y, "Champion signature : %s a joué %s %d fois en %s dans les compétitions suivies (%d victoires)." % (pid(k), c, n, Y, CW[k][c]), "Parties par couple joueur-champion.", "au moins 60 parties pour le joueur", n, 3, "A", [k, c])
 
     @section
     def p_maitrise():
@@ -740,7 +756,7 @@ def _generate(P, Y, state):
             if not c: continue
             v, k = max(c)
             fact("p.gd15.%s.%s" % (role, k), "intelligence", Y, "%s écrase sa lane : %s or d'avance en moyenne à 15 minutes sur %d parties, le meilleur %s des Worlds." % (
-                pid(k), sp(round(v)), A[k]["n15"], {"BOT": "tireur", "MID": "mid", "TOP": "top"}[role]),
+                pid(k), sp(round(v)), A[k]["n15"], {"BOT": "ADC", "MID": "mid", "TOP": "top"}[role]),
                  "Moyenne de l'écart d'or avec le vis-à-vis à 15 min de jeu (même méthode que gol.gg), parties de %s." % Y, "au moins 40 parties avec image de 15 min", A[k]["n15"], 3, "A", [k])
 
     # =====================================================================
@@ -770,7 +786,7 @@ def _generate(P, Y, state):
             m = round(z["gd15"] / z["n15"]) if z["n15"] >= 5 else None
             tail = "" if m is None else (", avec %s or d'avance en moyenne à 15 min" % sp(m) if m >= 200 else
                                          (", alors qu'il est derrière à 15 min (%s or en moyenne)" % sp(-m) if m <= -150 else ", sans écart notable à 15 min"))
-            fact("d.nemesis.%s.%s" % (a, b), "duels", "depuis %s" % y0, "%s est la bête noire de %s : %d victoires en %d duels de lane depuis %s%s." % (pid(a), pid(b), z["w"], z["g"], y0, tail),
+            fact("d.nemesis.%s.%s" % (a, b), "duels", "depuis %s" % y0, "%s est la bête noire de %s : %d victoires en %d duels de lane depuis %s (compétitions suivies)%s." % (pid(a), pid(b), z["w"], z["g"], y0, tail),
                  "Duels de lane depuis %s." % y0, "au moins 8 parties sur au moins 3 séries différentes", n, 4, "A", [a, b], "duels")
         fz = [(k, z) for k, z in du.items() if pid(k[0]) == "Faker" and pid(k[1]) == "Chovy"]
         if fz and fz[0][1]["g"] >= 20 and fz[0][1]["n15"]:
@@ -791,7 +807,7 @@ def _generate(P, Y, state):
             for p in g["p"]: cc[p["C"]] += 1; cw[p["C"]] += p["W"]; roles[p["C"]][p["role"]] += 1
         if ng < 500: return
         c, n = cc.most_common(1)[0]
-        fact("c.top", "champions", Y, "%s est le champion de l'année : joué dans %s des %d parties de %s." % (c, pct(n, ng, 1), ng, Y), "Picks, toutes les parties des ligues suivies.", "au moins 500 parties", ng, 3, "A", [c])
+        fact("c.top", "champions", Y, "%s est le champion de l'année dans les compétitions suivies : joué dans %s des %s parties de %s." % (c, pct(n, ng, 1), sp(ng), Y), "Picks, toutes les parties des ligues suivies.", "au moins 500 parties", ng, 3, "A", [c])
         ok = [(wilson(cw[c], n), c, n) for c, n in cc.items() if n >= 100]
         if ok:
             (lo, hi), c, n = max(ok, key=lambda x: x[0][0])
@@ -804,14 +820,14 @@ def _generate(P, Y, state):
         if CN:
             never = sorted(set(CN) - set(cc))
             if never:
-                fact("c.jamais", "champions", Y, "%d champion%s n'%s été joué%s dans aucune des %d parties de %s : %s." % (
-                    len(never), "s" if len(never) > 1 else "", "ont" if len(never) > 1 else "a", "s" if len(never) > 1 else "", ng, Y, ", ".join(never)),
+                fact("c.jamais", "champions", Y, "%d champion%s n'%s été joué%s dans aucune des %s parties des compétitions suivies en %s : %s." % (
+                    len(never), "s" if len(never) > 1 else "", "ont" if len(never) > 1 else "a", "s" if len(never) > 1 else "", sp(ng), Y, ", ".join(never)),
                      "Liste officielle des champions (Data Dragon) moins les champions vus en %s." % Y, "périmètre : ligues suivies + internationaux (pas les ligues mineures)", ng, 4, "A", never)
         else: hold("c.jamais", "Champions jamais joués", "liste Data Dragon injoignable")
         rare = [(p["k"], p, g) for g in G if g["y"] == Y and fin(g) for p in g["p"] if cc[p["C"]] <= 3 and p["key"] and p["k"] >= 12]
         if rare:
             k_, p, g = max(rare, key=lambda x: (x[0], x[2]["t"]))
-            fact("c.rare." + p["C"], "champions", Y, "%s n'a été joué que %d fois en %s… dont une partie à %d/%d/%d pour %s (%s, %s)." % (p["C"], cc[p["C"]], Y, p["k"], p["d"], p["a"], pid(p["key"]), LS.get(g["l"], g["l"]), dfr(g["t"])),
+            fact("c.rare." + p["C"], "champions", Y, "%s n'a été joué que %d fois en %s dans les compétitions suivies… dont une partie à %d/%d/%d pour %s (%s, %s)." % (p["C"], cc[p["C"]], Y, p["k"], p["d"], p["a"], pid(p["key"]), LS.get(g["l"], g["l"]), dfr(g["t"])),
                  "Nombre de parties du champion en %s + ligne du joueur." % Y, "champion joué 3 fois ou moins ; au moins 12 kills ; flux complet", cc[p["C"]], 3, "A", [p["key"], p["C"]])
         cam = roles.get("Camille")
         if cam and cam["SUP"] > cam["TOP"] and cam["SUP"] >= 50:
@@ -838,7 +854,7 @@ def _row(f):
     calc = f["calc"].strip(); calc += "" if calc.endswith((".", "…")) else "."
     cond = f["cond"].strip().rstrip(".")
     det = "%s Condition : %s. Échantillon : %s %s." % (calc, cond, sp(f["n"]), _unit(f["n"], f["src"]))
-    return [f["id"], f["fam"], f["txt"], det, f["n"], f["wow"], f["keys"]]
+    return [f["id"], f["fam"], _typo(f["txt"]), _typo(det), f["n"], f["wow"], f["keys"]]
 
 def _interest(f, Y):
     """Effet waouh d'abord ; à note égale, le tournoi en cours (faits « w. ») puis la robustesse."""
