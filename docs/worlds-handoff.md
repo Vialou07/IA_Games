@@ -95,6 +95,22 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 
 ---
 
+## 2 bis. Ajouts du 24/10 (v10 → v12)
+
+**Robot (`tools/`)** : `build_stats.py` remplit `FLAT` (toutes les parties à plat, côtés et vainqueurs corrigés) puis appelle des blocs indépendants. Chaque bloc est facultatif : une erreur est notée dans le journal, l'appli s'en passe.
+- `model_e.py`, `model_extras.py`, `lane_model.py`, `worlds_sim.py`, `model_c.py` : note d'impact par joueur corrigée de l'adversité et des ligues (`m`, incertitudes par 200 rééchantillonnages une fois par jour), phase de lane (`lane`), simulation des Worlds (`sim`), pronos figés au coup d'envoi et bilan du robot (`fiab`), bilan brut des ligues (`lgr`).
+- `rank_block.py` : classements par poste avec le pourquoi, « spécial Worlds », qui va gagner (`rk`).
+- `prematch.py` : clés des matchs à venir, seulement les faits testés, avec leur taux mesuré (`pm`). Le rapport du test (la règle top-jungle-mid, la forme, la draft…) est résumé dans l'appli derrière le « i ».
+- `facts_block.py` : faits « Le saviez-vous ? » (`fx`), publiés après 2 passages identiques.
+- `fiche_block.py` → `data/fiche.json` (rencontres détaillées entre titulaires, vis-à-vis, champions, forme, profil) ; `draft_block.py` + `draft_seed.json` → `data/draft.json` (bans et ordre des picks lus sur gol.gg, méta, picks et bans probables, matchups). Ces deux fichiers sont lus par l'appli à la demande (`loadAux`).
+- Flux : requêtes gzip, début de partie et pauses à l'image près, dragons et âme, niveaux, or et CS à 15:00 exacts, courbe d'or, premiers objectifs ; rattrapage des parties déjà en mémoire par tranches de `STATS_FLUX_MIN` minutes (clé `fl`).
+- `sched` : planning des Worlds vu par le robot, secours de l'appli quand l'API ne répond pas au téléphone.
+- État persistant : `data/model_state.json` (publié avec les stats).
+
+**Appli** : avant-match (clés, une ligne par poste, duel détaillé daté), direct (fil du match, draft avant/après, fearless entre deux manches), classements par poste avec le pourquoi, spécial Worlds, qui va gagner, fiche joueur « En bref » (âge et Worlds : constante `BIO`, Liquipedia et Leaguepedia croisés), vrais bans dans Stats › Champions, sursis avant l'élimination, « Revoir en VF », fluidité (seul l'onglet visible est dessiné tout de suite, animations hors écran en pause).
+
+**Tests** (dossier de travail, Playwright en émulation Pixel 7) : parcours complet avec ligue à 3 téléphones, écrans clés avec données locales interceptées, direct rejoué sur de vraies parties. Toujours : préprod, tests, puis prod ; `node --check` sur le script extrait ; monter `APP_VERSION`.
+
 ## 3. Sources externes et ce qui est vérifié
 
 | Source | Usage | État réel (vérifié le 23/10/2026) |
