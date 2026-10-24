@@ -2316,7 +2316,7 @@ const IMP=p=>SJ&&SJ.m&&SJ.m.p&&SJ.m.p[p.key];
 // rang du joueur parmi les titulaires des Worlds au même poste (note d'impact, ligues comprises) : « 3e/19 »
 const rkSup=n=>`${n}<sup>${n===1?"er":"e"}</sup>`;
 // rang net si la fourchette (rééchantillonnages) est étroite, sinon la fourchette : « 1er–4e » plutôt qu'un « 3e » trompeur
-const rkLabel=x=>x[5]-x[4]>=2?`${rkSup(x[4])}–${rkSup(x[5])}`:rkSup(x[2]);
+const rkLabel=x=>rkSup(x[2]);
 const rankTag=p=>{const x=p&&IMP(p);return x?`<i class="rkt" title="${x[5]-x[4]>=2?`entre le ${x[4]}${x[4]===1?"er":"e"} et le ${x[5]}e`:`${x[2]}${x[2]===1?"er":"e"}`} des ${x[3]} ${esc(ROLEP[p.role].replace(/^des /,""))} des Worlds (note d’impact, ligues comprises)">${rkLabel(x)}/${x[3]}</i>`:""};
 const PHI=x=>{const t=1/(1+.3275911*Math.abs(x)/Math.SQRT2),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x/2);return x>=0?(1+y)/2:(1-y)/2};
 const fxs=v=>(v>0?"+":"")+fx2(v);
@@ -3497,7 +3497,7 @@ function playerSheet(key,quiet){
         return `<div class="lane"><span class="rl">${SV2()?"Depuis "+esc(String(SJ.since||"2024").slice(0,4)):"Carrière"}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(p.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${t.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${T[opp].color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(o.id)}</b>
         <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face, KDA ${fx2(kdaV(x.ka,x.da,x.aa))} contre ${fx2(kdaV(x.kb,x.db,x.ab))}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`},12)
         +rkExp1(p.key,o.key)+(typeof encHTML==="function"?ablock("enc_"+p.key+"_"+o.key,()=>encData(p,o),encHTML(p,o,true),3):"")}}
-  const h=`<div class="bigwrap sm"><div class="bigcard">${pcard(p)}</div></div>${(x=>x?`<button class="rkbig frame hx" data-rkrole="${p.role}"><b>${rkLabel(x)}</b><span>${x[5]-x[4]>=2?`parmi les ${x[3]} ${esc(ROLEP[p.role].replace(/^des /,""))} des Worlds`:`des ${x[3]} ${esc(ROLEP[p.role].replace(/^des /,""))} des Worlds`}<small>${x[5]-x[4]>=2?`trop serré pour départager (note ${x[2]}${x[2]===1?"re":"e"}) · `:""}note d’impact, ligues comprises · voir le classement et le pourquoi ›</small></span></button>`:"")(IMP(p))}${rkBriefHTML(p)}${duel}${flPlayerHTML(p)}${lsvSheet([p.key])}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}${typeof ficheDetailsHTML==="function"?ablock("fjd_"+p.key,()=>ficheData(p),ficheDetailsHTML(p),3):""}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
+  const h=`<div class="bigwrap sm"><div class="bigcard">${pcard(p)}</div></div>${(x=>x?`<button class="rkbig frame hx" data-rkrole="${p.role}"><b>${rkLabel(x)}</b><span>des ${x[3]} ${esc(ROLEP[p.role].replace(/^des /,""))} des Worlds<small>${x[5]-x[4]>=2?`au coude-à-coude, entre le ${x[4]}${x[4]===1?"er":"e"} et le ${x[5]}e · `:""}note d’impact, ligues comprises · voir le classement et le pourquoi ›</small></span></button>`:"")(IMP(p))}${rkBriefHTML(p)}${duel}${flPlayerHTML(p)}${lsvSheet([p.key])}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}${typeof ficheDetailsHTML==="function"?ablock("fjd_"+p.key,()=>ficheData(p),ficheDetailsHTML(p),3):""}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
   setSheet(h,quiet);
 }
 
@@ -4273,7 +4273,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.10, 24/10/2026";
+const APP_VERSION="v12.11, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
