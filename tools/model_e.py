@@ -25,7 +25,7 @@ import json, gzip, math, os, datetime, importlib.util, random, bisect
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-INTL = ("worlds", "msi", "first_stand")
+INTL = ("worlds", "msi", "first_stand", "ewc_lol")
 HOME = {"lck": "LCK", "lpl": "LPL", "lec": "LEC", "lcs": "LCS", "lta_n": "LCS", "cblol-brazil": "CBLOL", "lta_s": "CBLOL",
         "lcp": "LCP", "pcs": "PCS", "vcs": "VCS"}
 ROLES = ("TOP", "JGL", "MID", "BOT", "SUP")

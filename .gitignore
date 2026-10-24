@@ -3,3 +3,4 @@ data/stats.json
 data/stats_log.txt
 data/cache.json.gz
 __pycache__/
+data/model_state.json
