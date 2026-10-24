@@ -402,8 +402,9 @@ def build(C, teams):
         W.update(winners(C, mid) if flip else w)
     LS = {"worlds": "Worlds", "msi": "MSI", "first_stand": "First Stand", "americas_cup": "Americas Cup", "ewc_lol": "EWC", "kespa_cup": "KeSPA"}
 
-    # lignes par joueur (nos 95), par partie
+    # lignes par joueur (nos 95), par partie ; FLAT : toutes les parties retenues, à plat, pour les blocs d'analyse (fiche, draft)
     prow = {}   # clé joueur -> [lignes]
+    FLAT.clear()
     duels, champs, mastery, tour, recent = {}, {}, {}, {"games": [], "rows": []}, {}
     tg = {t["id"]: [] for t in teams}   # parties 2026 par équipe
     cover = {}
@@ -426,6 +427,10 @@ def build(C, teams):
                 tid = our_team.get(sides[sd][0])
                 if tid and main_side(KS, sd, tid): main_ok.add((mid, tid))
             rows = {}
+            tm = {t[0]: t[1] for t in d["tm"]}
+            FLAT.append({"g": g[0], "m": mid, "t": t_, "l": e["l"], "op": op, "bn": e.get("bn", ""), "bo": e["bo"], "n": g[1],
+                         "b": sides["b"][0], "r": sides["r"][0], "bc": tm.get(sides["b"][0]), "rc": tm.get(sides["r"][0]), "w": wid,
+                         "min": s["min"], "ks": KS, "pid": [q[0] for q in P], "nm": [q[1] for q in P], "rows": rows})
             for i, pp in enumerate(P):
                 sd = "b" if i < 5 else "r"; me, opp = sides[sd], sides["r" if sd == "b" else "b"]
                 foe = next((q for q in (P[5:] if sd == "b" else P[:5]) if q[2] == pp[2]), None)
@@ -549,6 +554,7 @@ def build(C, teams):
             "cover": cover, "errors": [], "stale": {}}
 
 MS = {}   # état des modèles, chargé et sauvé par main()
+FLAT = []   # parties à plat (remplie par build) : {g, m, t, l, op, bn, bo, n, b, r, bc, rc, w, min, ks, pid, nm, rows{0..9}}
 def models_block(C, teams, W):
     """Note d'impact (avec 200 rééchantillonnages une fois par jour), phase de lane, simulation des Worlds, pronos figés au
     coup d'envoi, fiabilité du modèle et bilan brut des ligues. Chaque morceau est facultatif : en cas d'erreur, l'appli s'en passe.
