@@ -452,6 +452,7 @@ nav.tabs button{position:relative}
 .rr span{display:flex;align-items:center;gap:6px}.rr span.r{justify-content:flex-end}.rr b{font-family:var(--disp);font-size:16px}.rr i{font-style:normal;font-size:11.5px;color:var(--muted);text-align:center}.rr .lv{font-style:normal;color:var(--red);font-weight:800}
 .tcard .tf{display:flex;gap:3px}.tcard .tf i{font-style:normal;font-size:10px;font-weight:800;width:16px;height:16px;display:grid;place-items:center;border-radius:4px;background:rgba(10,200,185,.18);color:var(--teal)}.tcard .tf i.l{background:rgba(232,64,87,.16);color:var(--red)}
 .tcard .tn2{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}.tcard .tn2 b{color:var(--text,#F0E6D2);font-size:12.5px}.tcard .lv{font-style:normal;color:var(--red);font-weight:800}
+.lvhd .vod{margin-left:auto;font-size:12px;font-weight:700;color:var(--teal);border:1px solid rgba(10,200,185,.35);border-radius:999px;padding:3px 9px;white-space:nowrap}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
@@ -2181,7 +2182,10 @@ async function matchGames(m){
       return {id:mt.esportsTeamId,our:ourOf(mt.esportsTeamId),k:ft.totalKills,g:ft.totalGold,to:ft.towers,in:ft.inhibitors,ba:ft.barons,dragons:ft.dragons||[],
         // champion et stats lus sur la même ligne du flux que le joueur (participantId)
         p:mt.participantMetadata.map(pm=>{const x=fp[pm.participantId]||{},d=dp[pm.participantId]||{};return {sn:pm.summonerName,c:pm.championId,k:x.kills||0,d:x.deaths||0,a:x.assists||0,cs:x.creepScore||0,gold:x.totalGold||0,ds:d.championDamageShare}})}};
-    return {num:g.number,fin:fe.gameState==="finished",mins:(Date.parse(fe.rfc460Timestamp)-start)/60000,b:side("blue"),r:side("red")};
+    // rediffusion : la VF (sinon l'anglais) au début exact de la partie
+    const v=(g.vods||[]).find(v=>v.locale==="fr-FR"&&v.provider==="youtube")||(g.vods||[]).find(v=>v.locale==="en-US"&&v.provider==="youtube");
+    return {num:g.number,fin:fe.gameState==="finished",mins:(Date.parse(fe.rfc460Timestamp)-start)/60000,b:side("blue"),r:side("red"),
+      vod:v?[v.parameter,Math.round((v.startMillis||0)/1000),v.locale==="fr-FR"?"VF":"VO"]:null};
   }));
   // vainqueur de chaque partie : l'API ne donne que le score de la série. Même règle que le robot :
   // état final (seule l'équipe qui a détruit un inhibiteur peut finir), sous la contrainte du score de la série
@@ -2205,7 +2209,7 @@ function renderGames(m){return D=>{
   return D.games.map(x=>{
     if(x.none)return `<div class="note">Partie ${x.num} : stats pas encore publiées par LoL Esports.</div>`;
     const W=x.win===x.b.id?x.b:x.r;
-    return `<div class="gsheet frame hx"><div class="lvhd"><span class="badge">Partie ${x.num}</span><b>${dur(x.mins)}</b><span class="small">${W.our?`Victoire ${esc(T[W.our].id)}`:""}</span></div>
+    return `<div class="gsheet frame hx"><div class="lvhd"><span class="badge">Partie ${x.num}</span><b>${dur(x.mins)}</b><span class="small">${W.our?`Victoire ${esc(T[W.our].id)}`:""}</span>${x.vod?`<a class="vod" href="https://www.youtube.com/watch?v=${encodeURIComponent(x.vod[0])}&t=${x.vod[1]}s" target="_blank" rel="noopener">Revoir en ${x.vod[2]}</a>`:""}</div>
      <div class="lvsc"><div class="lvt">${logo(x.b.our,34)}<b>${esc(T[x.b.our]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${x.b.k}</b><i>kills</i><b>${x.r.k}</b></div><div class="lvt">${logo(x.r.our,34)}<b>${esc(T[x.r.our]?.id||"")}</b><span class="side r">rouge</span></div></div>
      <div class="lvobj">${[["Or",fx1(x.b.g/1000)+" k",fx1(x.r.g/1000)+" k"],["Tours",x.b.to,x.r.to],["Dragons",`${x.b.dragons.length} ${drg(x.b.dragons)}`,`${drg(x.r.dragons)} ${x.r.dragons.length}`],["Barons",x.b.ba,x.r.ba],["Inhibiteurs",x.b.in,x.r.in]].map(([l,a,b])=>`<div><span>${a}</span><em>${l}</em><span>${b}</span></div>`).join("")}</div>
      <div class="lvp"><div>${gsh(x.b.our,false)}${x.b.p.map(pp=>prow(pp,x.b,false)).join("")}</div><div>${gsh(x.r.our,true)}${x.r.p.map(pp=>prow(pp,x.r,true)).join("")}</div></div>
