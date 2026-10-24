@@ -4,7 +4,8 @@
 Plus de Leaguepedia (limité à une requête par minute, bloqué sur les téléphones) :
 - planning de chaque ligue (getSchedule) et détails des matchs terminés (getEventDetails) ;
 - flux de stats de chaque partie (feed.lolesports.com) : début, 15e minute, fin, et détails de fin
-  (part des dégâts, participation aux kills, balises).
+  (part des dégâts, participation aux kills, balises) ; patch, dragons par type, niveaux, courbe d'or et
+  premiers objectifs (voir flux_extras), à 0 requête de plus pour les nouvelles parties sauf les premiers objectifs.
 L'API ne dit pas qui a gagné chaque partie : on le déduit de l'état final (seule l'équipe qui a détruit
 un inhibiteur peut finir) sous la contrainte du score de la série (la dernière manche revient au vainqueur).
 
@@ -53,10 +54,13 @@ def fetch(url, key=False):
     last = None
     for a in range(10):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, **({"x-api-key": KEY} if key else {})})
+            # gzip : une fenêtre du flux passe de 137 Ko à 3 Ko, les détails de fin de 239 Ko à 4 Ko
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "gzip", **({"x-api-key": KEY} if key else {})})
             with _lock: NQ[0] += 1
             with urllib.request.urlopen(req, timeout=30) as r:
-                return None if r.status == 204 else json.load(r)
+                if r.status == 204: return None
+                b = r.read()
+                return json.loads(gzip.decompress(b) if r.headers.get("Content-Encoding") == "gzip" else b)
         except urllib.error.HTTPError as e:
             if e.code in (400, 403, 404): return None   # fenêtre hors partie, ou pas de flux pour ce match
             last = e
@@ -113,33 +117,37 @@ def fetch_details(C, mids):
             if d: C["details"][mid] = d
 
 SEC = datetime.timedelta(seconds=1)
-def timing(gid, first, end):
+def timing(gid, first, end, keep=None, step=120):
     """Temps de jeu réel, pauses retirées. Renvoie (début, minutes de jeu, secondes de pause, instant de la 15e minute de jeu).
-    Pendant une pause, le flux marque ses images « paused », ou n'en émet plus et renvoie les dernières, antérieures à l'instant demandé."""
+    Début = première image où l'or n'est plus nul : 500 par joueur au 0:00 du chrono (à 1 s près sur gol.gg, 14 parties des Worlds 2026 ;
+    l'ancien repère, or > 5 000 moins 49 s, se trompait de -30 à +5 s). Une pause dès le 0:00 est retirée comme les autres.
+    Pendant une pause, le flux marque ses images « paused », ou n'en émet plus et renvoie les dernières, antérieures à l'instant demandé.
+    step : une image toutes les step secondes pour repérer les pauses (30 aux Worlds : une pause de 50 s passait entre deux images à 2 min).
+    keep (dict) reçoit les fenêtres déjà prises, les instants échantillonnés et les pauses, pour flux_extras."""
     seen = {}
     def frames(t):
         k = iso10(t)
         if k not in seen: seen[k] = (feed("window/%s?startingTime=%s" % (gid, k)) or {}).get("frames") or []
         return seen[k]
-    def gold(t):
-        fr = frames(t)
-        return fr[0]["blueTeam"]["totalGold"] + fr[0]["redTeam"]["totalGold"] if fr else None
+    gold = lambda f: f["blueTeam"]["totalGold"] + f["redTeam"]["totalGold"]
+    srt = lambda fr: sorted(fr, key=lambda f: ts(f["rfc460Timestamp"]))
     def paused(t):
         fr = frames(t)
         if not fr: return True
         return fr[-1]["gameState"] == "paused" or (t - ts(fr[-1]["rfc460Timestamp"])).total_seconds() > 20
-    # début : l'or passe 5 000 de 40 à 64 s après 0:00 (médiane 49 s, mesuré sur les Worlds 2026).
-    # S'il est encore à 5 000 au bout de 75 s, c'est une attente ou un écran de chargement : on recale.
-    start = first
-    if (end - first).total_seconds() > 300 and (gold(first + 75 * SEC) or 0) <= 5000:
-        lo, hi = first + 75 * SEC, min(end, first + datetime.timedelta(minutes=60))
+    # début : si le flux commence par l'écran de chargement (or nul), dichotomie sur les fenêtres de 10 s
+    start, fr = first, frames(first)
+    if not any(gold(f) for f in fr):
+        lo, hi = first, min(end, first + datetime.timedelta(minutes=60))
         while (hi - lo).total_seconds() > 10:
-            mid = lo + (hi - lo) / 2
-            if (gold(mid) or 0) > 5000: hi = mid
+            mid = lo + (hi - lo) / 2; fm = frames(mid)
+            if fm and gold(fm[-1]) > 0: hi = mid
             else: lo = mid
-        start = hi - 49 * SEC
-    # une image toutes les 2 minutes (les pauses techniques durent plusieurs minutes), puis début et fin de chaque pause à 10 s près
-    T = [start + (60 + 120 * k) * SEC for k in range(max(0, int((end - start).total_seconds() - 90) // 120 + 1))]
+        fr = frames(lo) + frames(hi)
+    start = next((ts(f["rfc460Timestamp"]) for f in srt(fr) if gold(f) > 0), start)
+    # une image toutes les step secondes, puis début et fin de chaque pause à 10 s près, enfin à l'image près
+    T, t = [], start + min(60, step) * SEC
+    while t <= end - 30 * SEC: T.append(t); t += step * SEC
     st = [paused(t) for t in T]
     pauses, i = [], 0
     while i < len(T):
@@ -151,18 +159,23 @@ def timing(gid, first, end):
             mid = lo + (hi - lo) / 2
             if paused(mid): hi = mid
             else: lo = mid
-        ps = hi
+        fr = srt(frames(lo) + frames(hi))   # première image « paused », sinon dernière image avant le silence
+        ps = next((ts(f["rfc460Timestamp"]) for f in fr if f["gameState"] == "paused"), ts(fr[-1]["rfc460Timestamp"]) if fr else hi)
+        ps = max(ps, start)
         lo, hi = T[j], (T[j + 1] if j + 1 < len(T) else end)   # reprise du jeu
         while (hi - lo).total_seconds() > 10:
             mid = lo + (hi - lo) / 2
             if paused(mid): lo = mid
             else: hi = mid
-        if (hi - ps).total_seconds() >= 20: pauses.append((ps, hi))
+        pe = next((ts(f["rfc460Timestamp"]) for f in srt(frames(lo) + frames(hi))
+                   if f["gameState"] != "paused" and (ts(f["rfc460Timestamp"]) - ps).total_seconds() > 1), hi)
+        if (pe - ps).total_seconds() >= 3: pauses.append((ps, pe))
         i = j + 1
     pz = sum((b - a).total_seconds() for a, b in pauses)
     t15 = start + datetime.timedelta(minutes=15)
     for a, b in pauses:
         if a < t15: t15 += b - a
+    if keep is not None: keep.update(frames=frames, T=T, st=st, pauses=pauses)
     return start, round(((end - start).total_seconds() - pz) / 60, 2), round(pz), t15
 
 def summarize(gid, want_details, want_timing=False):
@@ -179,14 +192,19 @@ def summarize(gid, want_details, want_timing=False):
     fe = we["frames"][-1]; end = ts(fe["rfc460Timestamp"])
     if fe["gameState"] != "finished" and recent: return None   # partie à peine finie : on réessaiera au prochain passage
     wall = round((end - start).total_seconds() / 60, 2)
-    tm = timing(gid, start, end) if want_timing else None
+    kp = {}
+    tm = timing(gid, start, end, kp, 30 if gid in DENSE else 120) if want_timing else None
     if tm: start, mins, pz, t15 = tm
     else: mins, pz, t15 = wall, None, start + datetime.timedelta(minutes=15)
-    w15 = feed("window/" + gid + "?startingTime=" + iso10(t15)) if mins > 16 else None
-    f15 = w15["frames"][0] if w15 and w15.get("frames") else None
+    fx = flux_more(start, kp, t15, mins, fe, md) if tm else {}
+    if "q" in fx:   # or et CS sur l'image exacte de 15:00 (écart d'or à 15 min : médiane 0 contre gol.gg, 52 avec la première image de la fenêtre)
+        p15 = {i + 1: {"totalGold": x[4], "creepScore": x[5]} for i, x in enumerate(fx["q"])}
+    else:
+        w15 = feed("window/" + gid + "?startingTime=" + iso10(t15)) if mins > 16 else None
+        f15 = w15["frames"][0] if w15 and w15.get("frames") else None
+        p15 = {p["participantId"]: p for p in ([*f15["blueTeam"]["participants"], *f15["redTeam"]["participants"]] if f15 else [])}
     det = feed("details/" + gid + "?startingTime=" + iso10(t_end)) if want_details else None
     dp = {p["participantId"]: p for p in (det["frames"][-1]["participants"] if det and det.get("frames") else [])}
-    p15 = {p["participantId"]: p for p in ([*f15["blueTeam"]["participants"], *f15["redTeam"]["participants"]] if f15 else [])}
     def team(t, mt):
         return [mt["esportsTeamId"], t["totalKills"], t["totalGold"], t["towers"], t["inhibitors"], t["barons"], len(t["dragons"])]
     P = []
@@ -202,17 +220,21 @@ def summarize(gid, want_details, want_timing=False):
                       round(d["championDamageShare"], 4) if "championDamageShare" in d else None, d.get("wardsPlaced"), d.get("wardsDestroyed")])
     out = {"s": start.strftime("%Y-%m-%dT%H:%M:%S"), "fin": fe["gameState"] == "finished", "min": mins, "wmin": wall,
            "b": team(fe["blueTeam"], md["blueTeamMetadata"]), "r": team(fe["redTeam"], md["redTeamMetadata"]), "p": P}
-    if tm: out["tv"] = 1; out["pz"] = pz   # temps de jeu mesuré, pauses retirées
+    if tm: out["tv"] = 1; out["pz"] = pz; out["f"] = fx   # temps de jeu mesuré, pauses retirées ; données du flux
     return out
 
 def upgrade_timing(gid, s):
     """Partie déjà résumée en temps réel : on mesure le temps de jeu et on reprend l'image de la 15e minute de jeu."""
     first = ts(s["s"] + "Z"); end = first + datetime.timedelta(minutes=s.get("wmin", s["min"]))
-    start, mins, pz, t15 = timing(gid, first, end)
-    w15 = feed("window/" + gid + "?startingTime=" + iso10(t15)) if mins > 16 else None
-    f15 = w15["frames"][0] if w15 and w15.get("frames") else None
-    p15 = {p["participantId"]: p for p in ([*f15["blueTeam"]["participants"], *f15["redTeam"]["participants"]] if f15 else [])}
-    s = dict(s, s=start.strftime("%Y-%m-%dT%H:%M:%S"), min=mins, wmin=s.get("wmin", s["min"]), tv=1, pz=pz, p=[list(q) for q in s["p"]])
+    kp = {}
+    start, mins, pz, t15 = timing(gid, first, end, kp, 30 if gid in DENSE else 120)
+    fx = flux_more(start, kp, t15, mins, gid=gid)
+    if "q" in fx: p15 = {i + 1: {"totalGold": x[4], "creepScore": x[5]} for i, x in enumerate(fx["q"])}   # image exacte de 15:00
+    else:
+        w15 = feed("window/" + gid + "?startingTime=" + iso10(t15)) if mins > 16 else None
+        f15 = w15["frames"][0] if w15 and w15.get("frames") else None
+        p15 = {p["participantId"]: p for p in ([*f15["blueTeam"]["participants"], *f15["redTeam"]["participants"]] if f15 else [])}
+    s = dict(s, s=start.strftime("%Y-%m-%dT%H:%M:%S"), min=mins, wmin=s.get("wmin", s["min"]), tv=1, pz=pz, p=[list(q) for q in s["p"]], f=fx)
     for i, q in enumerate(s["p"]):   # participants 1 à 10 dans l'ordre (5 bleus puis 5 rouges)
         x = p15.get(i + 1); q[9], q[10] = (x["totalGold"], x["creepScore"]) if x else (None, None)
     return s
@@ -241,6 +263,239 @@ def needs_timing(C, gid, mid, our_players):
     if "p" not in s or s.get("tv"): return False
     e = C["events"].get(mid) or {}
     return e.get("l") in ("worlds", "msi", "first_stand", "ewc_lol") or (e.get("t", "")[:4] == YEAR and any(q[0] in our_players for q in s["p"]))
+
+# ---------- données du flux gardées : patch, dragons par type, niveaux, 15:00, courbe d'or, premiers objectifs ----------
+FLUX_MIN = float(os.environ.get("STATS_FLUX_MIN", "10"))   # rattrapage des parties déjà en mémoire : minutes au plus par passage
+DENSE = set()   # parties des Worlds 2026 : une image toutes les 30 s dans timing() (rempli par main)
+DTYP = {"ocean": "o", "infernal": "i", "mountain": "m", "cloud": "c", "hextech": "h", "chemtech": "t", "elder": "e"}
+def pl_(f): return sorted(f["blueTeam"]["participants"] + f["redTeam"]["participants"], key=lambda p: p["participantId"])
+def cnt_(f):   # compteurs qui ne reculent jamais
+    return [p[k] for p in pl_(f) for k in ("kills", "deaths", "assists", "level")] + \
+           [t[k] if k != "dragons" else len(t[k]) for t in (f["blueTeam"], f["redTeam"]) for k in ("towers", "inhibitors", "barons", "dragons")]
+def fresh(fr, prev=None):
+    """Images dans l'ordre de l'heure (pas du texte : « …:06Z », sans millisecondes, passerait après « …:06.900Z »), après prev,
+    sans image où un compteur recule (garde-fou : aucune sur 44 156 images des Worlds 2026 une fois triées par l'heure)."""
+    out = []
+    for f in sorted(fr, key=lambda f: ts(f["rfc460Timestamp"])):
+        last = out[-1] if out else prev
+        if len(pl_(f)) != 10: continue
+        if last and (ts(f["rfc460Timestamp"]) <= ts(last["rfc460Timestamp"]) or any(b < a for a, b in zip(cnt_(last), cnt_(f)))): continue
+        out.append(f)
+    return out
+def soul_(dr):   # âme = 4e dragon élémentaire d'une équipe (l'ancestral ne compte pas) : son type, sinon None
+    el = [d for d in dr if d not in ("elder", "e")]
+    return el[3] if len(el) >= 4 else None
+EVS = (("fb", lambda f: sum(p["deaths"] for p in pl_(f)) > 0),                                # premier sang (première mort)
+       ("ft", lambda f: f["blueTeam"]["towers"] + f["redTeam"]["towers"] > 0),                 # première tour
+       ("fd", lambda f: len(f["blueTeam"]["dragons"]) + len(f["redTeam"]["dragons"]) > 0),     # premier dragon
+       ("fn", lambda f: f["blueTeam"]["barons"] + f["redTeam"]["barons"] > 0),                 # premier Baron Nashor
+       ("so", lambda f: bool(soul_(f["blueTeam"]["dragons"]) or soul_(f["redTeam"]["dragons"]))))   # âme
+
+def flux_extras(start, kp, fe, md, t15, mins):
+    """Ce que le flux donne déjà et que le robot jetait. Temps en secondes de chrono : pauses retirées, arrondi vers le bas comme l'horloge du jeu
+    (à 1 s près de gol.gg). Joueurs en index 0 à 9 (participants 1 à 10 : 5 bleus puis 5 rouges, comme p), côtés 0 bleu 1 rouge.
+    pv  patch (« 16.20 ») ; lv niveaux finaux ;
+    dr  dragons de chaque équipe dans l'ordre, [bleus, rouges] : o océan, i infernal, m montagne, c nuages, h hextech, t chemtech, e ancestral ;
+    q   à 15:00 de chrono, par joueur : [kills, morts, assists, niveau, or, CS] (parties de plus de 16 min) ;
+    c   courbe : une image par minute (images de timing), puis l'image finale : [minute de chrono, or bleu, or rouge, kills bleus, kills rouges,
+        tours bleues, tours rouges, dragons bleus, dragons rouges, Barons bleus, Barons rouges] ;
+    e   premiers objectifs, par dichotomie sur les fenêtres de 10 s entre deux images de timing (2 à 4 requêtes chacun) :
+        fb [s, tueur, victime, [assistants]] (tueur -1 = exécution), ft et fn [s, côté], fd et so (âme) [s, côté, type]."""
+    frames, pauses = kp["frames"], kp["pauses"]
+    def clock(t):   # 53 premiers objectifs sur 55 à la seconde affichée par gol.gg, les 2 autres à 1 s (14 parties des Worlds 2026)
+        x = (t - start).total_seconds()
+        for a, b in pauses:
+            if a < t: x -= (min(b, t) - a).total_seconds()
+        return max(0, int(x + 0.1))
+    def last(t):   # dernière image valable de la fenêtre de 10 s qui commence à t
+        fr = fresh(frames(t)); return fr[-1] if fr else None
+    B, R = fe["blueTeam"], fe["redTeam"]
+    f = {"pv": ".".join(str(md.get("patchVersion") or "").split(".")[:2]),
+         "dr": ["".join(DTYP.get(d, "?") for d in t["dragons"]) for t in (B, R)], "lv": [p["level"] for p in pl_(fe)]}
+    if mins > 16:   # dernière image à 15:00 de chrono ou avant
+        fr = [x for x in fresh(frames(t15 - 10 * SEC) + frames(t15)) if ts(x["rfc460Timestamp"]) <= t15]
+        if fr: f["q"] = [[p["kills"], p["deaths"], p["assists"], p["level"], p["totalGold"], p["creepScore"]] for p in pl_(fr[-1])]   # fresh : 10 joueurs
+    smp = [(t, last(t)) for t, p in zip(kp["T"], kp["st"]) if not p]
+    smp = [(t, x) for t, x in smp if x and x["blueTeam"]["totalGold"]]
+    end = ts(fe["rfc460Timestamp"])
+    kl = lambda x, sd: sum(p["kills"] for p in x[sd]["participants"])
+    f["c"] = [[round(clock(ts(x["rfc460Timestamp"])) / 60, 1), x["blueTeam"]["totalGold"], x["redTeam"]["totalGold"], kl(x, "blueTeam"), kl(x, "redTeam"),
+               x["blueTeam"]["towers"], x["redTeam"]["towers"], len(x["blueTeam"]["dragons"]), len(x["redTeam"]["dragons"]), x["blueTeam"]["barons"], x["redTeam"]["barons"]]
+              for x in [x for t, x in smp if round((t - start).total_seconds()) % 60 == 0] + [fe]]
+    def find(lo, hi, pred):
+        """Première image où pred devient vrai entre l'instant lo (faux) et hi (vrai) : (image d'avant, image)."""
+        a, b = 1, max(1, -(-int((hi - lo).total_seconds()) // 10))
+        while a < b:
+            m = (a + b) // 2; x = last(lo + m * 10 * SEC)
+            if x and pred(x): b = m
+            else: a = m + 1
+        prev = last(lo + (a - 1) * 10 * SEC)
+        for x in fresh(frames(lo + a * 10 * SEC), prev):
+            if pred(x): return prev, x
+            prev = x
+        x = last(lo + a * 10 * SEC)
+        return (prev, x) if x and pred(x) else (None, None)
+    e, pts = {}, smp + [(end, fe)]
+    for name, pred in EVS:
+        k = next((i for i, (t, x) in enumerate(pts) if pred(x)), None)
+        if k is None: continue
+        prev, x = find(pts[k - 1][0] if k else start, pts[k][0], pred)
+        if not x: continue
+        t, b, r = clock(ts(x["rfc460Timestamp"])), x["blueTeam"], x["redTeam"]
+        if name == "fb":
+            P0, P1 = pl_(prev) if prev else [{"kills": 0, "deaths": 0, "assists": 0}] * 10, pl_(x)
+            V = [i for i in range(10) if P1[i]["deaths"] > P0[i]["deaths"]]
+            if not V: continue
+            v = V[0]; foe = lambda i: i // 5 != v // 5
+            e["fb"] = [t, next((i for i in range(10) if foe(i) and P1[i]["kills"] > P0[i]["kills"]), -1), v,
+                       [i for i in range(10) if foe(i) and P1[i]["assists"] > P0[i]["assists"]]]
+        elif name in ("ft", "fn"): e[name] = [t, 0 if b[{"ft": "towers", "fn": "barons"}[name]] else 1]
+        elif name == "fd": sd = 0 if b["dragons"] else 1; e[name] = [t, sd, DTYP.get((b, r)[sd]["dragons"][0], "?")]
+        else: sd = 0 if soul_(b["dragons"]) else 1; e[name] = [t, sd, DTYP.get(soul_((b, r)[sd]["dragons"]), "?")]
+    f["e"] = e
+    return f
+
+def flux_more(start, kp, t15, mins, fe=None, md=None, gid=None):
+    """flux_extras sans jamais faire échouer la partie : en cas de coupure {"x": 1}, repris par le rattrapage."""
+    try:
+        if fe is None:   # partie déjà en mémoire : image finale, une requête
+            now = datetime.datetime.now(datetime.timezone.utc)
+            we = feed("window/%s?startingTime=%s" % (gid, iso10(min(start + datetime.timedelta(hours=6), now - datetime.timedelta(seconds=60)))))
+            if not we or not we.get("frames"): return {"x": 1}
+            fe, md = we["frames"][-1], we["gameMetadata"]
+        return flux_extras(start, kp, fe, md, t15, mins)
+    except Exception as e:
+        log("  flux", gid or "", type(e).__name__, str(e)[:100]); return {"x": 1}
+
+def flux_fail(s):   # échec : 3 essais au plus, un par jour
+    return dict(s, f={"x": (s.get("f") or {}).get("x", 0) + 1, "at": time.strftime("%Y-%m-%d")})
+def flux_upgrade(gid, s):
+    """Partie déjà en mémoire sans les données du flux : début et pauses remesurés (timing), image de 15:00, puis flux_extras.
+    Environ 45 requêtes (images toutes les 2 min), 80 aux Worlds (toutes les 30 s). Renvoie la partie mise à jour."""
+    w0 = feed("window/" + gid) or {}
+    fr = w0.get("frames") or []
+    if not fr: return flux_fail(s)
+    first = ts(next((f for f in fr if f["blueTeam"]["totalGold"] > 0), fr[0])["rfc460Timestamp"])
+    now = datetime.datetime.now(datetime.timezone.utc)
+    we = feed("window/%s?startingTime=%s" % (gid, iso10(min(first + datetime.timedelta(hours=6), now - datetime.timedelta(seconds=60))))) or {}
+    if not we.get("frames"): return flux_fail(s)
+    fe = we["frames"][-1]; kp = {}
+    start, mins, pz, t15 = timing(gid, first, ts(fe["rfc460Timestamp"]), kp, 30 if gid in DENSE else 120)
+    f = flux_more(start, kp, t15, mins, fe, w0.get("gameMetadata") or {}, gid)
+    if "x" in f: return flux_fail(s)
+    s = dict(s, f=f)
+    # début et pauses à l'image près : durée et image de 15:00 remesurées (écart au plus de quelques secondes, sauf pause manquée avant)
+    if abs(mins - s["min"]) <= 5:
+        s.update(s=start.strftime("%Y-%m-%dT%H:%M:%S"), min=mins, pz=pz, tv=1)
+        if "q" in f:
+            s["p"] = [list(q) for q in s["p"]]
+            for q, x in zip(s["p"], f["q"]): q[9], q[10] = x[4], x[5]
+    return s
+
+def flux_catchup(C, our_players):
+    """Rattrapage des parties déjà en mémoire : Worlds 2026 d'abord, puis la saison 2026 de nos titulaires, des plus récentes aux plus
+    anciennes. Au plus FLUX_MIN minutes par passage et jamais après DEADLINE : la suite au passage suivant. 3 essais par partie, un par jour."""
+    E, D, G = C["events"], C["details"], C["games"]
+    first, rest, today = [], [], time.strftime("%Y-%m-%d")
+    for t, m in sorted(((E[m]["t"], m) for m in D if m in E), reverse=True):
+        if t[:4] != YEAR: continue
+        for g in D[m]["g"]:
+            s = G.get(g[0]) or {}; f = s.get("f") or {"x": 0}
+            if "p" not in s or "x" not in f or f["x"] >= 3 or f.get("at") == today: continue
+            if g[0] in DENSE: first.append(g[0])
+            elif any(q[0] in our_players for q in s["p"]): rest.append(g[0])
+    todo = first + rest
+    if not todo: return
+    end = min(DEADLINE, time.time() + FLUX_MIN * 60); n0 = NQ[0]; t0 = time.time()
+    def one(gid):
+        if time.time() > end: return gid, None
+        try: return gid, flux_upgrade(gid, G[gid])
+        except Exception as e: log("  flux", gid, type(e).__name__, str(e)[:100]); return gid, flux_fail(G[gid])
+    ok = ko = 0
+    with cf.ThreadPoolExecutor(10) as ex:
+        for gid, s in ex.map(one, todo):
+            if s is None: continue
+            G[gid] = s
+            if "x" in s["f"]: ko += 1
+            else: ok += 1
+    log("données du flux : %d parties reprises, %d en échec, %d restantes (%d requêtes, %d s)" % (ok, ko, len(todo) - ok - ko, NQ[0] - n0, time.time() - t0))
+
+def flux_block(C, teams):
+    """Clé « fl » de stats.json, tirée des données du flux (flux_extras) et de FLAT (côtés et vainqueurs corrigés par build).
+    Temps en secondes de chrono, côtés 0 bleu 1 rouge, joueurs en index 0 à 9 (5 bleus puis 5 rouges).
+    w  Worlds 2026, par partie : {gid: [match, manche, équipe bleue, équipe rouge, côté vainqueur, minutes, patch, [dragons bleus, rouges],
+       niveaux finaux (10), joueurs (10 : clé de nos titulaires, sinon pseudo), [fb, ft, fd, fn, so] (null si absent, format de flux_extras),
+       courbe [[minute, or bleu - or rouge, kills bleus, kills rouges], …]]}
+    p  saison 2026, par titulaire : [parties avec l'image de 15:00, kills, morts, assists avant 15:00, kills, morts, assists de ces parties,
+       somme des écarts de niveau à 15:00 face au vis-à-vis, parties avec premier sang connu, premiers sangs faits, subis, en assistant]
+    r  même chose pour tous les joueurs de ces parties, par poste puis ligue (« all » = toutes) : [lignes, kills, morts, assists avant 15:00, kills, morts, assists]
+    t  saison 2026, par équipe : [parties avec premiers objectifs, victoires, premiers sangs, dont gagnées, premières tours, dont gagnées,
+       premiers dragons, dont gagnées, parties avec un Baron, premiers Barons, dont gagnées, parties avec dragons connus, victoires,
+       âmes, dont gagnées, âmes adverses, dont gagnées, parties avec un ancestral, dont gagnées]
+    g  vu du vainqueur, saison 2026 (« 2026 ») puis par ligue (« worlds » = Worlds 2026, « lck »…) : [parties avec premier sang, gagnées par
+       l'équipe du premier sang, avec première tour, gagnées, avec premier dragon, gagnées, avec Baron, gagnées par l'équipe du premier Baron,
+       parties avec dragons connus, avec âme, gagnées par l'équipe de l'âme, avec ancestral, gagnées par une équipe qui l'a eu]
+    Premier sang sur exécution (tueur -1) : compté dans les parties, attribué à personne."""
+    G, R = C["games"], C["roster"]
+    key_team = {p["key"]: t["id"] for t in teams for p in t["players"]}
+    def tid(x, sd):   # notre équipe de ce côté : au moins 3 de ses titulaires, sinon son identifiant (pas à la KeSPA Cup : académies)
+        c = collections.Counter(key_team[k] for k in x["ks"][5 * sd:5 * sd + 5] if k).most_common(1)
+        if c and c[0][1] >= 3: return c[0][0]
+        return None if x["l"] in ROSTER_CHECK else R["teams"].get(x["r" if sd else "b"])
+    side_of = {"fb": lambda v: v[1] // 5 if v[1] >= 0 else None, "ft": lambda v: v[1], "fd": lambda v: v[1], "fn": lambda v: v[1]}
+    W, P, RL, T, GV = {}, {}, {}, {}, {}
+    for x in FLAT:
+        f = (G.get(x["g"]) or {}).get("f") or {}
+        if "dr" not in f or x["t"][:4] != YEAR or len(f.get("lv") or []) != 10 or len(x["rows"]) != 10: continue   # flux incomplet : partie ignorée
+        e, q, rows = f.get("e", {}), f.get("q"), x["rows"]
+        ws = 0 if x["w"] == x["b"] else 1
+        so = [soul_(d) for d in f["dr"]]; el = ["e" in d for d in f["dr"]]
+        for k in ("2026", x["l"]):   # vu du vainqueur
+            o = GV.setdefault(k, [0] * 13)
+            for j, n in enumerate(("fb", "ft", "fd", "fn")):
+                if n in e: o[2 * j] += 1; o[2 * j + 1] += side_of[n](e[n]) == ws
+            o[8] += 1
+            if any(so): o[9] += 1; o[10] += bool(so[ws])
+            if any(el): o[11] += 1; o[12] += el[ws]
+        for sd in (0, 1):   # par équipe
+            t = tid(x, sd)
+            if not t: continue
+            o, won = T.setdefault(t, [0] * 19), ws == sd
+            if "fb" in e:
+                o[0] += 1; o[1] += won
+                for j, n in enumerate(("fb", "ft", "fd")):
+                    if n in e and side_of[n](e[n]) == sd: o[2 + 2 * j] += 1; o[3 + 2 * j] += won
+                if "fn" in e:
+                    o[8] += 1
+                    if e["fn"][1] == sd: o[9] += 1; o[10] += won
+            o[11] += 1; o[12] += won
+            if so[sd]: o[13] += 1; o[14] += won
+            if so[1 - sd]: o[15] += 1; o[16] += won
+            if el[sd]: o[17] += 1; o[18] += won
+        for i in range(10):   # par joueur : avant 15:00 et premier sang
+            role, k = rows[i]["role"], x["ks"][i]
+            if q:
+                for lg in ("all", x["l"]):
+                    o = RL.setdefault(role, {}).setdefault(lg, [0] * 7)
+                    o[0] += 1
+                    for j in range(3): o[1 + j] += q[i][j]
+                    o[4] += rows[i]["k"]; o[5] += rows[i]["d"]; o[6] += rows[i]["a"]
+            if not k: continue
+            o = P.setdefault(k, [0] * 12)
+            if q:
+                o[0] += 1
+                for j in range(3): o[1 + j] += q[i][j]
+                o[4] += rows[i]["k"]; o[5] += rows[i]["d"]; o[6] += rows[i]["a"]
+                j = next((j for j in (range(5, 10) if i < 5 else range(5)) if rows[j]["role"] == role), None)
+                if j is not None: o[7] += q[i][3] - q[j][3]
+            if "fb" in e:
+                o[8] += 1; o[9] += e["fb"][1] == i; o[10] += e["fb"][2] == i; o[11] += i in e["fb"][3]
+        if x["l"] == "worlds":   # feuille des Worlds
+            tb, tr = tid(x, 0) or x["bc"], tid(x, 1) or x["rc"]
+            W[x["g"]] = [x["m"], x["n"], tb, tr, ws, x["min"], f["pv"], f["dr"], f["lv"],
+                         [k or re.sub(r"^\S+\s+", "", nm or "?") for k, nm in zip(x["ks"], x["nm"])],
+                         [e.get(n) for n in ("fb", "ft", "fd", "fn", "so")], [[c[0], c[1] - c[2], c[3], c[4]] for c in f.get("c", [])]]
+    return {"v": 1, "w": W, "p": P, "r": RL, "t": T, "g": GV}
 
 # ---------- vainqueur de chaque partie ----------
 def lean(s):
@@ -649,6 +904,7 @@ def main():
         fetch_details(C, todo)
         budget()
         ensure_roster(C, teams); ours = set(C["roster"]["teams"])
+        DENSE.update(g[0] for m, d in D.items() if m in E and E[m]["l"] == "worlds" and E[m]["t"][:4] == YEAR for g in d["g"])
         today = time.strftime("%Y-%m-%d")
         two_days = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
         todo = []
@@ -671,6 +927,7 @@ def main():
             log("temps de jeu à mesurer : %d parties" % len(upg))
             fetch_games(C, upg, ours, our_players)
             log("temps de jeu restant à mesurer : %d parties" % sum(1 for x in upg if not C["games"][x[0]].get("tv")))
+        flux_catchup(C, our_players)   # données du flux des parties déjà en mémoire, par tranches (STATS_FLUX_MIN)
         if time.time() > DEADLINE: complete = False
     except Budget:
         complete = False
@@ -690,6 +947,8 @@ def main():
         log("pas encore d'identifiants d'équipes, stats inchangées"); return 0
 
     out = build(C, teams)
+    try: out["fl"] = flux_block(C, teams)   # feuilles des Worlds, profils avant 15:00, premiers objectifs et âmes
+    except Exception as e: log("données du flux indisponibles :", type(e).__name__, str(e)[:160])
     now_iso = max((e["t"] for e in C["events"].values() if e["st"] == "completed"), default="")
     try:   # clés des matchs à venir (≈ 0,1 s) : faits utiles et leurs taux mesurés
         import prematch
