@@ -475,10 +475,11 @@ def build(C, teams):
                         tg[tid].append((sd, sides, wid, s["min"], kills))
             if e["l"] == "worlds" and year == YEAR:
                 tour["games"].append({"gl": s["min"], "b1": our_team.get(s["b"][0], s["b"][0]), "b2": our_team.get(s["r"][0], s["r"][0]),
-                                      "wt": our_team.get(wid, wid), "kills": kills["b"] + kills["r"]})
+                                      "wt": our_team.get(wid, wid), "kills": kills["b"] + kills["r"], "ph": "pi" if t_ < "2026-10-20" else "main"})
                 for i, r in rows.items():
                     k = KS[i]
-                    tour["rows"].append(dict(r, L=key_of[k]["id"] if k else re.sub(r"^\S+\s+", "", P[i][1] or "?"), tm=our_team.get(r["team"], "")))
+                    tour["rows"].append(dict(r, L=key_of[k]["id"] if k else re.sub(r"^\S+\s+", "", P[i][1] or "?"), tm=our_team.get(r["team"], ""),
+                                             ph="pi" if t_ < "2026-10-20" else "main"))
 
     # joueurs
     players = {}
@@ -543,6 +544,22 @@ def build(C, teams):
                         "dmg": top(lambda q: q["ds"] / max(1, q["dsn"]) * 100), "kp": top(lambda q: (q["k"] + q["a"]) / max(1, q["tk"]) * 100)},
                "champs": sorted([dict(c=c, pr=(v["p"] / n * 100) if n else 0, **v) for c, v in chs.items()], key=lambda x: -x["pr"])[:15]}
     tourney["red"] = n - tourney["blue"]
+    # leaders par phase : le Play-In (Bo5, beaucoup de parties) écrase sinon la phase principale ; minimum de parties adaptatif
+    tourney["lead2"] = {}
+    for ph in ("main", "pi"):
+        acc = {}
+        for r in tour["rows"]:
+            if r["ph"] != ph: continue
+            q = acc.setdefault(r["L"], {"L": r["L"], "tm": r["tm"], "g": 0, "w": 0, "k": 0, "d": 0, "a": 0, "cs": 0, "tk": 0, "min": 0, "ds": 0, "dsn": 0})
+            q["g"] += 1; q["w"] += r["W"]
+            for a in ("k", "d", "a", "cs", "tk", "min"): q[a] += r[a]
+            if r["ds"] is not None: q["ds"] += r["ds"]; q["dsn"] += 1
+        if not acc: continue
+        mx = max(q["g"] for q in acc.values()); mn = max(1, min(3, mx // 2))
+        tp = lambda f, m=mn: sorted([dict(q, v=f(q)) for q in acc.values() if q["g"] >= m], key=lambda x: -x["v"])[:5]
+        tourney["lead2"][ph] = {"n": sum(1 for g in TG if g["ph"] == ph), "mn": mn,
+                                "kda": tp(lambda q: (q["k"] + q["a"]) / max(1, q["d"])), "kills": tp(lambda q: q["k"], 1), "csm": tp(lambda q: q["cs"] / max(1, q["min"])),
+                                "dmg": tp(lambda q: q["ds"] / max(1, q["dsn"]) * 100), "kp": tp(lambda q: (q["k"] + q["a"]) / max(1, q["tk"]) * 100)}
 
     try: X = models_block(C, teams, W)
     except Exception as e: log("modèles indisponibles :", type(e).__name__, str(e)[:160]); X = {}
