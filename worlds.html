@@ -4114,6 +4114,9 @@ async function leFetch(path){
   const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),9000);
   try{const r=await fetch("https://esports-api.lolesports.com/persisted/gw/"+path,{headers:{"x-api-key":LE_KEY},signal:ctl.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(to)}
 }
+// l'API renvoie parfois les deux équipes dans l'autre ordre d'un appel à l'autre : un match garde l'ordre affiché la première fois
+// (scores et noms permutés avec ; le vainqueur et les paris sont rangés par équipe, ils ne bougent pas)
+function keepSides(m){const p=MATCHES.find(x=>x.id===m.id);if(p&&p.t1&&m.t1&&p.t1===m.t2&&p.t2===m.t1){[m.t1,m.t2]=[m.t2,m.t1];[m.n1,m.n2]=[m.n2,m.n1];[m.s1,m.s2]=[m.s2,m.s1]}}
 async function fromLolEsports(){
   const base=`getSchedule?hl=fr-FR&leagueId=${WORLDS_LEAGUE}`;
   const first=await leFetch(base);
@@ -4139,7 +4142,7 @@ async function fromLolEsports(){
     if(ev.state==="completed"){if(a.result?.outcome==="win")m.winner=t1;else if(b.result?.outcome==="win")m.winner=t2}
     if(ev.state==="inProgress")m.apiLive=true;
     if(ev.state==="unstarted"){m.s1=null;m.s2=null;m.unst=true}
-    out.push(m);
+    keepSides(m);out.push(m);
   });
   if(out.filter(m=>m.t1&&m.t2).length<6)throw new Error("planning incomplet");
   return out;
@@ -4154,7 +4157,7 @@ async function fromRobot(){
     const m={id:"le"+mid,stage:stageOf(t),label:bn||"",t1,t2,start:t,bo:bo||1,n1:a[1],n2:b[1],s1:st==="unstarted"?null:a[2]??null,s2:st==="unstarted"?null:b[2]??null};
     if(done&&a[2]!=null&&b[2]!=null&&a[2]!==b[2])m.winner=a[2]>b[2]?t1:t2;
     if(st==="inProgress")m.apiLive=true;
-    out.push(m);
+    keepSides(m);out.push(m);
   });
   if(out.filter(m=>m.t1&&m.t2).length<6)throw new Error("planning du robot incomplet");
   return out;
