@@ -19,7 +19,7 @@ claude
 - Dépôt : `Vialou07/IA_Games`, publié par GitHub Pages (branche `main`, mode classique) sur https://vialou07.github.io/IA_Games/
 - L'appli : `worlds.html`, un seul fichier HTML (CSS et JS inclus), lien direct https://vialou07.github.io/IA_Games/worlds.html. Elle a une tuile « Worlds 2026 » en tête de `index.html` (le hub).
 - Utilisateurs : Thomas et un groupe de potes, sur Android (Chrome et navigateur intégré de Messenger), souvent en 5G.
-- Version actuelle : `APP_VERSION = "v9.2, 24/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
+- Version actuelle : `APP_VERSION = "v9.3, 24/10/2026"` dans le bloc diagnostic (à incrémenter à chaque livraison).
 - Autres fichiers de l'appli :
   - `tools/build_stats.py` : le générateur de stats côté serveur (le « robot »), 100 % API officielle LoL Esports ;
   - `.github/workflows/stats.yml` : le workflow GitHub Actions qui le lance toutes les 30 minutes ;
@@ -117,7 +117,17 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 Fait les 23 et 24/10 :
 - Leaguepedia abandonné (1 requête par minute, bloqué sur les téléphones). Le robot prend tout chez LoL Esports : planning de 15 ligues depuis janvier 2024, détails de chaque match terminé, puis pour chaque partie le flux au début, à 15 min, à la fin, et les détails de fin.
 - Vainqueur de chaque partie : l'API ne le donne pas. Le robot le déduit de l'image finale (seule l'équipe qui a détruit un inhibiteur peut finir, puis tours et or) sous la contrainte du score de la série (`winners`). La règle seule était juste sur 202 parties sur 204 au vainqueur certain ; la contrainte de série corrige le reste.
-- Parties au flux coupé avant la fin (1,8 %) : comptées dans les bilans de séries, exclues des moyennes. Parties sans flux (1,5 %) : réessayées à chaque passage pendant 2 jours, puis 3 fois, une par jour.
+- Parties au flux arrêté sans l'état « finished » : gardées si elles durent au moins 20 min (complètes dans 53 cas sur 54 vérifiés), exclues sinon. Parties sans flux (1,5 %) : réessayées à chaque passage pendant 2 jours, puis 3 fois, une par jour.
+- Robot v3 (24/10), après un audit à 9 agents qui a comparé chaque partie 2026 des 95 titulaires à gol.gg :
+  - EWC 2026 (`ewc_lol`, équipes sous un autre identifiant reconnues par leurs titulaires) et KeSPA Cup 2026 (`kespa_cup`, séries d'académie écartées) ;
+  - `fix_sides()` : 13 flux LPL aux côtés ou identifiants inversés corrigés en mémoire ; poids réduit des flux coupés dans `winners()` ; vainqueurs justes sur 6 501 parties vérifiées ;
+  - identifiants de joueurs absents ou faux rattrapés par le pseudo (`ident()`) ;
+  - temps de jeu réel (`timing()`) : début recalé après une attente (l'or dépasse 5 000 de 40 à 64 s après 0:00), pauses retirées (le flux marque « paused » ou renvoie des images périmées) ; image de la 15e minute prise en temps de jeu. Mesuré : 1 à 20 s d'écart avec gol.gg au lieu de jusqu'à 18 min ;
+  - participation aux kills en moyenne par partie (`kps`, `kpn`), kills d'équipe recomptés sur les joueurs ;
+  - vrai dernier duel (dernière manche) et 5 dernières rencontres de chaque paire (`dr`) ;
+  - écart à 15 min ignoré si l'or total à 15:00 sort de 40 000 à 62 000 ; partie reprise après coupure écartée (or/min > 5 500).
+  - Résultat sur les 95 titulaires, écart moyen à gol.gg : CS/min 0,05, or/min 2,4, participation aux kills 0,5 point, KDA 0,08. Couverture 91 % des parties gol.gg (le reste : qualifs EWC et KeSPA Cup 2025, absentes de l'API).
+- Préprod : `python3 tools/preprod.py` fabrique `preprod/worlds.html` (stats de `stats-preprod`, données du téléphone et canal de ligue séparés, bandeau PRÉPROD), à publier sur main. Robot de préprod : pousser une branche puis `gh workflow run stats.yml --ref <branche>`. Adresse : https://vialou07.github.io/IA_Games/preprod/worlds.html
 - Premier chargement complet en préprod : 8 509 parties (2024 : 2 673, 2025 : 2 936, 2026 : 2 773), 30 496 requêtes, 21 minutes. Passage suivant : 8 secondes. Stats 2026 pour les 95 titulaires, 710 duels de lane, 73 face-à-face d'équipes.
 - Publication sur la branche `stats` (stats + mémoire), seulement si quelque chose a changé.
 
