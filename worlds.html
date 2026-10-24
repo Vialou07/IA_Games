@@ -435,6 +435,19 @@ nav.tabs button{position:relative}
 .mch{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(200,170,110,.08);font-size:12.5px;min-width:0}
 .mch span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mch small{color:var(--muted);white-space:nowrap}
 .lane[data-cmp]{cursor:pointer}
+.robot{padding:12px}svg.bot{width:1.05em;height:1.05em;vertical-align:-.15em;margin-right:2px;color:var(--gold)}.rbp svg.bot{width:11px;height:11px}.rb-h{margin:0 0 8px;font-weight:600}.rb-d summary{cursor:pointer;font-size:12.5px;color:var(--gold);margin-top:6px}
+.rbp{display:block;font-family:var(--body,inherit);font-size:9.5px;color:var(--muted);font-weight:700;white-space:nowrap;margin-top:2px}
+.simt{padding:6px 8px}.simr{display:grid;grid-template-columns:1fr 44px 50px 50px 92px;align-items:center;gap:4px;width:100%;padding:6px 2px;border-top:1px solid rgba(200,170,110,.08);font-size:13px;text-align:right}
+.simr:first-child{border-top:0}.simr.hd{font-size:10.5px;color:var(--muted);font-weight:700}.simr .tn{display:flex;align-items:center;gap:6px;text-align:left}.simr .tn b{font-family:var(--disp);font-size:16px}
+.simr.me{background:rgba(200,170,110,.08);border-radius:6px}.simr .ti{position:relative;display:flex;justify-content:flex-end;align-items:center}.simr .ti i{position:absolute;left:0;top:50%;height:6px;transform:translateY(-50%);background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;opacity:.55}.simr .ti b{position:relative;font-family:var(--disp)}
+.lgt{padding:8px 10px}.lgr{display:grid;grid-template-columns:150px 1fr 48px;align-items:center;gap:8px;padding:5px 0}.lgr b{font-size:13px}.lgr .br{height:8px;background:rgba(255,255,255,.05);border-radius:4px}.lgr .br i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--gold))}.lgr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
+.impt{display:flex;align-items:center;gap:12px;padding:10px 12px;margin-bottom:8px}.impt>b{font-family:var(--disp);font-size:30px;font-weight:800;background:linear-gradient(180deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.impt span{display:flex;flex-direction:column;font-size:13px}.impt small{font-size:11px;color:var(--muted)}
+.why{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.45}.why li{margin:3px 0}
+.fiab{padding:12px}.fiab .big{font-family:var(--disp);font-size:26px;color:var(--gold2)}.fbl{display:grid;gap:4px;margin:8px 0}
+.fbr{display:grid;grid-template-columns:48px 1fr auto 18px;gap:6px;align-items:center;font-size:12px;padding:5px 6px;background:rgba(5,11,24,.5);border-radius:6px;border-left:3px solid var(--muted)}
+.fbr.w{border-left-color:var(--teal)}.fbr.l{border-left-color:var(--red)}.fbr .tn{display:flex;align-items:center;gap:4px;min-width:0}.fbr .fw{color:var(--gold2)}.fbr i{font-style:normal;font-weight:800;text-align:center}.fbr.w i{color:var(--teal)}.fbr.l i{color:var(--red)}
+.lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
 .rc5.w{border-left-color:var(--teal)}.rc5.l{border-left-color:var(--red)}.rc5 .d{font-size:12px;font-weight:700;line-height:1.15;display:flex;flex-direction:column}.rc5 .d small{font-size:10px;color:var(--muted);font-weight:600}
 .rc5 .c{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-size:15px}.rc5 .c.r{justify-content:flex-end}.rc5 i{font-style:normal;font-family:var(--disp);font-weight:800;text-align:center}.rc5.w i{color:var(--teal)}.rc5.l i{color:var(--red)}
@@ -766,7 +779,7 @@ let MATCHES = [];
 let SOURCE = "embarquées";
 let lastSync = null;
 let picks = LS.get("picks",{}), manual = LS.get("manual",{}), fav = LS.get("fav",null), celebrated = LS.get("celebrated",{});
-const ui = {stage:"all",league:"all",role:"all",nat:null,q:"",counted:false,pview:"cards",pstat:"kda"};
+const ui = {stage:"all",league:"all",role:"all",nat:null,q:"",counted:false,pview:"cards",pstat:"imp"};
 
 /* clé de match stable : en suisse et en phase finale deux équipes ne se croisent qu'une fois */
 const mkey = m => {if(!(m.t1&&m.t2))return m.id;const t=[m.t1,m.t2].sort().join("_");return m.stage==="pi"?t+"_"+m.start.slice(0,10):t+"_"+m.stage};
@@ -993,7 +1006,7 @@ function renderHome(){
 /* ---- mes paris : à parier en un geste, en attente, derniers résultats ---- */
 function qbRow(m){const st=new Date(m.start),today=dayKeyL(st)===dayKeyL(new Date());
   const b=t=>`<button class="qbt hx" data-pick="${t}" data-mk="${esc(m.key)}" style="--c1:${col(t)}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,24)}${esc(T[t].id)}</button>`;
-  return `<div class="qb hx"><span class="tm">${today?"":`${esc(st.toLocaleDateString("fr-FR",{weekday:"short"}))}<br>`}${fmtTime(st)}</span>${b(m.t1)}<i>VS</i>${b(m.t2)}<button class="qi" data-m="${esc(m.id)}" aria-label="Détails du match">›</button></div>`}
+  return `<div class="qb hx"><span class="tm">${today?"":`${esc(st.toLocaleDateString("fr-FR",{weekday:"short"}))}<br>`}${fmtTime(st)}</span>${b(m.t1)}<i>VS${robotHint(m)}</i>${b(m.t2)}<button class="qi" data-m="${esc(m.id)}" aria-label="Détails du match">›</button></div>`}
 function betsHTML(){
   const todo=MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]),pend=MATCHES.filter(x=>picks[x.key]&&!x.winner&&x.t1&&x.t2);
   const last=MATCHES.filter(x=>picks[x.key]&&x.winner).slice(-4).reverse();
@@ -1014,9 +1027,10 @@ function renderMatchs(){
   MATCHES.filter(m=>inF(m.stage)).forEach(m=>{const k=dayKeyL(new Date(m.start));(groups[k]=groups[k]||[]).push(m)});
   const known=new Set(MATCHES.filter(m=>m.t1||m.t2).map(m=>dayKeyL(new Date(m.start))));
   DAYS.forEach(d=>{if(!inF(d.stage))return;const dt=new Date(d.d+"T"+d.t+":00Z"),k=dayKeyL(dt);if(!known.has(k)&&!groups[k])groups[k]=[{placeholder:true,d,dt}]});
-  Object.keys(groups).sort().forEach(k=>{
+  const ks=Object.keys(groups).sort(),kt=ks.find(k=>groups[k].some(m=>m.placeholder?m.dt>Date.now():m.state!=="done"))||ks[ks.length-1];
+  ks.forEach(k=>{
     const g=groups[k],first=g[0].placeholder?g[0].dt:new Date(g[0].start),stg=g[0].placeholder?g[0].d.stage:g[0].stage;
-    h+=`<div class="day">${fmtDay(evDate(first))}<span>${esc(STAGES[stg])}<br>${esc(VENUES[stg])}</span></div>`;
+    h+=`<div class="day${k===kt?" today":""}">${fmtDay(evDate(first))}<span>${esc(STAGES[stg])}<br>${esc(VENUES[stg])}</span></div>`;
     h+=g[0].placeholder?`<div class="tbd hx">${esc(g[0].d.what)}. Premier match à ${fmtTime(first)}.</div>`:`<div class="list">${g.map(matchRow).join("")}</div>`;
   });
   h+=`<p class="small" style="margin-top:14px">Horaires en ${tzLabel}. Point doré : ton prono. Vert : gagné. Rouge : perdu.</p>`;
@@ -1044,6 +1058,7 @@ function renderSwiss(){
   let h=`<h2>Phase suisse</h2><p class="sub">16 équipes, 5 rondes. Trois victoires pour les quarts, trois défaites pour la sortie. Les matchs qualificatifs ou éliminatoires se jouent en Bo3.</p>
   <div class="legend"><span><i style="background:var(--teal)"></i>victoire</span><span><i style="background:var(--red)"></i>défaite</span>${fav?`<span><i style="background:var(--gold)"></i>parcours de ${esc(T[fav].id)}</span>`:`<span>Choisis ton équipe dans Direct pour tracer son parcours</span>`}</div>
   <div class="sw-scroll" id="swScroll"><div class="sw-board"><svg viewBox="0 0 930 620">${edges}${favPath}</svg>${nh}</div></div>`;
+  h+=simHTML()+fiabHTML();
   const ko=MATCHES.filter(m=>["qf","sf","f"].includes(m.stage)&&(m.t1||m.t2));
   h+=`<h2>Phase finale</h2>`+(ko.length?`<div class="list">${ko.map(matchRow).join("")}</div>`:`<div class="note">Tirage des quarts le 31 octobre. Les deux équipes à 3-0 seront placées dans des moitiés de tableau opposées, face à des équipes à 3-2. Quarts du 3 au 6 novembre, demies les 7 et 8, finale le 14 au Barclays Center.</div>`);
   $("#v-swiss").innerHTML=h;
@@ -1129,7 +1144,8 @@ function showTab(v,fromPop){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
   document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
   $("#ind").style.transform=`translateX(${TABS.indexOf(v)*100}%)`;
-  window.scrollTo(0,scrollMem[v]||0);vib(8);
+  const td=v==="matchs"&&scrollMem.matchs==null&&$("#v-matchs .day.today");
+  window.scrollTo(0,td?Math.max(0,td.getBoundingClientRect().top+scrollY-120):scrollMem[v]||0);vib(8);
   if(v==="players")renderMap(); if(v==="home")startBeam(); if(v==="stats"){statsOpen=true;renderStats()}
 }
 function openSheet(html,mode){
@@ -1177,6 +1193,7 @@ function matchSheet(id,quiet){
     <div class="mid"><span class="${sc==="VS"?"v":"score"}" style="${sc==="VS"?"font-size:30px":"font-size:40px"}">${sc}</span></div>
     <button class="side sR" data-t="${m.t2||""}">${m.t2?logo(m.t2,62):""}<span class="code">${esc(tname(m,"t2"))}</span></button></div>
     <div class="cd-date">${fmtDay(st)}, ${fmtTime(st)}<br>${esc(VENUES[m.stage])}</div></div></div>`;
+  if(m.state!=="done")h+=robotHTML(m);
   if(m.state==="live"&&m.t1&&m.t2)h+=`<h2>En direct</h2><div id="livebox" class="livebox frame hx" data-k="${esc(m.key)}">${liveBoxHTML(m)}</div>`;
   if(m.state!=="soon"&&m.t1&&m.t2&&/^le\d/.test(m.id)&&(m.state==="done"||(m.s1||0)+(m.s2||0)>0))
     h+=`<h2>Feuille de match</h2>`+ablock("games_"+m.key+"_"+((m.s1||0)+(m.s2||0)),()=>matchGames(m),renderGames(m),m.state==="done"?24:.03);
@@ -1341,7 +1358,7 @@ const sjOk=(s,sec)=>s&&!(s.errors||[]).some(e=>String(e).startsWith(sec+":"));
 const AK={};
 const skel=(n=3)=>`<div class="skel">${Array.from({length:n},()=>"<i></i>").join("")}</div>`;
 const errHTML=k=>{const a=AK[k]||{},m=String(a.emsg||"");const rl=/rate|limit|exceeded/i.test(m);
-  return `<div class="aerr"><span>${rl?`Leaguepedia limite les requêtes. Nouvel essai automatique dans ${Math.max(1,Math.ceil((lpPause-Date.now())/60e3))} min.`:"Leaguepedia ne répond pas pour l’instant."}${!rl&&m?`<small>${esc(m.slice(0,120))}</small>`:""}</span><button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`};
+  return `<div class="aerr"><span>${rl?`Leaguepedia limite les requêtes. Nouvel essai automatique dans ${Math.max(1,Math.ceil((lpPause-Date.now())/60e3))} min.`:"Données injoignables pour l’instant."}${!rl&&m?`<small>${esc(m.slice(0,120))}</small>`:""}</span><button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`};
 const waitHTML=()=>`<div class="aerr"><span>Leaguepedia limite les requêtes. Chargement automatique dans ${Math.max(5,Math.round((lpPause-Date.now())/1000))} s.</span></div>`;
 let akIO=null;
 function armAk(){
@@ -1362,7 +1379,7 @@ function ablock(key,fn,render,ttlH=6){
 function safeRender(a){try{return a.render(a.data)}catch(e){console.error(e);return `<p class="small">Données incomplètes pour ce bloc.</p>`}}
 async function runAk(key){
   const a=AK[key];a.st="load";a.started=true;
-  try{a.data=await a.fn();a.st="ok";a.emsg=null;LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err";a.emsg=String(e&&e.message||e);
+  try{a.data=await a.fn();a.st="ok";a.emsg=null;if(!(a.data&&a.data.nocache))LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err";a.emsg=String(e&&e.message||e);
     if(isRL(e)){clearTimeout(a.rt);a.rt=setTimeout(()=>{if(a.st==="err"&&document.querySelector(`[data-ak="${CSS.escape(key)}"]`)){document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>el.innerHTML=skel());runAk(key)}},Math.max(65000,lpPause-Date.now()+5000))}}
   document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>{el.innerHTML=a.st==="ok"?safeRender(a):errHTML(key);el.classList.add("in")});
 }
@@ -1544,10 +1561,91 @@ function renderLanes(m,P,flip){
 }
 function tiles(list){return `<div class="tiles">${list.map(([v,l])=>`<div class="tile hx"><b>${v}</b><span>${l}</span></div>`).join("")}</div>`}
 function champList(cs){return `<div class="clist">${cs.map(c=>`<div class="crow">${champ(c.c,32)}<span class="cn">${esc(c.c)}<small>${c.g} partie${c.g>1?"s":""}, KDA ${fx1(kdaV(c.k,c.d,c.a))}</small></span><span class="cw"><i style="width:${pct(c.w,c.g)}%"></i></span><b>${pct(c.w,c.g)} %</b></div>`).join("")}</div>`}
+/* ---- modèles du robot : note d'impact des joueurs, pronostics, simulation du tournoi ----
+   Note d'impact : KDA, participation, or, CS et avance à 15 min, corrigés de la force des adversaires et de la ligue
+   (testée à l'aveugle sur 343 parties internationales 2025-2026). Comparable seulement à poste égal. */
+/* ---- modèles du robot : SJ.m (notes E), SJ.lane (modèle D), SJ.sim (simulation) ----
+   Bloc à coller dans worlds.html (section 7, Stats). Testé par node test_helpers.js contre le Python du robot. */
+const sigm=x=>1/(1+Math.exp(-x));
+function Phi(x){const t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x/2);return x>=0?(1+y)/2:(1-y)/2}
+const GX=Array.from({length:49},(_,k)=>-6+.25*k),GW0=GX.map(x=>Math.exp(-x*x/2)),GWS=GW0.reduce((a,b)=>a+b,0),GW=GW0.map(w=>w/GWS);
+function firstTo(p,a,b){const q=1-p;let s=0,c=1;for(let k=0;k<b;k++){if(k)c=c*(a-1+k)/k;s+=c*q**k}return p**a*s}
+/* P(A gagne le match) : za = alpha×(force A − force B) ; a0 = avantage du côté bleu ; score en cours wa-wb ;
+   aBlue true/false/null (Bo1) ; h = jours avant le match ; v = [variance de série, dérive par jour] (SJ.sim.var). */
+function matchProb(za,bo,{a0=0,wa=0,wb=0,aBlue=null,h=0,v=[.4,.0093]}={}){
+  const k=Math.sqrt(1+Math.PI*v[0]/8),sd=Math.sqrt(v[0]+2*v[1]*h);
+  if(bo===1){const f=z=>GX.reduce((s,x,i)=>s+GW[i]*sigm(k*z+sd*x),0);return aBlue==null?(f(a0+za)+1-f(a0-za))/2:aBlue?f(a0+za):1-f(a0-za)}
+  const need=(bo>>1)+1;let num=0,den=0;
+  GX.forEach((x,i)=>{const p=sigm(k*za+sd*x),l=GW[i]*p**wa*(1-p)**wb;num+=l*firstTo(p,need-wa,need-wb);den+=l});return num/den;
+}
+/* force d'une équipe = somme des notes de ses 5 joueurs (SJ.sim.S pour les 16 des Worlds, sinon SJ.m.t) ; P(A bat B) pour un match quelconque */
+function teamProb(A,B,bo,o={}){const M=SJ.m,t=Object.assign({},M&&M.t,SJ.sim&&SJ.sim.S);if(!M||t[A]==null||t[B]==null)return null;
+  return matchProb(M.logit[1]*(t[A]-t[B]),bo,{a0:M.logit[0],v:(SJ.sim&&SJ.sim.var)||[.4,.0093],...o})}
+/* écart-type de la différence de deux notes (rééchantillonnages du robot), puis P(A mieux noté que B) */
+function pairSd(role,ka,kb){const P=SJ.m.pd&&SJ.m.pd[role];if(!P)return null;const o=P.o,n=o.length,i=o.indexOf(ka),j=o.indexOf(kb);
+  if(i<0||j<0||i===j)return null;const a=Math.min(i,j),b=Math.max(i,j);return P.s[a*n-a*(a+1)/2+(b-a-1)]/1000}
+function pBetter(ka,kb,role){const A=SJ.m.p[ka],B=SJ.m.p[kb];if(!A||!B)return null;const s=pairSd(role,ka,kb)||Math.hypot(A[1],B[1]);
+  return {d:A[0]-B[0],sd:s,p:Phi((A[0]-B[0])/s)}}
+/* duel de lane (modèle D) : écart attendu à 15 min pour A et P(A devant) ; cs=true : en CS, sinon en or */
+function laneDuel(ka,kb,role,cs){const L=SJ.lane,A=L&&L.p[ka],B=L&&L.p[kb];if(!A||!B)return null;const i=cs?0:2,g=L.sg[role];
+  const e=A[i]-B[i];return {e,p:Phi(e/Math.sqrt(g[cs?1:0]**2+A[i+1]**2+B[i+1]**2))}}
+const IMP=p=>SJ&&SJ.m&&SJ.m.p&&SJ.m.p[p.key];
+const PHI=x=>{const t=1/(1+.3275911*Math.abs(x)/Math.SQRT2),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x/2);return x>=0?(1+y)/2:(1-y)/2};
+const fxs=v=>(v>0?"+":"")+fx2(v);
+// probabilité que t1 gagne le match (série complète, score en cours compris)
+function robotProb(m){
+  if(!SJ||!SJ.m||!m.t1||!m.t2)return null;
+  const x=SJ.sim&&(SJ.sim.mt||[]).find(r=>"le"+r[0]===m.id||r[0]===m.id);
+  if(x&&(x[1]===m.t1||x[2]===m.t1))return x[1]===m.t1?x[4]:1-x[4];
+  const h=Math.max(0,(new Date(m.start||Date.now())-Date.now())/864e5);
+  return teamProb(m.t1,m.t2,m.bo||1,{wa:m.s1||0,wb:m.s2||0,h});
+}
+const BOT=`<svg class="bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13v2M15 13v2"/></svg>`;
+function robotHTML(m){
+  const p=robotProb(m);if(p==null)return"";
+  const f=p>=.5?m.t1:m.t2,pf=Math.max(p,1-p),txt=pf<.56?"voit un match très serré":`voit <b>${esc(T[f].id)}</b> favori`;
+  return `<h2>Pronostic du robot</h2><div class="robot frame hx"><p class="rb-h">${BOT} Le robot ${txt}${m.state==="live"&&(m.s1||m.s2)?` (score actuel ${m.s1}-${m.s2} compris)`:""}</p>
+    <div class="wpbar big"><i style="width:${p*100}%;background:${col(m.t1)}"></i><i style="width:${(1-p)*100}%;background:${col(m.t2)}"></i></div>
+    <p class="small wpl"><span><b>${Math.round(p*100)} %</b> ${esc(T[m.t1].id)}</span><span>chances de gagner ${m.bo>1?"la série":"le match"}</span><span>${esc(T[m.t2].id)} <b>${Math.round((1-p)*100)} %</b></span></p>
+    <details class="rb-d"><summary>Comment il calcule ?</summary><p class="small">Il additionne la note d’impact des 5 joueurs de chaque équipe, corrigée de la force des ligues, puis simule la suite du tournoi 20 000 fois. Testé à l’aveugle sur 343 parties internationales : il trouve le bon favori 2 fois sur 3, et quand il annonce 75 %, l’équipe gagne environ 72 % du temps. Son bilan sur ces Worlds est dans l’onglet Suisse. Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p></details></div>`;
+}
+function robotHint(m){const p=robotProb(m);if(p==null)return"";const pf=Math.round(Math.max(p,1-p)*100);return `<small class="rbp" title="Favori du robot : ${esc(T[p>=.5?m.t1:m.t2].id)}">${p>=.5?"◀ ":""}${BOT}${pf} %${p<.5?" ▶":""}</small>`}
+function simHTML(){
+  const s=SJ&&SJ.sim;if(!s||!s.eq)return"";
+  const rows=Object.entries(s.eq).sort((a,b)=>b[1][10]-a[1][10]||b[1][7]-a[1][7]),pc=v=>v>=.995?"99+":v<.005?(v>0?"<1":"0"):Math.round(v*100);
+  return `<h2>Qui va aller au bout ?</h2><p class="sub">Le robot rejoue la fin du tournoi 20 000 fois à chaque mise à jour, avec les vrais résultats déjà acquis.</p>
+   <div class="simt frame hx"><div class="simr hd"><span></span><span>Bilan</span><span>Quarts</span><span>Demies</span><span>Titre</span></div>${rows.map(([t,v])=>`<button class="simr${t===fav?" me":""}" data-t="${esc(t)}"><span class="tn">${logo(t,22)}<b>${esc(T[t]?T[t].id:t)}</b></span><span>${esc(v[0])}</span><span>${pc(v[7])} %</span><span>${pc(v[8])} %</span><span class="ti"><i style="width:${Math.min(100,v[10]*100*2)}%"></i><b>${pc(v[10])} %</b></span></button>`).join("")}</div>
+   <p class="small" style="margin-top:6px">Probabilités du robot, pas des certitudes. ${s.modele&&/secours/.test(s.modele)?"Modèle de secours utilisé cette fois. ":""}Mis à jour ${s.maj?esc(new Date(s.maj).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"})):""}.</p>`;
+}
+function fiabHTML(){
+  const F=SJ&&SJ.fiab;if(!F||!F.w26||!F.w26.m||!F.w26.m.length)return"";
+  const R=F.w26.m,ok=R.filter(r=>(r[5]>=.5)===!!r[6]).length,nm=c=>esc(T[c]?T[c].id:c),E=F.t&&F.t.E,L=F.t&&F.t.lig;
+  const cal=(F.cal||[]).filter(c=>c[2]>=30).map(c=>`quand il annonce ${Math.round(c[0]*100)} %, l’équipe gagne ${Math.round(c[1]*100)} % du temps`);
+  return `<h2>Le robot a-t-il vu juste ?</h2><div class="fiab frame hx"><p><b class="big">${ok}/${R.length}</b> bons favoris sur les matchs déjà joués de ces Worlds.</p>
+   <details class="rb-d"><summary>Match par match</summary><div class="fbl">${R.slice().reverse().map(r=>{const fa=r[5]>=.5,good=fa===!!r[6];
+     return `<div class="fbr ${good?"w":"l"}"><span>${esc(new Date(r[1]+"T12:00:00Z").toLocaleDateString("fr-FR",{day:"numeric",month:"short"}))}</span><span class="tn">${logo(r[2],16)}<b class="${r[6]?"fw":""}">${nm(r[2])}</b> – <b class="${r[6]?"":"fw"}">${nm(r[3])}</b>${logo(r[3],16)}</span><span>${nm(fa?r[2]:r[3])} ${Math.round(Math.max(r[5],1-r[5])*100)} %</span><i>${good?"✓":"✗"}</i></div>`}).join("")}</div>
+   <p class="small">${R.some(r=>r[7]==="g")?"Pronos figés au coup d’envoi. ":""}${R.some(r=>r[7]==="r")?"Les premiers matchs sont recalculés avec les seules données d’avant le match. ":""}Le gagnant est en or.</p></details>
+   ${E&&L?`<p class="small" style="margin-top:8px">Avant les Worlds, testé à l’aveugle sur ${E.g[0]} parties internationales : bon favori ${Math.round(E.g[3]*100)} % du temps, autant que la règle « la ligue la plus forte gagne » (${Math.round(L.g[3]*100)} %), mais avec des pourcentages plus justes${cal.length?" : "+cal.slice(-2).join(", "):""}.</p>`:""}</div>`;
+}
+function lgrHTML(NM){
+  const G=SJ.lgr&&(SJ.lgr["2025"]||SJ.lgr["2024"]);if(!G)return"";
+  const rows=Object.entries(G).filter(([k,v])=>k.split("|").every(l=>NM[l])&&v[0]+v[1]>=6).slice(0,8);if(!rows.length)return"";
+  return `<details class="rb-d"><summary>Leurs vrais face-à-face aux internationaux depuis 2025</summary><div class="fbl">${rows.map(([k,v])=>{const [a,b]=k.split("|"),[x,y]=v[0]>=v[1]?[a,b]:[b,a],[wx,wy]=v[0]>=v[1]?v:[v[1],v[0]];
+    return `<div class="lgv"><b>${esc(x)}</b><span>${wx} – ${wy}</span><b>${esc(y)}</b><small>${Math.round(wx/(wx+wy)*100)} % pour ${esc(x)}</small></div>`}).join("")}</div><p class="small">Parties gagnées entre équipes des deux ligues (Worlds, MSI, First Stand, EWC). Brut : ne tient pas compte de qui a été envoyé.</p></details>`;
+}
+function leaguesHTML(){
+  const m=SJ&&SJ.m;if(!m||!m.lg)return"";
+  const NM={LCK:"Corée (LCK)",LPL:"Chine (LPL)",LEC:"Europe (LEC)",LCS:"Amérique du Nord (LCS)",LCP:"Pacifique (LCP)",CBLOL:"Brésil (CBLOL)"};
+  const L=Object.entries(m.lg).filter(([l])=>NM[l]).sort((a,b)=>b[1]-a[1]),mx=L[0][1],mn=L[L.length-1][1],al=(m.logit||[0,.64])[1];
+  const vs=(a,b)=>Math.round(100/(1+Math.exp(-al*5*(a-b))));
+  return `<h2>Force des ligues</h2><p class="sub">Mesurée sur les matchs internationaux depuis 2024, en comparant les performances des joueurs. C’est elle qui rend les ligues comparables.</p>
+   <div class="lgt frame hx">${L.map(([l,v])=>`<div class="lgr"><b>${esc(NM[l])}</b><span class="br"><i style="width:${(v-mn)/(mx-mn||1)*92+8}%"></i></span><em>${fxs(v)}</em></div>`).join("")}${lgrHTML(NM)}</div>
+   <p class="small" style="margin-top:6px">Pour se faire une idée : une équipe LCK moyenne battrait une équipe LEC moyenne ${vs(m.lg.LCK,m.lg.LEC)} fois sur 100, et une équipe LEC moyenne une équipe CBLOL moyenne ${vs(m.lg.LEC,m.lg.CBLOL)} fois sur 100. Un même KDA ne vaut donc pas la même chose d’une ligue à l’autre.</p>`;
+}
 /* ---- stats 2026 par joueur : classements au poste et comparaison (robot, API LoL Esports) ---- */
 const SV2=()=>!!(SJ&&SJ.v>=2);
 // id, libellé, calcul sur la saison, format, plus haut = mieux
-const PSTAT=[["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","KDA",S=>kdaV(S.k,S.d,S.a),fx2,1],
+const PSTAT=[["imp","Note d’impact",S=>null,v=>fxs(v),1],["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","KDA",S=>kdaV(S.k,S.d,S.a),fx2,1],
   ["kpg","Kills par partie",S=>S.k/S.g,fx1,1],["dpg","Morts par partie",S=>S.d/S.g,fx1,0],["apg","Assists par partie",S=>S.a/S.g,fx1,1],
   ["kp","Participation aux kills",S=>S.kpn?S.kps/S.kpn*100:S.tk?(S.k+S.a)/S.tk*100:null,v=>Math.round(v)+" %",1],["dmg","Part des dégâts",S=>S.dsn?S.ds/S.dsn*100:null,v=>Math.round(v)+" %",1],
   ["csm","CS par minute",S=>S.cs/Math.max(1,S.min),fx1,1],["gpm","Or par minute",S=>S.gold/Math.max(1,S.min),v=>Math.round(v),1],
@@ -1556,15 +1654,17 @@ const PSTAT=[["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","
 const MINR=10;   // parties 2026 minimum pour être classé
 const ROLEP={TOP:"des tops",JGL:"des junglers",MID:"des mids",BOT:"des ADC",SUP:"des supports"};
 function seasonOf(p){const x=SV2()&&SJ.players&&SJ.players[p.key];return x&&x.S&&x.S.g?x.S:null}
-function statVal(p,id){const S=seasonOf(p),d=PSTAT.find(x=>x[0]===id);if(!S||!d)return null;const v=d[2](S);return v==null||!isFinite(v)?null:v}
+function statVal(p,id){if(id==="imp"){const x=IMP(p);return x?x[0]:null}const S=seasonOf(p),d=PSTAT.find(x=>x[0]===id);if(!S||!d)return null;const v=d[2](S);return v==null||!isFinite(v)?null:v}
 function ranking(id,filt){const d=PSTAT.find(x=>x[0]===id);return PLAYERS.filter(p=>filt(p)&&(seasonOf(p)||{}).g>=MINR&&statVal(p,id)!=null).map(p=>({p,v:statVal(p,id)})).sort((a,b)=>d[4]?b.v-a.v:a.v-b.v)}
 function rankOf(p,id){const r=ranking(id,x=>x.role===p.role),i=r.findIndex(x=>x.p===p);return i<0?null:{i:i+1,n:r.length}}
 const rkBadge=(p,id)=>{const r=rankOf(p,id);return r?`<i class="rkb${r.i>3?" lo":""}" title="${r.i}${r.i===1?"er":"e"} sur ${r.n} ${ROLEP[p.role]}">${r.i}${r.i===1?"er":"e"}/${r.n}</i>`:""};
 function season2Tiles(p,S){
   const t=id=>{const d=PSTAT.find(x=>x[0]===id),v=d[2](S);return v==null||!isFinite(v)?null:[d[3](v),d[1].toLowerCase()+rkBadge(p,id)]};
-  return tiles([[S.g,"parties"+(S.g<MINR?` <i class="rkb lo">non classé</i>`:"")],t("win"),t("kda"),[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
+  const im=IMP(p);
+  return (im?`<div class="impt frame hx"><b>${fxs(im[0])}</b><span>note d’impact ${rkBadge(p,"imp")}<small>${im[4]===im[5]?`${im[4]}${im[4]===1?"er":"e"} ${ROLEP[p.role]} à coup sûr`:`entre le ${im[4]}${im[4]===1?"er":"e"} et le ${im[5]}e ${ROLEP[p.role]}`}, marge ±${fx2(im[1]||0)}</small></span></div>`:"")
+   +tiles([[S.g,"parties"+(S.g<MINR?` <i class="rkb lo">non classé</i>`:"")],t("win"),t("kda"),[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
     t("csm"),t("gpm"),t("dmg"),t("kp"),t("gd15"),t("csd15"),t("wpg"),t("pool")].filter(Boolean))
-   +`<p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Rang parmi les titulaires des Worlds au même poste (${MINR} parties minimum). Écarts à 15 min face au joueur d’en face.</p>`;
+   +`<p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Rang parmi les titulaires des Worlds au même poste (${MINR} parties minimum). Écarts à 15 min face au joueur d’en face.${IMP(p)?" La note d’impact résume KDA, participation, or, CS et avance à 15 min, corrigés de la force des adversaires et de la ligue : c’est elle qui permet de comparer des joueurs de ligues différentes. Elle ne mesure ni le shotcalling ni la vision.":""}</p>`;
 }
 function bestFoe(p){const nm=MATCHES.find(m=>(m.t1===p.team||m.t2===p.team)&&m.t1&&m.t2&&m.state!=="done"),opp=nm&&(nm.t1===p.team?nm.t2:nm.t1);
   return PLAYERS.find(x=>x.team===opp&&x.role===p.role)||(ranking("kda",x=>x.role===p.role&&x!==p)[0]||{}).p||PLAYERS.find(x=>x.role===p.role&&x!==p)}
@@ -1589,6 +1689,16 @@ function compareSheet(id,md){
   if(!SV2())h+=`<div class="note">Les stats 2026 arrivent dès que le robot a publié. Réessaie dans quelques minutes.</div>`;
   else if(!SA||!SB)h+=`<p class="small">Aucune partie 2026 recensée pour ${esc((!SA?a:b).id)}.</p>`;
   else{
+    const ia=IMP(a),ib=IMP(b),same=a.role===b.role,pb=ia&&ib?(same&&pBetter(a.key,b.key,a.role))||{d:ia[0]-ib[0],p:PHI((ia[0]-ib[0])/Math.hypot(ia[1]||.08,ib[1]||.08))}:null;
+    const la=ta.league,lb=tb.league,al=SJ.m&&SJ.m.logit?SJ.m.logit[1]:.64;
+    if(la!==lb)h+=`<div class="note">${esc(a.id)} joue en ${esc(la)}, ${esc(b.id)} en ${esc(lb)} : leurs stats brutes ont été faites contre des adversaires différents. La note d’impact, elle, corrige la force des ligues.</div>`;
+    if(pb){const W=pb.p>=.5?a:b,Lz=W===a?b:a,pw=Math.max(pb.p,1-pb.p),ld=same&&laneDuel(a.key,b.key,a.role,true),lg=same&&laneDuel(a.key,b.key,a.role,false);
+      h+=`<h2>Le plus fort, ligues comprises</h2><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Note d’impact",ia[0],ib[0],fxs,true,true)}</div>
+      <ul class="why">${same?`<li><b>${esc(W.id)}</b> est meilleur avec une probabilité de <b>${pw>.99?"plus de 99":Math.round(pw*100)} %</b>${pw>=.95?" (quasi certain)":pw>=.8?" (probable)":pw<.65?" : trop serré pour trancher":""}.</li>`:`<li>Postes différents : comparaison indicative.</li>`}
+      ${ia[6]!=null&&ib[6]!=null&&Math.abs(ia[6]-ib[6])>=.1?`<li>${esc((ia[6]>ib[6]?a:b).id)} a affronté des adversaires plus forts (adversité ${fxs(Math.max(ia[6],ib[6]))} contre ${fxs(Math.min(ia[6],ib[6]))}).</li>`:""}
+      ${same&&Math.abs(pb.d)>=.03?`<li>Dans une partie équilibrée, ${esc(W.id)} à la place de ${esc(Lz.id)} vaut environ <b>+${fx1(Math.abs(pb.d)*al*25)} points</b> de chances de victoire.</li>`:""}
+      ${ld?`<li>En lane, ${esc((ld.p>=.5?a:b).id)} finirait devant aux CS à 15 min dans <b>${Math.round(Math.max(ld.p,1-ld.p)*100)} %</b> des cas${lg&&Math.abs(lg.e)>=50?`, avec environ ${Math.round(Math.abs(lg.e))} d’or d’avance attendus`:""}.</li>`:""}</ul>
+      <p class="small" style="margin-top:6px">Corrigé de la force des adversaires et de la ligue, contrairement aux stats brutes ci-dessous.</p>`}
     h+=`<h2>Saison 2026</h2><div class="tapehd"><span>${esc(a.id)}</span><span>${esc(b.id)}</span></div><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Parties",SA.g,SB.g,v=>v)}`
       +PSTAT.map(([sid,l,f,fmt,hi])=>{const va=f(SA),vb=f(SB);return va==null||vb==null||!isFinite(va)||!isFinite(vb)?"":tape(l,va,vb,fmt,!!hi,sid==="gd15"||sid==="csd15")}).join("")+`</div>
       <p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Le chiffre en or est le meilleur des deux.</p>
@@ -1650,7 +1760,7 @@ function renderTourney(D){
     ${D.bloodiest?`<div class="tile hx"><b>${D.bloodiest.kills}</b><span>kills dans une partie, ${tn(D.bloodiest.b1)} contre ${tn(D.bloodiest.b2)}</span></div>`:""}</div>`;
 }
 function renderStats(){
-  $("#v-stats").innerHTML=`<h2>Worlds 2026 en stats</h2><p class="sub">${SV2()?"Calculé par notre robot depuis les données officielles LoL Esports, Play-In compris. Mis à jour toutes les 30 minutes.":"Calculé en direct depuis les feuilles de match Leaguepedia, Play-In compris."}</p>`+ablock("tourney",tourneyStats,renderTourney,.25);
+  $("#v-stats").innerHTML=`<h2>Worlds 2026 en stats</h2><p class="sub">${SV2()?"Calculé par notre robot depuis les données officielles LoL Esports, Play-In compris. Mis à jour toutes les 30 minutes.":"Calculé en direct depuis les feuilles de match Leaguepedia, Play-In compris."}</p>`+ablock("tourney",tourneyStats,renderTourney,.25)+leaguesHTML();
 }
 /* blocs prêts à insérer dans les fiches */
 function matchStatsHTML(m){
@@ -2018,10 +2128,10 @@ async function matchGames(m){
   const ourOf=id=>{const t=teams.find(x=>x.id===id);return t?resolveTeam(t.code,t.name):null};
   const done=(ev.match.games||[]).filter(g=>g.state==="completed").sort((a,b)=>a.number-b.number);
   const games=await Promise.all(done.map(async g=>{
-    const w0=await feedWin(g.id).catch(()=>null);if(!w0||!w0.frames||!w0.frames.length)return {num:g.number,none:true};
+    const w0=await feedWin(g.id).catch(()=>"err");if(w0==="err")return {num:g.number,err:true};if(!w0||!w0.frames||!w0.frames.length)return {num:g.number,none:true};
     const fr=w0.frames.find(f=>f.blueTeam.totalGold>0)||w0.frames[0],start=Date.parse(fr.rfc460Timestamp);
     const tEnd=Math.min(start+6*3600e3,Date.now()-60e3);   // jamais dans le futur : le flux refuserait
-    const we=await feedWin(g.id,tEnd).catch(()=>null),fe=we&&we.frames&&we.frames[we.frames.length-1];if(!fe)return {num:g.number,none:true};
+    const we=await feedWin(g.id,tEnd).catch(()=>"err");if(we==="err")return {num:g.number,err:true};const fe=we&&we.frames&&we.frames[we.frames.length-1];if(!fe)return {num:g.number,none:true};
     const det=await feedDetails(g.id,tEnd),dp={};((det&&det.frames&&det.frames.length&&det.frames[det.frames.length-1].participants)||[]).forEach(p=>dp[p.participantId]=p);
     const md=w0.gameMetadata;
     const side=sd=>{const mt=md[sd+"TeamMetadata"],ft=fe[sd+"Team"],fp={};(ft.participants||[]).forEach(p=>fp[p.participantId]=p);
@@ -2032,7 +2142,7 @@ async function matchGames(m){
   }));
   // vainqueur de chaque partie : l'API ne donne que le score de la série. Même règle que le robot :
   // état final (seule l'équipe qui a détruit un inhibiteur peut finir), sous la contrainte du score de la série
-  const G=games.filter(x=>!x.none),lean=x=>((x.b.in>0)!==(x.r.in>0)?(x.b.in>0?3:-3):0)+.3*(x.b.to-x.r.to)+(x.b.g-x.r.g)/5000;
+  const G=games.filter(x=>!x.none&&!x.err),lean=x=>((x.b.in>0)!==(x.r.in>0)?(x.b.in>0?3:-3):0)+.3*(x.b.to-x.r.to)+(x.b.g-x.r.g)/5000;
   let best=null,bs=-Infinity;const full=G.length===total&&ids.length===2;
   for(let mask=0;mask<(1<<G.length);mask++){
     const w=G.map((x,i)=>mask>>i&1?x.b.id:x.r.id),cnt={};w.forEach(t=>cnt[t]=(cnt[t]||0)+1);
@@ -2040,7 +2150,8 @@ async function matchGames(m){
     const sc=G.reduce((a,x,i)=>a+(mask>>i&1?lean(x):-lean(x)),0);if(sc>bs){bs=sc;best=w}
   }
   G.forEach((x,i)=>x.win=best?best[i]:(lean(x)>=0?x.b.id:x.r.id));
-  return {games};
+  if(games.some(x=>x.err))throw new Error("flux LoL Esports injoignable");
+  return {games,nocache:games.some(x=>x.none)};
 }
 function renderGames(m){return D=>{
   if(!D.games.length)return `<p class="small">Pas encore de partie terminée.</p>`;
@@ -2049,7 +2160,7 @@ function renderGames(m){return D=>{
   const prow=(pp,sd,rev)=>{const pl=playerFromSummoner(pp.sn,sd.our),cn=CH&&CH.nm?CH.nm[pp.c]||pp.c:pp.c;
     return `<div class="lpr${rev?" r":""}"${pl?` data-p="${pl.key}"`:""}>${champ(pp.c,30)}<span class="lpn"><b>${esc(pl?pl.id:String(pp.sn||"").split(" ").slice(1).join(" ")||pp.sn||"")}</b><small>${esc(cn)}</small></span><span class="lps"><b>${pp.k}/${pp.d}/${pp.a}</b><small>${pp.cs} cs${pp.ds!=null?` · ${Math.round(pp.ds*100)} %`:""}</small></span></div>`};
   return D.games.map(x=>{
-    if(x.none)return `<div class="note">Partie ${x.num} : LoL Esports n’a pas publié ses stats.</div>`;
+    if(x.none)return `<div class="note">Partie ${x.num} : stats pas encore publiées par LoL Esports.</div>`;
     const W=x.win===x.b.id?x.b:x.r;
     return `<div class="gsheet frame hx"><div class="lvhd"><span class="badge">Partie ${x.num}</span><b>${dur(x.mins)}</b><span class="small">${W.our?`Victoire ${esc(T[W.our].id)}`:""}</span></div>
      <div class="lvsc"><div class="lvt">${logo(x.b.our,34)}<b>${esc(T[x.b.our]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${x.b.k}</b><i>kills</i><b>${x.r.k}</b></div><div class="lvt">${logo(x.r.our,34)}<b>${esc(T[x.r.our]?.id||"")}</b><span class="side r">rouge</span></div></div>
@@ -2092,6 +2203,21 @@ async function fromLolEsports(){
     out.push(m);
   });
   if(out.filter(m=>m.t1&&m.t2).length<6)throw new Error("planning incomplet");
+  return out;
+}
+// secours : le planning publié par le robot (toutes les 30 min), bien plus frais que les données embarquées
+async function fromRobot(){
+  const S=await loadSJ(),L=S&&S.sched;if(!L||!L.length)throw new Error("pas de planning du robot");
+  const out=[];
+  L.forEach(([mid,t,st,bn,bo,a,b])=>{
+    if(!a||!b)return;
+    const t1=resolveTeam(a[0],a[1]),t2=resolveTeam(b[0],b[1]),done=st==="completed";
+    const m={id:"le"+mid,stage:stageOf(t),label:bn||"",t1,t2,start:t,bo:bo||1,n1:a[1],n2:b[1],s1:st==="unstarted"?null:a[2]??null,s2:st==="unstarted"?null:b[2]??null};
+    if(done&&a[2]!=null&&b[2]!=null&&a[2]!==b[2])m.winner=a[2]>b[2]?t1:t2;
+    if(st==="inProgress")m.apiLive=true;
+    out.push(m);
+  });
+  if(out.filter(m=>m.t1&&m.t2).length<6)throw new Error("planning du robot incomplet");
   return out;
 }
 async function cargo(params){
@@ -2181,29 +2307,33 @@ async function loadPhotos(force){
 async function sync(force){
   const el=$("#sync");el.className="sync busy";el.querySelector("span").textContent="Synchro…";
   let list=null;
-  try{list=await fromLolEsports();SOURCE="LoL Esports"}catch(e){
-    try{list=await fromLeaguepedia();SOURCE="Leaguepedia"}catch(e2){list=null}
+  try{list=await fromLolEsports();SOURCE="LoL Esports";syncFails=0}catch(e){
+    syncFails++;
+    try{list=await fromRobot();SOURCE="robot"}catch(e1){
+      try{list=await fromLeaguepedia();SOURCE="Leaguepedia"}catch(e2){list=null}}
   }
   if(!list){list=EMBED.map(m=>({...m}));SOURCE="embarquées"}
   MATCHES=finalize(list);
   lastSync=new Date();
-  el.className="sync "+(SOURCE==="embarquées"?"warn":"ok");
-  el.querySelector("span").textContent=SOURCE==="embarquées"?"Hors ligne":fmtTime(lastSync);
-  el.title=SOURCE==="embarquées"?"Sources injoignables, données du 23/10 et tes saisies":"Synchronisé via "+SOURCE+". Toucher pour actualiser.";
+  const rb=SOURCE==="robot"&&SJ&&SJ.built?new Date(SJ.built):null;
+  el.className="sync "+(SOURCE==="LoL Esports"?"ok":"warn");
+  el.querySelector("span").textContent=SOURCE==="embarquées"?"Hors ligne":rb?"Robot "+fmtTime(rb):fmtTime(lastSync);
+  el.title=SOURCE==="embarquées"?"Sources injoignables, données du 23/10 et tes saisies":rb?"LoL Esports ne répond pas : résultats du robot de "+fmtTime(rb)+". Nouvel essai automatique.":"Synchronisé via "+SOURCE+". Toucher pour actualiser.";
   renderLive();
   if(!photosStarted||force){photosStarted=true;loadPhotos(force)}
   scheduleNext();
 }
-let syncTimer=null, photosStarted=false;
+let syncTimer=null, photosStarted=false, syncFails=0;
 function scheduleNext(){
   clearTimeout(syncTimer);
   const now=Date.now();
   const hot=MATCHES.some(m=>m.state==="live"||m.state==="wait"||(m.state==="soon"&&new Date(m.start)-now<20*60e3));
-  syncTimer=setTimeout(()=>sync(false),hot?60e3:5*60e3);
+  // API injoignable : nouveaux essais rapprochés (3 s, 10 s, 30 s) avant le rythme normal
+  syncTimer=setTimeout(()=>sync(false),SOURCE!=="LoL Esports"&&syncFails>=1&&syncFails<=3?[3,10,30][syncFails-1]*1e3:hot?60e3:5*60e3);
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v9.3, 24/10/2026";
+const APP_VERSION="v11.1, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}

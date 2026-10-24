@@ -13,6 +13,7 @@ télécharge que les nouvelles parties, de la plus récente à la plus ancienne 
 Usage local : python3 tools/build_stats.py   (STATS_MAX_MIN = budget en minutes)"""
 import json, gzip, time, re, os, sys, unicodedata, urllib.request, urllib.parse, urllib.error, datetime, itertools, threading, collections
 import concurrent.futures as cf
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # modèles voisins (model_e, worlds_sim, lane_model…), processus fils compris
 
 GW = "https://esports-api.lolesports.com/persisted/gw/"
 FEED = "https://feed.lolesports.com/livestats/v1/"
@@ -21,6 +22,7 @@ UA = "IA_Games-Worlds26-stats/2.0 (+https://github.com/Vialou07/IA_Games)"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "data", "stats.json")
 CACHE = os.path.join(ROOT, "data", "cache.json.gz")
+STATE = os.path.join(ROOT, "data", "model_state.json")   # état des modèles : incertitudes du jour, pronos figés, historique de la simulation
 MAX_MIN = float(os.environ.get("STATS_MAX_MIN", "40"))
 T0 = time.time(); DEADLINE = T0 + MAX_MIN * 60
 SINCE = "2024-01-01"; YEAR = "2026"
@@ -400,8 +402,9 @@ def build(C, teams):
         W.update(winners(C, mid) if flip else w)
     LS = {"worlds": "Worlds", "msi": "MSI", "first_stand": "First Stand", "americas_cup": "Americas Cup", "ewc_lol": "EWC", "kespa_cup": "KeSPA"}
 
-    # lignes par joueur (nos 95), par partie
+    # lignes par joueur (nos 95), par partie ; FLAT : toutes les parties retenues, à plat, pour les blocs d'analyse (fiche, draft)
     prow = {}   # clé joueur -> [lignes]
+    FLAT.clear()
     duels, champs, mastery, tour, recent = {}, {}, {}, {"games": [], "rows": []}, {}
     tg = {t["id"]: [] for t in teams}   # parties 2026 par équipe
     cover = {}
@@ -424,6 +427,10 @@ def build(C, teams):
                 tid = our_team.get(sides[sd][0])
                 if tid and main_side(KS, sd, tid): main_ok.add((mid, tid))
             rows = {}
+            tm = {t[0]: t[1] for t in d["tm"]}
+            FLAT.append({"g": g[0], "m": mid, "t": t_, "l": e["l"], "op": op, "bn": e.get("bn", ""), "bo": e["bo"], "n": g[1],
+                         "b": sides["b"][0], "r": sides["r"][0], "bc": tm.get(sides["b"][0]), "rc": tm.get(sides["r"][0]), "w": wid,
+                         "min": s["min"], "ks": KS, "pid": [q[0] for q in P], "nm": [q[1] for q in P], "rows": rows})
             for i, pp in enumerate(P):
                 sd = "b" if i < 5 else "r"; me, opp = sides[sd], sides["r" if sd == "b" else "b"]
                 foe = next((q for q in (P[5:] if sd == "b" else P[:5]) if q[2] == pp[2]), None)
@@ -537,11 +544,51 @@ def build(C, teams):
                "champs": sorted([dict(c=c, pr=(v["p"] / n * 100) if n else 0, **v) for c, v in chs.items()], key=lambda x: -x["pr"])[:15]}
     tourney["red"] = n - tourney["blue"]
 
+    try: X = models_block(C, teams, W)
+    except Exception as e: log("modèles indisponibles :", type(e).__name__, str(e)[:160]); X = {}
     names = {t["id"]: sorted({t["lp"], t["name"], t["id"]} | {x[c] for mid in D for x in D[mid]["tm"] if our_team.get(x[0]) == t["id"] for c in (1, 2) if x[c]}) for t in teams}
     return {"v": 2, "src": "lolesports", "since": SINCE[:4], "teams": teams_out, "h2h": h2h, "duels": duels, "players": players, "tourney": tourney,
             "champs": champs, "mastery": mastery, "names": names, "logos": R["logos"], "pinfo": R["pinfo"],
             "dr": {k: sorted(v, key=lambda x: (x[0], x[1]), reverse=True)[:5] for k, v in recent.items()},
-            "cover": cover, "errors": [], "stale": {}}
+            "m": X.get("m"), "sim": X.get("sim"), "lane": X.get("lane"), "fiab": X.get("fiab"), "lgr": X.get("lgr"),
+            "cover": cover, "errors": [], "stale": {},
+            # planning des Worlds vu par le robot : secours de l'appli quand l'API LoL Esports ne répond pas au téléphone
+            "sched": [[m, e["t"], e["st"], e.get("bn", ""), e["bo"]] + (e.get("tm") or [])[:2]
+                      for m, e in sorted(E.items(), key=lambda kv: kv[1]["t"]) if e["l"] == "worlds" and e["t"] >= "2026-10-10"]}
+
+MS = {}   # état des modèles, chargé et sauvé par main()
+FLAT = []   # parties à plat (remplie par build) : {g, m, t, l, op, bn, bo, n, b, r, bc, rc, w, min, ks, pid, nm, rows{0..9}}
+def models_block(C, teams, W):
+    """Note d'impact (avec 200 rééchantillonnages une fois par jour), phase de lane, simulation des Worlds, pronos figés au
+    coup d'envoi, fiabilité du modèle et bilan brut des ligues. Chaque morceau est facultatif : en cas d'erreur, l'appli s'en passe.
+    « Maintenant » = heure de la dernière partie du cache : sans nouvelle donnée, rien ne bouge (pas de publication inutile)."""
+    import types, model_extras as X
+    out, T = {}, {}
+    ns = types.SimpleNamespace(winners=winners, lean=lean)
+    last = max(s["s"] for s in C["games"].values() if "s" in s)
+    try:
+        t = time.time()
+        out["m"], R, U, dt = X.impact_block(C, teams, ns, os.path.join(ROOT, "data", "teams.json"), unc_cache=MS.get("unc"), B=200, workers=4)
+        MS["unc"] = U; T["impact"] = round(time.time() - t, 1)
+    except Exception as e:
+        log("modèle d'impact indisponible :", type(e).__name__, str(e)[:160]); return out
+    try:
+        t = time.time(); out["lane"], _, _ = X.lane_block(C, teams, asof=last); T["lane"] = round(time.time() - t, 1)
+    except Exception as e: log("modèle de lane indisponible :", type(e).__name__, str(e)[:160])
+    raw = {}
+    try:
+        t = time.time(); sim, raw, _ = X.sim_block(C, teams, ns, R, hist=MS.get("hist"), now_iso=last)
+        if sim: out["sim"] = sim; MS["hist"] = sim["hist"]
+        T["simulation"] = round(time.time() - t, 1)
+    except Exception as e: log("simulation indisponible :", type(e).__name__, str(e)[:160])
+    try:
+        if raw: X.freeze_pronos(MS, C, raw, last)
+        out["fiab"], _ = X.fiab_block(MS, C, W, R, raw)
+    except Exception as e: log("fiabilité indisponible :", type(e).__name__, str(e)[:160])
+    try: out["lgr"] = {"2025": X.league_record(C, W, "2025-01-01"), "2024": X.league_record(C, W, "2024-01-01")}
+    except Exception as e: log("bilan des ligues indisponible :", type(e).__name__, str(e)[:160])
+    log("modèles :", T)
+    return out
 
 # ---------- passage ----------
 def main():
@@ -551,6 +598,9 @@ def main():
         try: C = json.load(gzip.open(CACHE, "rt", encoding="utf-8"))
         except Exception as e: log("cache illisible, on repart de zéro :", e)
     for k in ("events", "details", "games"): C.setdefault(k, {})
+    if os.path.exists(STATE):
+        try: MS.update(json.load(open(STATE, encoding="utf-8")))
+        except Exception as e: log("état des modèles illisible :", e)
     log("cache : %d matchs, %d détails, %d parties | budget %d min" % (len(C["events"]), len(C["details"]), len(C["games"]), MAX_MIN))
     complete = True
     try:
@@ -600,6 +650,7 @@ def main():
         log("pas encore d'identifiants d'équipes, stats inchangées"); return 0
 
     out = build(C, teams)
+    with open(STATE, "w", encoding="utf-8") as f: json.dump(MS, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     left = sum(1 for m in C["details"].values() for g in m["g"] if g[2] == "completed" and g[0] not in C["games"])
     out["meta"] = {"queries": NQ[0], "seconds": round(time.time() - T0), "games": len(C["games"]), "left": left, "cover": out["cover"], "timed": sum(1 for s in C["games"].values() if s.get("tv")),
                    "players": sum(1 for p in out["players"].values() if p["S"]["g"]), "duels": len(out["duels"]), "h2h": len(out["h2h"]), "tourney": out["tourney"]["n"]}
