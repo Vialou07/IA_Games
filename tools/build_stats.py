@@ -11,7 +11,7 @@ un inhibiteur peut finir) sous la contrainte du score de la série (la dernière
 Mémoire du robot : data/cache.json.gz, publiée avec stats.json sur la branche stats. Chaque passage ne
 télécharge que les nouvelles parties, de la plus récente à la plus ancienne (2026, puis 2025 et 2024).
 Usage local : python3 tools/build_stats.py   (STATS_MAX_MIN = budget en minutes)"""
-import json, gzip, time, re, os, sys, unicodedata, urllib.request, urllib.parse, urllib.error, datetime, itertools, threading
+import json, gzip, time, re, os, sys, unicodedata, urllib.request, urllib.parse, urllib.error, datetime, itertools, threading, collections
 import concurrent.futures as cf
 
 GW = "https://esports-api.lolesports.com/persisted/gw/"
@@ -26,8 +26,12 @@ T0 = time.time(); DEADLINE = T0 + MAX_MIN * 60
 SINCE = "2024-01-01"; YEAR = "2026"
 # ligues où jouent (ou ont joué depuis 2024) les 95 titulaires
 SLUGS = ["worlds", "msi", "first_stand", "americas_cup", "lck", "lpl", "lec", "lcs", "cblol-brazil", "lcp",
-         "lta_n", "lta_s", "lta_cross", "pcs", "vcs"]
-INTL = {"worlds": "Season World Championship", "msi": "Mid-Season Invitational", "first_stand": "First Stand", "americas_cup": "Americas Cup"}
+         "lta_n", "lta_s", "lta_cross", "pcs", "vcs", "ewc_lol", "kespa_cup"]
+INTL = {"worlds": "Season World Championship", "msi": "Mid-Season Invitational", "first_stand": "First Stand", "americas_cup": "Americas Cup",
+        "ewc_lol": "Esports World Cup"}
+# KeSPA Cup : les équipes LCK y alignent souvent leur académie sous le même identifiant d'équipe (T1A sous « T1 », GGA sous « GEN »)
+ROSTER_CHECK = {"kespa_cup"}
+MIN_NOFIN = 20   # flux arrêté sans l'état « finished » : on garde la partie si elle a duré au moins 20 min (KDA identiques à gol.gg dans 53 cas sur 54)
 ROLE = {"top": "TOP", "jungle": "JGL", "mid": "MID", "bottom": "BOT", "support": "SUP"}
 LOG = []
 def log(*a):
@@ -106,7 +110,60 @@ def fetch_details(C, mids):
         for mid, d in ex.map(one, mids):
             if d: C["details"][mid] = d
 
-def summarize(gid, want_details):
+SEC = datetime.timedelta(seconds=1)
+def timing(gid, first, end):
+    """Temps de jeu réel, pauses retirées. Renvoie (début, minutes de jeu, secondes de pause, instant de la 15e minute de jeu).
+    Pendant une pause, le flux marque ses images « paused », ou n'en émet plus et renvoie les dernières, antérieures à l'instant demandé."""
+    seen = {}
+    def frames(t):
+        k = iso10(t)
+        if k not in seen: seen[k] = (feed("window/%s?startingTime=%s" % (gid, k)) or {}).get("frames") or []
+        return seen[k]
+    def gold(t):
+        fr = frames(t)
+        return fr[0]["blueTeam"]["totalGold"] + fr[0]["redTeam"]["totalGold"] if fr else None
+    def paused(t):
+        fr = frames(t)
+        if not fr: return True
+        return fr[-1]["gameState"] == "paused" or (t - ts(fr[-1]["rfc460Timestamp"])).total_seconds() > 20
+    # début : l'or passe 5 000 de 40 à 64 s après 0:00 (médiane 49 s, mesuré sur les Worlds 2026).
+    # S'il est encore à 5 000 au bout de 75 s, c'est une attente ou un écran de chargement : on recale.
+    start = first
+    if (end - first).total_seconds() > 300 and (gold(first + 75 * SEC) or 0) <= 5000:
+        lo, hi = first + 75 * SEC, min(end, first + datetime.timedelta(minutes=60))
+        while (hi - lo).total_seconds() > 10:
+            mid = lo + (hi - lo) / 2
+            if (gold(mid) or 0) > 5000: hi = mid
+            else: lo = mid
+        start = hi - 49 * SEC
+    # une image toutes les 2 minutes (les pauses techniques durent plusieurs minutes), puis début et fin de chaque pause à 10 s près
+    T = [start + (60 + 120 * k) * SEC for k in range(max(0, int((end - start).total_seconds() - 90) // 120 + 1))]
+    st = [paused(t) for t in T]
+    pauses, i = [], 0
+    while i < len(T):
+        if not st[i]: i += 1; continue
+        j = i
+        while j + 1 < len(T) and st[j + 1]: j += 1
+        lo, hi = (T[i - 1] if i else start), T[i]   # premier instant en pause
+        while (hi - lo).total_seconds() > 10:
+            mid = lo + (hi - lo) / 2
+            if paused(mid): hi = mid
+            else: lo = mid
+        ps = hi
+        lo, hi = T[j], (T[j + 1] if j + 1 < len(T) else end)   # reprise du jeu
+        while (hi - lo).total_seconds() > 10:
+            mid = lo + (hi - lo) / 2
+            if paused(mid): lo = mid
+            else: hi = mid
+        if (hi - ps).total_seconds() >= 20: pauses.append((ps, hi))
+        i = j + 1
+    pz = sum((b - a).total_seconds() for a, b in pauses)
+    t15 = start + datetime.timedelta(minutes=15)
+    for a, b in pauses:
+        if a < t15: t15 += b - a
+    return start, round(((end - start).total_seconds() - pz) / 60, 2), round(pz), t15
+
+def summarize(gid, want_details, want_timing=False):
     w0 = feed("window/" + gid)
     if not w0 or not w0.get("frames"): return {"x": 1}
     md = w0["gameMetadata"]
@@ -119,7 +176,11 @@ def summarize(gid, want_details):
     if not we or not we.get("frames"): return None if recent else {"x": 1}
     fe = we["frames"][-1]; end = ts(fe["rfc460Timestamp"])
     if fe["gameState"] != "finished" and recent: return None   # partie à peine finie : on réessaiera au prochain passage
-    w15 = feed("window/" + gid + "?startingTime=" + iso10(start + datetime.timedelta(minutes=15))) if (end - start).total_seconds() > 16 * 60 else None
+    wall = round((end - start).total_seconds() / 60, 2)
+    tm = timing(gid, start, end) if want_timing else None
+    if tm: start, mins, pz, t15 = tm
+    else: mins, pz, t15 = wall, None, start + datetime.timedelta(minutes=15)
+    w15 = feed("window/" + gid + "?startingTime=" + iso10(t15)) if mins > 16 else None
     f15 = w15["frames"][0] if w15 and w15.get("frames") else None
     det = feed("details/" + gid + "?startingTime=" + iso10(t_end)) if want_details else None
     dp = {p["participantId"]: p for p in (det["frames"][-1]["participants"] if det and det.get("frames") else [])}
@@ -137,24 +198,47 @@ def summarize(gid, want_details):
                       pp["kills"], pp["deaths"], pp["assists"], pp["creepScore"], pp["totalGold"],
                       q["totalGold"] if q else None, q["creepScore"] if q else None,
                       round(d["championDamageShare"], 4) if "championDamageShare" in d else None, d.get("wardsPlaced"), d.get("wardsDestroyed")])
-    return {"s": iso10(start)[:19], "fin": fe["gameState"] == "finished", "min": round((end - start).total_seconds() / 60, 2),
-            "b": team(fe["blueTeam"], md["blueTeamMetadata"]), "r": team(fe["redTeam"], md["redTeamMetadata"]), "p": P}
+    out = {"s": start.strftime("%Y-%m-%dT%H:%M:%S"), "fin": fe["gameState"] == "finished", "min": mins, "wmin": wall,
+           "b": team(fe["blueTeam"], md["blueTeamMetadata"]), "r": team(fe["redTeam"], md["redTeamMetadata"]), "p": P}
+    if tm: out["tv"] = 1; out["pz"] = pz   # temps de jeu mesuré, pauses retirées
+    return out
 
-def fetch_games(C, todo, ours):
+def upgrade_timing(gid, s):
+    """Partie déjà résumée en temps réel : on mesure le temps de jeu et on reprend l'image de la 15e minute de jeu."""
+    first = ts(s["s"] + "Z"); end = first + datetime.timedelta(minutes=s.get("wmin", s["min"]))
+    start, mins, pz, t15 = timing(gid, first, end)
+    w15 = feed("window/" + gid + "?startingTime=" + iso10(t15)) if mins > 16 else None
+    f15 = w15["frames"][0] if w15 and w15.get("frames") else None
+    p15 = {p["participantId"]: p for p in ([*f15["blueTeam"]["participants"], *f15["redTeam"]["participants"]] if f15 else [])}
+    s = dict(s, s=start.strftime("%Y-%m-%dT%H:%M:%S"), min=mins, wmin=s.get("wmin", s["min"]), tv=1, pz=pz, p=[list(q) for q in s["p"]])
+    for i, q in enumerate(s["p"]):   # participants 1 à 10 dans l'ordre (5 bleus puis 5 rouges)
+        x = p15.get(i + 1); q[9], q[10] = (x["totalGold"], x["creepScore"]) if x else (None, None)
+    return s
+
+def fetch_games(C, todo, ours, our_players):
     def one(item):
-        gid, year, teams = item
+        gid, year, teams, upgrade = item
         if time.time() > DEADLINE: return gid, None
-        try: return gid, summarize(gid, year >= YEAR and bool(teams & ours))
+        try:
+            if upgrade: return gid, upgrade_timing(gid, C["games"][gid])
+            return gid, summarize(gid, year >= YEAR and bool(teams & ours), want_timing=True)   # nouvelles parties : temps de jeu mesuré
         except Exception as e:
             log("  partie", gid, str(e)[:120]); return gid, None
     n = 0
-    with cf.ThreadPoolExecutor(8) as ex:
+    with cf.ThreadPoolExecutor(10) as ex:
         for gid, s in ex.map(one, todo):
             if s is None: continue
             if "x" in s: s["x"] = C["games"].get(gid, {}).get("x", 0) + 1; s["at"] = time.strftime("%Y-%m-%d")
             C["games"][gid] = s; n += 1
-            if n % 250 == 0: log("  %d parties résumées (%d requêtes, %d s)" % (n, NQ[0], time.time() - T0))
+            if n % 250 == 0: log("  %d parties traitées (%d requêtes, %d s)" % (n, NQ[0], time.time() - T0))
     return n
+
+def needs_timing(C, gid, mid, our_players):
+    """Parties où le temps de jeu compte pour l'appli : 2026 avec un de nos titulaires, et toutes les parties internationales."""
+    s = C["games"].get(gid) or {}
+    if "p" not in s or s.get("tv"): return False
+    e = C["events"].get(mid) or {}
+    return e.get("l") in ("worlds", "msi", "first_stand", "ewc_lol") or (e.get("t", "")[:4] == YEAR and any(q[0] in our_players for q in s["p"]))
 
 # ---------- vainqueur de chaque partie ----------
 def lean(s):
@@ -173,7 +257,9 @@ def winners(C, mid):
     for g in games:
         s = C["games"].get(g[0])
         blue = s["b"][0] if s and "b" in s else g[3]
-        lean_of.append((blue, lean(s) if s and "b" in s else 0.0))
+        l = lean(s) if s and "b" in s else 0.0
+        if s and "b" in s and not s.get("fin"): l *= 0.1   # flux coupé : état partiel, sert seulement à départager
+        lean_of.append((blue, l))
     best, bscore = None, None
     for combo in itertools.product(ids, repeat=len(games)):
         if any(combo.count(t) != wins[t] for t in ids) or combo[-1] != sw: continue
@@ -183,20 +269,49 @@ def winners(C, mid):
         best = [blue if l >= 0 else next(t for t in ids if t != blue) for blue, l in lean_of]
     return {g[0]: w for g, w in zip(games, best)}
 
+def swap_ids(s):
+    P = s["p"]
+    for i in range(5):
+        j = next((k for k in range(5, 10) if P[k][2] == P[i][2]), None)
+        if j is not None: P[i][0], P[j][0] = P[j][0], P[i][0]
+
+def fix_sides(C):
+    """Flux LPL mal étiquetés (17 parties, vérifiées sur gol.gg) : étiquette d'équipe ou identifiants de joueurs du mauvais côté.
+    On corrige en mémoire seulement (le cache brut est déjà écrit), à chaque passage."""
+    E, D, G = C["events"], C["details"], C["games"]; codes, year, votes = {}, {}, {}
+    for mid, d in D.items():
+        for t in d["tm"]:
+            if t[1]: codes.setdefault(t[0], set()).add(norm(t[1]))
+        for g in d["g"]: year[g[0]] = E.get(mid, {}).get("t", "")[:4]
+    for gid, s in G.items():
+        for i, p in enumerate(s.get("p", [])):
+            v = votes.setdefault((p[0], year.get(gid)), {}); t = (s["b"] if i < 5 else s["r"])[0]; v[t] = v.get(t, 0) + 1
+    n = 0
+    for gid, s in G.items():
+        if "p" not in s: continue
+        b, r, y, P = s["b"][0], s["r"][0], year.get(gid), s["p"]
+        pre = lambda p, t: bool(p[1]) and any(norm(p[1]).startswith(c) for c in codes.get(t, ()))
+        if sum(pre(p, r) for p in P[:5]) >= 3 and sum(pre(p, b) for p in P[5:]) >= 3:   # les pseudos contredisent l'étiquette
+            s["b"][0], s["r"][0] = r, b; b, r = r, b; n += 1
+        bad = lambda ps, me, ot: sum(votes.get((p[0], y), {}).get(ot, 0) > votes.get((p[0], y), {}).get(me, 0) for p in ps)
+        if bad(P[:5], b, r) >= 3 and bad(P[5:], r, b) >= 3: swap_ids(s); n += 1   # identifiants de l'autre équipe
+    return n
+
 # ---------- agrégats ----------
 def agg(rows):
     A = {"g": 0, "w": 0, "k": 0, "d": 0, "a": 0, "cs": 0, "gold": 0, "min": 0, "tk": 0, "dmg": 0, "vs": 0,
-         "dsn": 0, "ds": 0, "wp": 0, "wk": 0, "wn": 0, "n15": 0, "gd15": 0, "csd15": 0}
+         "dsn": 0, "ds": 0, "wp": 0, "wk": 0, "wn": 0, "n15": 0, "gd15": 0, "csd15": 0, "kps": 0, "kpn": 0}
     ch = {}
     for r in rows:
         A["g"] += 1; A["w"] += r["W"]
         for a in ("k", "d", "a", "cs", "gold", "min", "tk"): A[a] += r[a]
+        if r["tk"]: A["kpn"] += 1; A["kps"] += (r["k"] + r["a"]) / r["tk"]   # participation aux kills : moyenne par partie, comme gol.gg
         if r["ds"] is not None: A["dsn"] += 1; A["ds"] += r["ds"]
         if r["wp"] is not None: A["wn"] += 1; A["wp"] += r["wp"]; A["wk"] += r["wk"] or 0
         if r["gd15"] is not None: A["n15"] += 1; A["gd15"] += r["gd15"]; A["csd15"] += r["csd15"]
         c = ch.setdefault(r["C"], {"g": 0, "w": 0, "k": 0, "d": 0, "a": 0}); c["g"] += 1; c["w"] += r["W"]
         c["k"] += r["k"]; c["d"] += r["d"]; c["a"] += r["a"]
-    for k in ("min", "ds"): A[k] = round(A[k], 3)
+    for k in ("min", "ds", "kps"): A[k] = round(A[k], 3)
     A["champs"] = [dict(c=c, **v) for c, v in sorted(ch.items(), key=lambda kv: (-kv[1]["g"], -kv[1]["w"]))[:8]]
     A["pool"] = len(ch)
     return A
@@ -228,22 +343,66 @@ def build(C, teams):
     R = C["roster"]; our_team = R["teams"]; our_pl = R["players"]
     key_of = {p["key"]: p for t in teams for p in t["players"]}
     team_of_key = {p["key"]: t["id"] for t in teams for p in t["players"]}
-    LN = {"lck": "LCK", "lpl": "LPL", "lec": "LEC", "lcs": "LCS", "cblol-brazil": "CBLOL", "lcp": "LCP", "lta_n": "LTA North", "lta_s": "LTA South", "lta_cross": "LTA", "pcs": "PCS", "vcs": "VCS"}
+    LN = {"lck": "LCK", "lpl": "LPL", "lec": "LEC", "lcs": "LCS", "cblol-brazil": "CBLOL", "lcp": "LCP", "lta_n": "LTA North", "lta_s": "LTA South", "lta_cross": "LTA", "pcs": "PCS", "vcs": "VCS",
+          "kespa_cup": "KeSPA Cup"}
     # noms des champions (Data Dragon)
     try:
         v = fetch("https://ddragon.leagueoflegends.com/api/versions.json")[0]
         CN = {c["id"]: c["name"] for c in fetch("https://ddragon.leagueoflegends.com/cdn/%s/data/en_US/champion.json" % v)["data"].values()}
     except Exception: CN = {}
     cname = lambda c: CN.get(c, c)
+    pseudo = {k: norm(p["id"]) for k, p in key_of.items()}
+    side_ix = {"b": range(5), "r": range(5, 10)}
+    # équipes 2026 sous un autre identifiant (EWC : « AG.AL » = AL, « MIBR.LOS » = LOS) : au moins 3 titulaires d'une même équipe du même côté
+    alias = {}
+    for mid in D:
+        if mid not in E or E[mid]["t"][:4] != YEAR: continue
+        for g in D[mid]["g"]:
+            s = G.get(g[0])
+            if not s or "p" not in s: continue
+            for sd in ("b", "r"):
+                if s[sd][0] in our_team: continue
+                c = collections.Counter(team_of_key[our_pl[s["p"][i][0]]] for i in side_ix[sd] if s["p"][i][0] in our_pl).most_common(1)
+                if c and c[0][1] >= 3: alias[s[sd][0]] = c[0][0]
+    our_team = {**our_team, **alias}
+    def ident(s):
+        """Clé de nos joueurs pour chaque participant. Le flux se trompe parfois : identifiant d'un de nos joueurs posé sur un adversaire
+        alors que le vrai joueur est dans la partie (LPL 18/05/2025, 25/01/2026), ou identifiant absent (TES-WBG 02/05/2026)."""
+        P = s["p"]; ks = [our_pl.get(q[0]) for q in P]
+        lost = []
+        for i, q in enumerate(P):
+            k = ks[i]
+            if k and q[1] and len(pseudo[k]) >= 3 and not norm(q[1]).endswith(pseudo[k]) and \
+               any(j != i and x[1] and norm(x[1]).endswith(pseudo[k]) for j, x in enumerate(P)):
+                ks[i] = None; lost.append(k)
+        for k in lost:
+            j = next((j for j, x in enumerate(P) if x[1] and norm(x[1]).endswith(pseudo[k])), None)
+            if j is not None: ks[j] = k
+        for i, q in enumerate(P):
+            if ks[i] is None and q[0] is None and q[1]:
+                tid = our_team.get(s["b" if i < 5 else "r"][0]); nm = norm(q[1])
+                ks[i] = next((k for k in pseudo if team_of_key[k] == tid and len(pseudo[k]) >= 3 and nm.endswith(pseudo[k]) and k not in ks), None)
+        return ks
+    def main_side(KS, sd, tid):   # l'équipe a-t-elle aligné au moins 3 de nos titulaires ? (KeSPA Cup : sinon c'est l'académie)
+        return sum(1 for i in side_ix[sd] if KS[i] and team_of_key[KS[i]] == tid) >= 3
+    main_ok = set()   # (match, notre équipe) où l'équipe principale a joué
 
     # matchs terminés, du plus récent au plus ancien
     matches = sorted([(E[m]["t"], m) for m in D if m in E and E[m]["st"] == "completed"], reverse=True)
     W = {}
-    for _, mid in matches: W.update(winners(C, mid))
+    log("côtés ou identifiants corrigés :", fix_sides(C))
+    for _, mid in matches:
+        w = winners(C, mid)
+        # vainqueur imposé par la série contre un état final très net : les métadonnées du flux sont inversées, on suit les images
+        flip = [g for g, x in w.items() if "b" in G.get(g, {}) and abs(lean(G[g])) >= 3 and (G[g]["b"][0] if lean(G[g]) > 0 else G[g]["r"][0]) != x]
+        for g in flip:
+            s = G[g]; s["b"][0], s["r"][0] = s["r"][0], s["b"][0]; swap_ids(s)
+        W.update(winners(C, mid) if flip else w)
+    LS = {"worlds": "Worlds", "msi": "MSI", "first_stand": "First Stand", "americas_cup": "Americas Cup", "ewc_lol": "EWC", "kespa_cup": "KeSPA"}
 
     # lignes par joueur (nos 95), par partie
     prow = {}   # clé joueur -> [lignes]
-    duels, champs, mastery, tour = {}, {}, {}, {"games": [], "rows": []}
+    duels, champs, mastery, tour, recent = {}, {}, {}, {"games": [], "rows": []}, {}
     tg = {t["id"]: [] for t in teams}   # parties 2026 par équipe
     cover = {}
     for t_, mid in matches:
@@ -252,21 +411,31 @@ def build(C, teams):
             s = G.get(g[0]); wid = W.get(g[0])
             if not s or "p" not in s or not wid: continue
             year = t_[:4]; cover[year] = cover.get(year, 0) + 1
-            if not s["fin"]: continue   # flux coupé avant la fin : chiffres incomplets
-            sides = {"b": s["b"], "r": s["r"]}; P = s["p"]
+            # flux arrêté sans « finished » : la dernière image est presque toujours la fin réelle ; on écarte seulement les flux coupés tôt
+            if not s["fin"] and s["min"] < MIN_NOFIN: continue
+            # partie reprise après une coupure (compteurs remis à zéro) : or par minute impossible, on l'écarte
+            if (s["b"][2] + s["r"][2]) / max(1, s.get("wmin", s["min"])) > 5500: continue
+            sides = {"b": s["b"], "r": s["r"]}; P = s["p"]; KS = ident(s)
+            # kills d'équipe = somme des kills des joueurs (le total du flux compte aussi les exécutions)
+            kills = {"b": sum(q[4] for q in P[:5]), "r": sum(q[4] for q in P[5:])}
+            # écart à 15 min seulement si l'image est plausible (or total 40 000 à 62 000 : sinon pause ou image vide)
+            ok15 = 40000 <= sum(q[9] or 0 for q in P) <= 62000
+            for sd in ("b", "r"):
+                tid = our_team.get(sides[sd][0])
+                if tid and main_side(KS, sd, tid): main_ok.add((mid, tid))
             rows = {}
             for i, pp in enumerate(P):
                 sd = "b" if i < 5 else "r"; me, opp = sides[sd], sides["r" if sd == "b" else "b"]
                 foe = next((q for q in (P[5:] if sd == "b" else P[:5]) if q[2] == pp[2]), None)
                 r = {"C": cname(pp[3]), "W": 1 if me[0] == wid else 0, "k": pp[4], "d": pp[5], "a": pp[6], "cs": pp[7], "gold": pp[8],
-                     "min": s["min"], "tk": me[1], "ds": pp[11], "wp": pp[12], "wk": pp[13],
-                     "gd15": pp[9] - foe[9] if foe and pp[9] is not None and foe[9] is not None else None,
-                     "csd15": pp[10] - foe[10] if foe and pp[10] is not None and foe[10] is not None else None,
+                     "min": s["min"], "tk": kills[sd], "ds": pp[11], "wp": pp[12], "wk": pp[13],
+                     "gd15": pp[9] - foe[9] if ok15 and foe and pp[9] is not None and foe[9] is not None else None,
+                     "csd15": pp[10] - foe[10] if ok15 and foe and pp[10] is not None and foe[10] is not None else None,
                      "dt": lpdt(t_), "op": op, "team": me[0], "role": pp[2]}
                 rows[i] = r
                 if year == YEAR:
                     ck = norm(r["C"]); c = champs.setdefault(ck, {"n": 0, "w": 0}); c["n"] += 1; c["w"] += r["W"]
-                k = our_pl.get(pp[0])
+                k = KS[i]
                 if k:
                     prow.setdefault(k, []).append(r)
                     if year >= "2025":
@@ -275,7 +444,7 @@ def build(C, teams):
             for i in range(5):
                 a, b = P[i], next((q for q in P[5:] if q[2] == P[i][2]), None)
                 if not b: continue
-                ka, kb = our_pl.get(a[0]), our_pl.get(b[0])
+                ka, kb = KS[i], KS[P.index(b)]
                 if not (ka and kb): continue
                 ra, rb = rows[i], rows[P.index(b)]
                 for (x, rx, y, ry) in ((ka, ra, kb, rb), (kb, rb, ka, ra)):
@@ -284,17 +453,24 @@ def build(C, teams):
                     z["g"] += 1; z["w"] += rx["W"]
                     z["ka"] += rx["k"]; z["da"] += rx["d"]; z["aa"] += rx["a"]; z["kb"] += ry["k"]; z["db"] += ry["d"]; z["ab"] += ry["a"]
                     if rx["gd15"] is not None: z["n15"] += 1; z["gd15"] += rx["gd15"]
-                    if not z["last"]: z["last"] = {"dt": rx["dt"], "ca": rx["C"], "cb": ry["C"], "w": bool(rx["W"]), "op": op}
+                    # dernière manche jouée (les matchs vont du plus récent au plus ancien, les manches dans l'ordre)
+                    if not z["last"] or (z["last"]["dt"] == rx["dt"] and g[1] > z["last"]["n"]):
+                        z["last"] = {"dt": rx["dt"], "ca": rx["C"], "cb": ry["C"], "w": bool(rx["W"]), "op": op, "n": g[1]}
+                # 5 dernières rencontres, rangées une seule fois (clé dans l'ordre alphabétique, du point de vue du premier)
+                (x, rx, y, ry) = sorted(((ka, ra, kb, rb), (kb, rb, ka, ra)), key=lambda v: norm(key_of[v[0]]["id"]))[0]
+                recent.setdefault(norm(key_of[x]["id"]) + "|" + norm(key_of[y]["id"]), []).append(
+                    [rx["dt"][:10], g[1], LS.get(e["l"], LN.get(e["l"], e["l"].upper())), rx["C"], ry["C"], [rx["k"], rx["d"], rx["a"]], [ry["k"], ry["d"], ry["a"]], rx["gd15"], rx["W"]])
             # parties 2026 des équipes, et parties des Worlds 2026
             if year == YEAR:
                 for sd in ("b", "r"):
                     tid = our_team.get(sides[sd][0])
-                    if tid: tg[tid].append((sd, sides, wid, s["min"]))
+                    if tid and (e["l"] not in ROSTER_CHECK or (mid, tid) in main_ok and main_side(KS, sd, tid)):
+                        tg[tid].append((sd, sides, wid, s["min"], kills))
             if e["l"] == "worlds" and year == YEAR:
                 tour["games"].append({"gl": s["min"], "b1": our_team.get(s["b"][0], s["b"][0]), "b2": our_team.get(s["r"][0], s["r"][0]),
-                                      "wt": our_team.get(wid, wid), "kills": s["b"][1] + s["r"][1]})
+                                      "wt": our_team.get(wid, wid), "kills": kills["b"] + kills["r"]})
                 for i, r in rows.items():
-                    k = our_pl.get(P[i][0])
+                    k = KS[i]
                     tour["rows"].append(dict(r, L=key_of[k]["id"] if k else re.sub(r"^\S+\s+", "", P[i][1] or "?"), tm=our_team.get(r["team"], "")))
 
     # joueurs
@@ -316,6 +492,8 @@ def build(C, teams):
         (ia, ca, na, wa), (ib, cb, nb, wb) = d["tm"]
         if wa == wb or wa is None: continue
         op = opname(e["l"], LN, t_); A, B = our_team.get(ia), our_team.get(ib)
+        if e["l"] in ROSTER_CHECK:   # série jouée par l'académie sous le nom de l'équipe : ignorée pour l'équipe
+            A = A if (mid, A) in main_ok else None; B = B if (mid, B) in main_ok else None
         for me, opp, onm, s1, s2 in ((A, B, nb, wa, wb), (B, A, na, wb, wa)):
             if not me or t_[:4] != YEAR: continue
             S = teams_out[me]; won = s1 > s2
@@ -332,12 +510,12 @@ def build(C, teams):
             H["since"] = lpdt(t_)
     for tid, gl in tg.items():
         S = teams_out[tid]
-        for sd, sides, wid, mins in gl:
+        for sd, sides, wid, mins, kl in gl:
             me, op_ = sides[sd], sides["r" if sd == "b" else "b"]; won = me[0] == wid
             S["g"] += 1; S["gw"] += won
             if sd == "b": S["bn"] += 1; S["bw"] += won
             else: S["rn"] += 1; S["rw"] += won
-            S["gl"] += mins; S["k"] += me[1]; S["d"] += op_[1]; S["dr"] += me[6]; S["ba"] += me[5]; S["to"] += me[3]; S["gd"] += me[2] - op_[2]
+            S["gl"] += mins; S["k"] += kl[sd]; S["d"] += kl["r" if sd == "b" else "b"]; S["dr"] += me[6]; S["ba"] += me[5]; S["to"] += me[3]; S["gd"] += me[2] - op_[2]
         if S["g"]:
             for k in ("gl", "k", "d", "dr", "ba", "to", "gd"): S[k] = round(S[k] / S["g"], 3)
 
@@ -362,6 +540,7 @@ def build(C, teams):
     names = {t["id"]: sorted({t["lp"], t["name"], t["id"]} | {x[c] for mid in D for x in D[mid]["tm"] if our_team.get(x[0]) == t["id"] for c in (1, 2) if x[c]}) for t in teams}
     return {"v": 2, "src": "lolesports", "since": SINCE[:4], "teams": teams_out, "h2h": h2h, "duels": duels, "players": players, "tourney": tourney,
             "champs": champs, "mastery": mastery, "names": names, "logos": R["logos"], "pinfo": R["pinfo"],
+            "dr": {k: sorted(v, key=lambda x: (x[0], x[1]), reverse=True)[:5] for k, v in recent.items()},
             "cover": cover, "errors": [], "stale": {}}
 
 # ---------- passage ----------
@@ -396,9 +575,17 @@ def main():
                 if s and "p" in s: continue
                 # flux absent : à chaque passage pendant 2 jours, puis 3 essais, un par jour
                 if s and (s.get("x", 0) >= 40 if t >= two_days else (s.get("x", 0) >= 3 or s.get("at") == today)): continue
-                todo.append((g[0], t[:4], {x[0] for x in d["tm"]}))
+                todo.append((g[0], t[:4], {x[0] for x in d["tm"]}, False))
         log("parties à résumer : %d" % len(todo))
-        fetch_games(C, todo, ours)
+        our_players = set(C["roster"]["players"])
+        fetch_games(C, todo, ours, our_players)
+        # parties déjà en mémoire sans temps de jeu mesuré (pauses comptées) : de la plus récente à la plus ancienne
+        upg = [(g[0], t[:4], set(), True) for t, m in sorted(((E[m]["t"], m) for m in D if m in E), reverse=True)
+               for g in D[m]["g"] if needs_timing(C, g[0], m, our_players)]
+        if upg:
+            log("temps de jeu à mesurer : %d parties" % len(upg))
+            fetch_games(C, upg, ours, our_players)
+            log("temps de jeu restant à mesurer : %d parties" % sum(1 for x in upg if not C["games"][x[0]].get("tv")))
         if time.time() > DEADLINE: complete = False
     except Budget:
         complete = False
@@ -414,7 +601,7 @@ def main():
 
     out = build(C, teams)
     left = sum(1 for m in C["details"].values() for g in m["g"] if g[2] == "completed" and g[0] not in C["games"])
-    out["meta"] = {"queries": NQ[0], "seconds": round(time.time() - T0), "games": len(C["games"]), "left": left, "cover": out["cover"],
+    out["meta"] = {"queries": NQ[0], "seconds": round(time.time() - T0), "games": len(C["games"]), "left": left, "cover": out["cover"], "timed": sum(1 for s in C["games"].values() if s.get("tv")),
                    "players": sum(1 for p in out["players"].values() if p["S"]["g"]), "duels": len(out["duels"]), "h2h": len(out["h2h"]), "tourney": out["tourney"]["n"]}
     if left: out["stale"] = {"parties": "%d récentes ou manquantes, reprises au prochain passage" % left}
     old = None
