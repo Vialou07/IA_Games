@@ -11,7 +11,7 @@ import os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src = open(os.path.join(ROOT, "worlds.html"), encoding="utf-8").read()
 REPL = [
-    ("raw.githubusercontent.com/Vialou07/IA_Games/stats/data/stats.json", "raw.githubusercontent.com/Vialou07/IA_Games/stats-preprod/data/stats.json"),
+    ("raw.githubusercontent.com/Vialou07/IA_Games/stats/data/", "raw.githubusercontent.com/Vialou07/IA_Games/stats-preprod/data/"),
     ('localStorage.getItem("w26_"+k)', 'localStorage.getItem("w26pp_"+k)'),
     ('localStorage.setItem("w26_"+k,', 'localStorage.setItem("w26pp_"+k,'),
     ('topicOf=c=>"iagames-worlds26-ligue-"+c', 'topicOf=c=>"iagames-worlds26pp-ligue-"+c'),
