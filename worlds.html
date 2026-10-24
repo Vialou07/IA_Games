@@ -435,7 +435,7 @@ nav.tabs button{position:relative}
 .mch{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(200,170,110,.08);font-size:12.5px;min-width:0}
 .mch span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mch small{color:var(--muted);white-space:nowrap}
 .lane[data-cmp]{cursor:pointer}
-.robot{padding:12px}.rb-h{margin:0 0 8px;font-weight:600}.rb-d summary{cursor:pointer;font-size:12.5px;color:var(--gold);margin-top:6px}
+.robot{padding:12px}svg.bot{width:1.05em;height:1.05em;vertical-align:-.15em;margin-right:2px;color:var(--gold)}.rbp svg.bot{width:11px;height:11px}.rb-h{margin:0 0 8px;font-weight:600}.rb-d summary{cursor:pointer;font-size:12.5px;color:var(--gold);margin-top:6px}
 .rbp{display:block;font-family:var(--body,inherit);font-size:9.5px;color:var(--muted);font-weight:700;white-space:nowrap;margin-top:2px}
 .simt{padding:6px 8px}.simr{display:grid;grid-template-columns:1fr 44px 50px 50px 92px;align-items:center;gap:4px;width:100%;padding:6px 2px;border-top:1px solid rgba(200,170,110,.08);font-size:13px;text-align:right}
 .simr:first-child{border-top:0}.simr.hd{font-size:10.5px;color:var(--muted);font-weight:700}.simr .tn{display:flex;align-items:center;gap:6px;text-align:left}.simr .tn b{font-family:var(--disp);font-size:16px}
@@ -1027,9 +1027,10 @@ function renderMatchs(){
   MATCHES.filter(m=>inF(m.stage)).forEach(m=>{const k=dayKeyL(new Date(m.start));(groups[k]=groups[k]||[]).push(m)});
   const known=new Set(MATCHES.filter(m=>m.t1||m.t2).map(m=>dayKeyL(new Date(m.start))));
   DAYS.forEach(d=>{if(!inF(d.stage))return;const dt=new Date(d.d+"T"+d.t+":00Z"),k=dayKeyL(dt);if(!known.has(k)&&!groups[k])groups[k]=[{placeholder:true,d,dt}]});
-  Object.keys(groups).sort().forEach(k=>{
+  const ks=Object.keys(groups).sort(),kt=ks.find(k=>groups[k].some(m=>m.placeholder?m.dt>Date.now():m.state!=="done"))||ks[ks.length-1];
+  ks.forEach(k=>{
     const g=groups[k],first=g[0].placeholder?g[0].dt:new Date(g[0].start),stg=g[0].placeholder?g[0].d.stage:g[0].stage;
-    h+=`<div class="day">${fmtDay(evDate(first))}<span>${esc(STAGES[stg])}<br>${esc(VENUES[stg])}</span></div>`;
+    h+=`<div class="day${k===kt?" today":""}">${fmtDay(evDate(first))}<span>${esc(STAGES[stg])}<br>${esc(VENUES[stg])}</span></div>`;
     h+=g[0].placeholder?`<div class="tbd hx">${esc(g[0].d.what)}. Premier match à ${fmtTime(first)}.</div>`:`<div class="list">${g.map(matchRow).join("")}</div>`;
   });
   h+=`<p class="small" style="margin-top:14px">Horaires en ${tzLabel}. Point doré : ton prono. Vert : gagné. Rouge : perdu.</p>`;
@@ -1143,7 +1144,8 @@ function showTab(v,fromPop){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
   document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
   $("#ind").style.transform=`translateX(${TABS.indexOf(v)*100}%)`;
-  window.scrollTo(0,scrollMem[v]||0);vib(8);
+  const td=v==="matchs"&&scrollMem.matchs==null&&$("#v-matchs .day.today");
+  window.scrollTo(0,td?Math.max(0,td.getBoundingClientRect().top+scrollY-120):scrollMem[v]||0);vib(8);
   if(v==="players")renderMap(); if(v==="home")startBeam(); if(v==="stats"){statsOpen=true;renderStats()}
 }
 function openSheet(html,mode){
@@ -1356,7 +1358,7 @@ const sjOk=(s,sec)=>s&&!(s.errors||[]).some(e=>String(e).startsWith(sec+":"));
 const AK={};
 const skel=(n=3)=>`<div class="skel">${Array.from({length:n},()=>"<i></i>").join("")}</div>`;
 const errHTML=k=>{const a=AK[k]||{},m=String(a.emsg||"");const rl=/rate|limit|exceeded/i.test(m);
-  return `<div class="aerr"><span>${rl?`Leaguepedia limite les requêtes. Nouvel essai automatique dans ${Math.max(1,Math.ceil((lpPause-Date.now())/60e3))} min.`:"Leaguepedia ne répond pas pour l’instant."}${!rl&&m?`<small>${esc(m.slice(0,120))}</small>`:""}</span><button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`};
+  return `<div class="aerr"><span>${rl?`Leaguepedia limite les requêtes. Nouvel essai automatique dans ${Math.max(1,Math.ceil((lpPause-Date.now())/60e3))} min.`:"Données injoignables pour l’instant."}${!rl&&m?`<small>${esc(m.slice(0,120))}</small>`:""}</span><button class="btn" data-retry="${esc(k)}">Réessayer</button></div>`};
 const waitHTML=()=>`<div class="aerr"><span>Leaguepedia limite les requêtes. Chargement automatique dans ${Math.max(5,Math.round((lpPause-Date.now())/1000))} s.</span></div>`;
 let akIO=null;
 function armAk(){
@@ -1377,7 +1379,7 @@ function ablock(key,fn,render,ttlH=6){
 function safeRender(a){try{return a.render(a.data)}catch(e){console.error(e);return `<p class="small">Données incomplètes pour ce bloc.</p>`}}
 async function runAk(key){
   const a=AK[key];a.st="load";a.started=true;
-  try{a.data=await a.fn();a.st="ok";a.emsg=null;LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err";a.emsg=String(e&&e.message||e);
+  try{a.data=await a.fn();a.st="ok";a.emsg=null;if(!(a.data&&a.data.nocache))LS.set("ak_"+key,{t:Date.now(),d:a.data})}catch(e){console.warn(key,e);a.st="err";a.emsg=String(e&&e.message||e);
     if(isRL(e)){clearTimeout(a.rt);a.rt=setTimeout(()=>{if(a.st==="err"&&document.querySelector(`[data-ak="${CSS.escape(key)}"]`)){document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>el.innerHTML=skel());runAk(key)}},Math.max(65000,lpPause-Date.now()+5000))}}
   document.querySelectorAll(`[data-ak="${CSS.escape(key)}"]`).forEach(el=>{el.innerHTML=a.st==="ok"?safeRender(a):errHTML(key);el.classList.add("in")});
 }
@@ -1598,15 +1600,16 @@ function robotProb(m){
   const h=Math.max(0,(new Date(m.start||Date.now())-Date.now())/864e5);
   return teamProb(m.t1,m.t2,m.bo||1,{wa:m.s1||0,wb:m.s2||0,h});
 }
+const BOT=`<svg class="bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13v2M15 13v2"/></svg>`;
 function robotHTML(m){
   const p=robotProb(m);if(p==null)return"";
   const f=p>=.5?m.t1:m.t2,pf=Math.max(p,1-p),txt=pf<.56?"voit un match très serré":`voit <b>${esc(T[f].id)}</b> favori`;
-  return `<h2>Pronostic du robot</h2><div class="robot frame hx"><p class="rb-h">🤖 Le robot ${txt}${m.state==="live"&&(m.s1||m.s2)?` (score actuel ${m.s1}-${m.s2} compris)`:""}</p>
+  return `<h2>Pronostic du robot</h2><div class="robot frame hx"><p class="rb-h">${BOT} Le robot ${txt}${m.state==="live"&&(m.s1||m.s2)?` (score actuel ${m.s1}-${m.s2} compris)`:""}</p>
     <div class="wpbar big"><i style="width:${p*100}%;background:${col(m.t1)}"></i><i style="width:${(1-p)*100}%;background:${col(m.t2)}"></i></div>
     <p class="small wpl"><span><b>${Math.round(p*100)} %</b> ${esc(T[m.t1].id)}</span><span>chances de gagner ${m.bo>1?"la série":"le match"}</span><span>${esc(T[m.t2].id)} <b>${Math.round((1-p)*100)} %</b></span></p>
     <details class="rb-d"><summary>Comment il calcule ?</summary><p class="small">Il additionne la note d’impact des 5 joueurs de chaque équipe, corrigée de la force des ligues, puis simule la suite du tournoi 20 000 fois. Testé à l’aveugle sur 343 parties internationales : il trouve le bon favori 2 fois sur 3, et quand il annonce 75 %, l’équipe gagne environ 72 % du temps. Son bilan sur ces Worlds est dans l’onglet Suisse. Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p></details></div>`;
 }
-function robotHint(m){const p=robotProb(m);if(p==null)return"";const pf=Math.round(Math.max(p,1-p)*100);return `<small class="rbp" title="Favori du robot : ${esc(T[p>=.5?m.t1:m.t2].id)}">${p>=.5?"◀ ":""}🤖 ${pf} %${p<.5?" ▶":""}</small>`}
+function robotHint(m){const p=robotProb(m);if(p==null)return"";const pf=Math.round(Math.max(p,1-p)*100);return `<small class="rbp" title="Favori du robot : ${esc(T[p>=.5?m.t1:m.t2].id)}">${p>=.5?"◀ ":""}${BOT}${pf} %${p<.5?" ▶":""}</small>`}
 function simHTML(){
   const s=SJ&&SJ.sim;if(!s||!s.eq)return"";
   const rows=Object.entries(s.eq).sort((a,b)=>b[1][10]-a[1][10]||b[1][7]-a[1][7]),pc=v=>v>=.995?"99+":v<.005?(v>0?"<1":"0"):Math.round(v*100);
@@ -2125,10 +2128,10 @@ async function matchGames(m){
   const ourOf=id=>{const t=teams.find(x=>x.id===id);return t?resolveTeam(t.code,t.name):null};
   const done=(ev.match.games||[]).filter(g=>g.state==="completed").sort((a,b)=>a.number-b.number);
   const games=await Promise.all(done.map(async g=>{
-    const w0=await feedWin(g.id).catch(()=>null);if(!w0||!w0.frames||!w0.frames.length)return {num:g.number,none:true};
+    const w0=await feedWin(g.id).catch(()=>"err");if(w0==="err")return {num:g.number,err:true};if(!w0||!w0.frames||!w0.frames.length)return {num:g.number,none:true};
     const fr=w0.frames.find(f=>f.blueTeam.totalGold>0)||w0.frames[0],start=Date.parse(fr.rfc460Timestamp);
     const tEnd=Math.min(start+6*3600e3,Date.now()-60e3);   // jamais dans le futur : le flux refuserait
-    const we=await feedWin(g.id,tEnd).catch(()=>null),fe=we&&we.frames&&we.frames[we.frames.length-1];if(!fe)return {num:g.number,none:true};
+    const we=await feedWin(g.id,tEnd).catch(()=>"err");if(we==="err")return {num:g.number,err:true};const fe=we&&we.frames&&we.frames[we.frames.length-1];if(!fe)return {num:g.number,none:true};
     const det=await feedDetails(g.id,tEnd),dp={};((det&&det.frames&&det.frames.length&&det.frames[det.frames.length-1].participants)||[]).forEach(p=>dp[p.participantId]=p);
     const md=w0.gameMetadata;
     const side=sd=>{const mt=md[sd+"TeamMetadata"],ft=fe[sd+"Team"],fp={};(ft.participants||[]).forEach(p=>fp[p.participantId]=p);
@@ -2139,7 +2142,7 @@ async function matchGames(m){
   }));
   // vainqueur de chaque partie : l'API ne donne que le score de la série. Même règle que le robot :
   // état final (seule l'équipe qui a détruit un inhibiteur peut finir), sous la contrainte du score de la série
-  const G=games.filter(x=>!x.none),lean=x=>((x.b.in>0)!==(x.r.in>0)?(x.b.in>0?3:-3):0)+.3*(x.b.to-x.r.to)+(x.b.g-x.r.g)/5000;
+  const G=games.filter(x=>!x.none&&!x.err),lean=x=>((x.b.in>0)!==(x.r.in>0)?(x.b.in>0?3:-3):0)+.3*(x.b.to-x.r.to)+(x.b.g-x.r.g)/5000;
   let best=null,bs=-Infinity;const full=G.length===total&&ids.length===2;
   for(let mask=0;mask<(1<<G.length);mask++){
     const w=G.map((x,i)=>mask>>i&1?x.b.id:x.r.id),cnt={};w.forEach(t=>cnt[t]=(cnt[t]||0)+1);
@@ -2147,7 +2150,8 @@ async function matchGames(m){
     const sc=G.reduce((a,x,i)=>a+(mask>>i&1?lean(x):-lean(x)),0);if(sc>bs){bs=sc;best=w}
   }
   G.forEach((x,i)=>x.win=best?best[i]:(lean(x)>=0?x.b.id:x.r.id));
-  return {games};
+  if(games.some(x=>x.err))throw new Error("flux LoL Esports injoignable");
+  return {games,nocache:games.some(x=>x.none)};
 }
 function renderGames(m){return D=>{
   if(!D.games.length)return `<p class="small">Pas encore de partie terminée.</p>`;
@@ -2156,7 +2160,7 @@ function renderGames(m){return D=>{
   const prow=(pp,sd,rev)=>{const pl=playerFromSummoner(pp.sn,sd.our),cn=CH&&CH.nm?CH.nm[pp.c]||pp.c:pp.c;
     return `<div class="lpr${rev?" r":""}"${pl?` data-p="${pl.key}"`:""}>${champ(pp.c,30)}<span class="lpn"><b>${esc(pl?pl.id:String(pp.sn||"").split(" ").slice(1).join(" ")||pp.sn||"")}</b><small>${esc(cn)}</small></span><span class="lps"><b>${pp.k}/${pp.d}/${pp.a}</b><small>${pp.cs} cs${pp.ds!=null?` · ${Math.round(pp.ds*100)} %`:""}</small></span></div>`};
   return D.games.map(x=>{
-    if(x.none)return `<div class="note">Partie ${x.num} : LoL Esports n’a pas publié ses stats.</div>`;
+    if(x.none)return `<div class="note">Partie ${x.num} : stats pas encore publiées par LoL Esports.</div>`;
     const W=x.win===x.b.id?x.b:x.r;
     return `<div class="gsheet frame hx"><div class="lvhd"><span class="badge">Partie ${x.num}</span><b>${dur(x.mins)}</b><span class="small">${W.our?`Victoire ${esc(T[W.our].id)}`:""}</span></div>
      <div class="lvsc"><div class="lvt">${logo(x.b.our,34)}<b>${esc(T[x.b.our]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${x.b.k}</b><i>kills</i><b>${x.r.k}</b></div><div class="lvt">${logo(x.r.our,34)}<b>${esc(T[x.r.our]?.id||"")}</b><span class="side r">rouge</span></div></div>
@@ -2199,6 +2203,21 @@ async function fromLolEsports(){
     out.push(m);
   });
   if(out.filter(m=>m.t1&&m.t2).length<6)throw new Error("planning incomplet");
+  return out;
+}
+// secours : le planning publié par le robot (toutes les 30 min), bien plus frais que les données embarquées
+async function fromRobot(){
+  const S=await loadSJ(),L=S&&S.sched;if(!L||!L.length)throw new Error("pas de planning du robot");
+  const out=[];
+  L.forEach(([mid,t,st,bn,bo,a,b])=>{
+    if(!a||!b)return;
+    const t1=resolveTeam(a[0],a[1]),t2=resolveTeam(b[0],b[1]),done=st==="completed";
+    const m={id:"le"+mid,stage:stageOf(t),label:bn||"",t1,t2,start:t,bo:bo||1,n1:a[1],n2:b[1],s1:st==="unstarted"?null:a[2]??null,s2:st==="unstarted"?null:b[2]??null};
+    if(done&&a[2]!=null&&b[2]!=null&&a[2]!==b[2])m.winner=a[2]>b[2]?t1:t2;
+    if(st==="inProgress")m.apiLive=true;
+    out.push(m);
+  });
+  if(out.filter(m=>m.t1&&m.t2).length<6)throw new Error("planning du robot incomplet");
   return out;
 }
 async function cargo(params){
@@ -2288,29 +2307,33 @@ async function loadPhotos(force){
 async function sync(force){
   const el=$("#sync");el.className="sync busy";el.querySelector("span").textContent="Synchro…";
   let list=null;
-  try{list=await fromLolEsports();SOURCE="LoL Esports"}catch(e){
-    try{list=await fromLeaguepedia();SOURCE="Leaguepedia"}catch(e2){list=null}
+  try{list=await fromLolEsports();SOURCE="LoL Esports";syncFails=0}catch(e){
+    syncFails++;
+    try{list=await fromRobot();SOURCE="robot"}catch(e1){
+      try{list=await fromLeaguepedia();SOURCE="Leaguepedia"}catch(e2){list=null}}
   }
   if(!list){list=EMBED.map(m=>({...m}));SOURCE="embarquées"}
   MATCHES=finalize(list);
   lastSync=new Date();
-  el.className="sync "+(SOURCE==="embarquées"?"warn":"ok");
-  el.querySelector("span").textContent=SOURCE==="embarquées"?"Hors ligne":fmtTime(lastSync);
-  el.title=SOURCE==="embarquées"?"Sources injoignables, données du 23/10 et tes saisies":"Synchronisé via "+SOURCE+". Toucher pour actualiser.";
+  const rb=SOURCE==="robot"&&SJ&&SJ.built?new Date(SJ.built):null;
+  el.className="sync "+(SOURCE==="LoL Esports"?"ok":"warn");
+  el.querySelector("span").textContent=SOURCE==="embarquées"?"Hors ligne":rb?"Robot "+fmtTime(rb):fmtTime(lastSync);
+  el.title=SOURCE==="embarquées"?"Sources injoignables, données du 23/10 et tes saisies":rb?"LoL Esports ne répond pas : résultats du robot de "+fmtTime(rb)+". Nouvel essai automatique.":"Synchronisé via "+SOURCE+". Toucher pour actualiser.";
   renderLive();
   if(!photosStarted||force){photosStarted=true;loadPhotos(force)}
   scheduleNext();
 }
-let syncTimer=null, photosStarted=false;
+let syncTimer=null, photosStarted=false, syncFails=0;
 function scheduleNext(){
   clearTimeout(syncTimer);
   const now=Date.now();
   const hot=MATCHES.some(m=>m.state==="live"||m.state==="wait"||(m.state==="soon"&&new Date(m.start)-now<20*60e3));
-  syncTimer=setTimeout(()=>sync(false),hot?60e3:5*60e3);
+  // API injoignable : nouveaux essais rapprochés (3 s, 10 s, 30 s) avant le rythme normal
+  syncTimer=setTimeout(()=>sync(false),SOURCE!=="LoL Esports"&&syncFails>=1&&syncFails<=3?[3,10,30][syncFails-1]*1e3:hot?60e3:5*60e3);
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v11, 24/10/2026";
+const APP_VERSION="v11.1, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}

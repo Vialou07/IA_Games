@@ -551,7 +551,10 @@ def build(C, teams):
             "champs": champs, "mastery": mastery, "names": names, "logos": R["logos"], "pinfo": R["pinfo"],
             "dr": {k: sorted(v, key=lambda x: (x[0], x[1]), reverse=True)[:5] for k, v in recent.items()},
             "m": X.get("m"), "sim": X.get("sim"), "lane": X.get("lane"), "fiab": X.get("fiab"), "lgr": X.get("lgr"),
-            "cover": cover, "errors": [], "stale": {}}
+            "cover": cover, "errors": [], "stale": {},
+            # planning des Worlds vu par le robot : secours de l'appli quand l'API LoL Esports ne répond pas au téléphone
+            "sched": [[m, e["t"], e["st"], e.get("bn", ""), e["bo"]] + (e.get("tm") or [])[:2]
+                      for m, e in sorted(E.items(), key=lambda kv: kv[1]["t"]) if e["l"] == "worlds" and e["t"] >= "2026-10-10"]}
 
 MS = {}   # état des modèles, chargé et sauvé par main()
 FLAT = []   # parties à plat (remplie par build) : {g, m, t, l, op, bn, bo, n, b, r, bc, rc, w, min, ks, pid, nm, rows{0..9}}
