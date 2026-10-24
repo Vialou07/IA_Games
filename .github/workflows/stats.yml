@@ -6,7 +6,7 @@ name: Stats Worlds 2026
 # Lancé à la main depuis une autre branche, il publie sur « stats-preprod » : l'appli n'y touche pas.
 on:
   schedule:
-    - cron: "7,37 * * * *"
+    - cron: "3,18,33,48 * * * *"   # 4 créneaux par heure : GitHub saute parfois des passages programmés quand il est chargé
   workflow_dispatch:
   push:
     branches: [main]
