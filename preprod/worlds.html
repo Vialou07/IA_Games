@@ -450,6 +450,9 @@ nav.tabs button{position:relative}
 .rnd{display:grid;gap:4px;margin:0 0 14px}.rnd .rg{display:flex;align-items:baseline;gap:8px;margin-top:6px}.rnd .rg b{font-family:var(--disp);font-size:17px;color:var(--gold2)}.rnd .rg small{font-size:11px;color:var(--muted)}
 .rr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;width:100%}
 .rr span{display:flex;align-items:center;gap:6px}.rr span.r{justify-content:flex-end}.rr b{font-family:var(--disp);font-size:16px}.rr i{font-style:normal;font-size:11.5px;color:var(--muted);text-align:center}.rr .lv{font-style:normal;color:var(--red);font-weight:800}
+.tcard .tf{display:flex;gap:3px}.tcard .tf i{font-style:normal;font-size:10px;font-weight:800;width:16px;height:16px;display:grid;place-items:center;border-radius:4px;background:rgba(10,200,185,.18);color:var(--teal)}.tcard .tf i.l{background:rgba(232,64,87,.16);color:var(--red)}
+.tcard .tn2{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}.tcard .tn2 b{color:var(--text,#F0E6D2);font-size:12.5px}.tcard .lv{font-style:normal;color:var(--red);font-weight:800}
+.lvhd .vod{margin-left:auto;font-size:12px;font-weight:700;color:var(--teal);border:1px solid rgba(10,200,185,.35);border-radius:999px;padding:3px 9px;white-space:nowrap}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
@@ -1082,6 +1085,11 @@ function renderSwiss(){
   $("#v-swiss").innerHTML=h;
   const maxc=Math.max(0,...Object.values(P).map(p=>p.length-1));const sc=$("#swScroll");if(sc)sc.scrollLeft=Math.max(0,CX(Math.min(5,maxc))-60);
 }
+// carte équipe : forme aux Worlds (séries) et prochain match
+function tform(id){const L=MATCHES.filter(m=>m.winner&&(m.t1===id||m.t2===id)).sort((a,b)=>a.start.localeCompare(b.start)).slice(-5);
+  return L.length?`<div class="ln tf">${L.map(m=>`<i class="${m.winner===id?"w":"l"}" title="${esc(T[m.t1===id?m.t2:m.t1].id)}">${m.winner===id?"V":"D"}</i>`).join("")}</div>`:""}
+function tnext(id){const m=MATCHES.find(m=>!m.winner&&m.state!=="done"&&m.t1&&m.t2&&(m.t1===id||m.t2===id));if(!m)return"";const o=m.t1===id?m.t2:m.t1,d=new Date(m.start);
+  return `<div class="ln tn2">${m.state==="live"?`<em class="lv">EN DIRECT</em>`:esc(d.toDateString()===new Date().toDateString()?"ce soir "+fmtTime(d):d.toLocaleDateString("fr-FR",{weekday:"short"})+" "+fmtTime(d))} contre ${logo(o,16)}<b>${esc(T[o].id)}</b></div>`}
 function renderTeams(){
   const R=records(),f=ui.league;
   const chip=(k,l)=>`<button class="chip" data-league="${k}" aria-pressed="${f===k}">${l}</button>`;
@@ -1089,8 +1097,9 @@ function renderTeams(){
   const list=TEAMS.filter(t=>f==="all"||t.league===f).sort((a,b)=>(status(a.id,R).k==="out")-(status(b.id,R).k==="out"));
   h+=`<div class="grid">${list.map(t=>{const st=status(t.id,R);return `<button class="tcard hx${st.k==="out"?" out":""}" style="--tc:${t.color}" data-t="${t.id}">
      <span class="wm">${logo(t.id,120)}</span><div class="hd">${logo(t.id,42)}<b>${esc(t.name)}</b></div>
-     <div class="ln">${flag(t.cc)}${esc(t.league)}, ${esc(t.seed)}</div>
-     <div class="ln"><span class="fls">${teamPlayers(t.id).map(p=>flag(p.cc)).join("")}</span>${teamPlayers(t.id).some(p=>p.titles.length)?" 🏆":""}</div>
+     <div class="ln">${flag(t.cc)}${esc(t.seed)}${teamPlayers(t.id).some(p=>p.titles.length)?" 🏆":""}</div>
+     ${new Set(teamPlayers(t.id).map(p=>p.cc)).size>1?`<div class="ln"><span class="fls">${teamPlayers(t.id).map(p=>flag(p.cc)).join("")}</span></div>`:""}
+     ${tform(t.id)}${tnext(t.id)}
      <span class="st ${st.k}" style="align-self:flex-start">${esc(st.txt)}</span></button>`}).join("")}</div>`;
   $("#v-teams").innerHTML=h;
 }
@@ -1373,6 +1382,13 @@ function loadSJ(){
   return SJp;
 }
 const sjOk=(s,sec)=>s&&!(s.errors||[]).some(e=>String(e).startsWith(sec+":"));
+// fichiers annexes du robot (fiche.json, draft.json), même branche que stats.json, chargés à la première fiche qui en a besoin
+const AUXD={},AUXP={};
+function loadAux(name){
+  const c=AUXD[name];if(c&&Date.now()-c.t<10*60e3)return Promise.resolve(c.d);if(AUXP[name])return AUXP[name];
+  return AUXP[name]=(async()=>{try{const r=await fetch(`https://raw.githubusercontent.com/Vialou07/IA_Games/stats-preprod/data/${name}.json`,{cache:"no-cache"});
+    if(r.ok){const d=await r.json();AUXD[name]={t:Date.now(),d};return d}}catch(e){}return c?c.d:null})().finally(()=>setTimeout(()=>{delete AUXP[name]},1000));
+}
 
 /* ---- blocs asynchrones : squelette, puis contenu, survivent aux re-rendus ---- */
 const AK={};
@@ -2167,7 +2183,10 @@ async function matchGames(m){
       return {id:mt.esportsTeamId,our:ourOf(mt.esportsTeamId),k:ft.totalKills,g:ft.totalGold,to:ft.towers,in:ft.inhibitors,ba:ft.barons,dragons:ft.dragons||[],
         // champion et stats lus sur la même ligne du flux que le joueur (participantId)
         p:mt.participantMetadata.map(pm=>{const x=fp[pm.participantId]||{},d=dp[pm.participantId]||{};return {sn:pm.summonerName,c:pm.championId,k:x.kills||0,d:x.deaths||0,a:x.assists||0,cs:x.creepScore||0,gold:x.totalGold||0,ds:d.championDamageShare}})}};
-    return {num:g.number,fin:fe.gameState==="finished",mins:(Date.parse(fe.rfc460Timestamp)-start)/60000,b:side("blue"),r:side("red")};
+    // rediffusion : la VF (sinon l'anglais) au début exact de la partie
+    const v=(g.vods||[]).find(v=>v.locale==="fr-FR"&&v.provider==="youtube")||(g.vods||[]).find(v=>v.locale==="en-US"&&v.provider==="youtube");
+    return {num:g.number,fin:fe.gameState==="finished",mins:(Date.parse(fe.rfc460Timestamp)-start)/60000,b:side("blue"),r:side("red"),
+      vod:v?[v.parameter,Math.round((v.startMillis||0)/1000),v.locale==="fr-FR"?"VF":"VO"]:null};
   }));
   // vainqueur de chaque partie : l'API ne donne que le score de la série. Même règle que le robot :
   // état final (seule l'équipe qui a détruit un inhibiteur peut finir), sous la contrainte du score de la série
@@ -2191,7 +2210,7 @@ function renderGames(m){return D=>{
   return D.games.map(x=>{
     if(x.none)return `<div class="note">Partie ${x.num} : stats pas encore publiées par LoL Esports.</div>`;
     const W=x.win===x.b.id?x.b:x.r;
-    return `<div class="gsheet frame hx"><div class="lvhd"><span class="badge">Partie ${x.num}</span><b>${dur(x.mins)}</b><span class="small">${W.our?`Victoire ${esc(T[W.our].id)}`:""}</span></div>
+    return `<div class="gsheet frame hx"><div class="lvhd"><span class="badge">Partie ${x.num}</span><b>${dur(x.mins)}</b><span class="small">${W.our?`Victoire ${esc(T[W.our].id)}`:""}</span>${x.vod?`<a class="vod" href="https://www.youtube.com/watch?v=${encodeURIComponent(x.vod[0])}&t=${x.vod[1]}s" target="_blank" rel="noopener">Revoir en ${x.vod[2]}</a>`:""}</div>
      <div class="lvsc"><div class="lvt">${logo(x.b.our,34)}<b>${esc(T[x.b.our]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${x.b.k}</b><i>kills</i><b>${x.r.k}</b></div><div class="lvt">${logo(x.r.our,34)}<b>${esc(T[x.r.our]?.id||"")}</b><span class="side r">rouge</span></div></div>
      <div class="lvobj">${[["Or",fx1(x.b.g/1000)+" k",fx1(x.r.g/1000)+" k"],["Tours",x.b.to,x.r.to],["Dragons",`${x.b.dragons.length} ${drg(x.b.dragons)}`,`${drg(x.r.dragons)} ${x.r.dragons.length}`],["Barons",x.b.ba,x.r.ba],["Inhibiteurs",x.b.in,x.r.in]].map(([l,a,b])=>`<div><span>${a}</span><em>${l}</em><span>${b}</span></div>`).join("")}</div>
      <div class="lvp"><div>${gsh(x.b.our,false)}${x.b.p.map(pp=>prow(pp,x.b,false)).join("")}</div><div>${gsh(x.r.our,true)}${x.r.p.map(pp=>prow(pp,x.r,true)).join("")}</div></div>
@@ -2362,7 +2381,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="PRÉPROD v11.2, 24/10/2026";
+const APP_VERSION="PRÉPROD v11.3, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
