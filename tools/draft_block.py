@@ -9,13 +9,17 @@ Deux entrées :
   méta des Worlds (picks, bans, présence, First Selection, côté bleu, qui a joué quoi), pool 90 jours et picks
   probables de nos 95 titulaires, bans probables contre chaque équipe, matchups champion contre champion au même
   poste (2025-2026, toutes ligues, a priori bayésien), fiabilité mesurée sur le tournoi en cours et sur 2025.
+- series_update(C, now_iso) : champions des parties déjà finies des séries des Worlds en cours (fearless), lus dès la fin de
+  chaque partie dans l'API LoL Esports. 0 requête quand le score n'a pas bougé.
+- draft_block(..., ms=état des modèles) fige aussi, au coup d'envoi de chaque partie, ses bans et picks probables (fearless de
+  la série compris) et publie partie par partie ce qui a été annoncé et ce qui a été joué (clé « gm »).
 
 Format de draft.json (champions remplacés par leur rang dans « ch ») : voir LISEZMOI.md.
 L'API LoL Esports n'a pas les bans : gol.gg est la seule source utilisée pour eux (vérifiée sur 114 parties des
 Worlds 2025 et 2026 : picks et vainqueurs identiques à l'API, 10 bans distincts, fearless respecté).
 Bibliothèque standard seulement. Aucune exception ne remonte.
 Usage local : python draft_block.py <cache.json.gz> <flat.json.gz> <teams.json> <draft.json> [--net]"""
-import json, gzip, os, re, sys, time, bisect, datetime, collections, unicodedata, urllib.request, urllib.parse
+import json, gzip, os, re, sys, time, bisect, datetime, collections, unicodedata, urllib.request, urllib.parse, urllib.error
 
 GG = "https://gol.gg/"
 UA = "IA_Games-Worlds26-stats/2.0 (+https://github.com/Vialou07/IA_Games)"
@@ -46,6 +50,12 @@ MU_FI = [{"cut": "2025-09-01", "n": 16195, "ll": 0.6931, "gd": 1.5, "nn": 1586, 
 # contre ses autres champions, à l'intérieur de chaque joueur-saison, 2025-2026 : parties, écart en points, IC 95 % ;
 # toutes ligues puis internationaux seuls
 BAN_FI = {"n": 39136, "d": 0.4, "lo": -0.7, "hi": 1.5, "ni": 3849, "di": 2.5, "loi": -0.5, "hii": 5.6}
+# séries en cours (series_update) et pronos figés partie par partie (gm_freeze, gm_publish)
+LE_GW = "https://esports-api.lolesports.com/persisted/gw/"
+LE_FEED = "https://feed.lolesports.com/livestats/v1/"
+LE_KEY = "0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z"   # clé publique du site lolesports.com (la même que build_stats)
+ROLE_API = {"top": "TOP", "jungle": "JGL", "mid": "MID", "bottom": "BOT", "support": "SUP"}
+GM_AHEAD = 36      # heures : prono de la partie 1 réécrit à chaque passage pour les matchs qui commencent dans ce délai
 
 # ---------- utilitaires ----------
 def norm(s):
@@ -116,6 +126,13 @@ def api_games(C, year):
             key = frozenset(ck(p[3]) for p in s["p"])
             if key in idx: dup.add(key)
             idx[key] = {"gid": g[0], "mid": mid, "bn": e.get("bn", ""), "s": s.get("s"), "min": s.get("wmin", s.get("min", 40))}
+    # parties finies des séries encore en cours (series_update) : pas encore résumées, « s » = heure où on les a vues finies
+    for mid, S in ((C.get("gg") or {}).get("sr") or {}).items():
+        e = E.get(mid) or {}
+        for x in (S.get("g") or {}).values():
+            try: key = frozenset(ck(p[0]) for p in x[2])
+            except Exception: continue
+            if len(key) == 10 and key not in idx: idx[key] = {"gid": x[0], "mid": mid, "bn": e.get("bn", ""), "s": x[1], "min": 0.01}
     for k in dup: idx.pop(k, None)   # deux parties avec les mêmes 10 champions : on ne devine pas
     return idx
 
@@ -129,6 +146,64 @@ def gg_games(gg):
                     out[frozenset(ck(c) for c in g["L"][3] + g["R"][3])] = (sid, S, g)
             except Exception: pass   # partie mal formée : ignorée plutôt que de tout perdre
     return out
+
+# ---------- séries en cours : champions des parties déjà finies (fearless) ----------
+def _le_get(url, timeout=20):
+    """Une requête LoL Esports (API ou flux), 2 essais : JSON, ou None (204, 400/403/404 : rien à lire)."""
+    last = None
+    for a in range(2):
+        try:
+            hd = {"User-Agent": UA, "Accept-Encoding": "gzip", **({"x-api-key": LE_KEY} if url.startswith(LE_GW) else {})}
+            with urllib.request.urlopen(urllib.request.Request(url, headers=hd), timeout=timeout) as r:
+                if r.status == 204: return None
+                b = r.read()
+                return json.loads(gzip.decompress(b) if r.headers.get("Content-Encoding") == "gzip" else b)
+        except urllib.error.HTTPError as e:
+            if e.code in (400, 403, 404): return None
+            last = e
+        except Exception as e: last = e
+        if a == 0: time.sleep(1)
+    raise RuntimeError(str(last)[:100])
+
+def series_update(C, now_iso, get=None, log=print, budget_s=30):
+    """Fearless des séries des Worlds en cours : le robot ne résume une série qu'une fois finie ; ici, dès qu'une partie est
+    finie, on lit ses 10 champions (fenêtre du flux) pour figer le prono de la suivante. now_iso = heure réelle (UTC).
+    Mémoire C["gg"]["sr"][match] = {"tm": {id équipe LoL Esports: code}, "g": {numéro: [id de la partie, vue finie à (UTC),
+    [[champion, poste, id LoL Esports du joueur] × 10, bleus d'abord], id équipe bleue, id équipe rouge]}}.
+    Requêtes : 1 getEventDetails par série dont le score a bougé, 1 fenêtre du flux par nouvelle partie finie ; 0 sinon.
+    get(url) -> JSON ou None (remplaçable pour les essais hors ligne). Aucune exception ne remonte."""
+    t0 = time.time(); nq = 0; get = get or _le_get
+    try:
+        gg = C.setdefault("gg", {"v": 1, "s": {}, "ml": {}, "try": {}}); sr = gg.setdefault("sr", {})
+        E = C.get("events") or {}; now = t19(now_iso); year = now[:4]
+        for mid in list(sr):   # série finie depuis 2 jours : le robot l'a résumée
+            e = E.get(mid)
+            if not e or (e.get("st") == "completed" and t19(e.get("t")) < shift(now, days=-2)): sr.pop(mid, None)
+        for mid, e in sorted(E.items(), key=lambda kv: kv[1].get("t", "")):
+            if e.get("l") != "worlds" or str(e.get("t", ""))[:4] != year or e.get("st") != "inProgress" or (e.get("bo") or 1) < 2: continue
+            done = sum((x[2] or 0) for x in (e.get("tm") or []) if len(x) > 2)
+            S = sr.get(mid) or {"tm": {}, "g": {}}
+            if done <= len(S["g"]): continue   # score inchangé depuis le dernier passage : rien à lire
+            if time.time() - t0 > budget_s: break
+            nq += 1; j = get(LE_GW + "getEventDetails?" + urllib.parse.urlencode({"hl": "en-US", "id": mid})) or {}
+            m = ((j.get("data") or {}).get("event") or {}).get("match") or {}
+            if not m: continue
+            S["tm"] = {t.get("id"): t.get("code") for t in m.get("teams") or []}
+            for g in sorted(m.get("games") or [], key=lambda g: g.get("number") or 0):
+                n = str(g.get("number"))
+                if g.get("state") != "completed" or n in S["g"] or not g.get("id"): continue
+                if time.time() - t0 > budget_s: break
+                nq += 1; md = (get(LE_FEED + "window/" + g["id"]) or {}).get("gameMetadata")
+                if not md: continue
+                P = [[pm.get("championId"), ROLE_API.get(pm.get("role"), pm.get("role")), pm.get("esportsPlayerId")]
+                     for sd in ("blue", "red") for pm in sorted(md[sd + "TeamMetadata"]["participantMetadata"], key=lambda p: p["participantId"])]
+                if len(P) != 10 or not all(p[0] for p in P): continue   # flux incomplet : on n'invente rien
+                S["g"][n] = [g["id"], now, P, md["blueTeamMetadata"].get("esportsTeamId"), md["redTeamMetadata"].get("esportsTeamId")]
+            sr[mid] = S
+        return {"req": nq, "n": sum(len(S["g"]) for S in sr.values())}
+    except Exception as e:
+        log("  séries en cours : erreur", type(e).__name__, str(e)[:120])
+        return {"req": nq, "err": 1}
 
 # ---------- gol.gg : mise à jour (robot) ----------
 def golgg_update(C, now_iso, budget_s=60, log=print, seed=SEED):
@@ -314,10 +389,12 @@ class State:
         sc = lambda c: (cnt[c] / max(1, n) + p["eps"]) * (rm.get(c, 0) + 0.01) ** p["alpha"]
         return sorted(cands, key=lambda c: (-sc(c), c)), cnt, n
 
-def replay(recs, flat_worlds, pools, mp, mpr, par=P, opp=True, picks_on=True, state_cls=None):
+def replay(recs, flat_worlds, pools, mp, mpr, par=P, opp=True, picks_on=True, state_cls=None, keep=None, teams_by=None):
     """Rejoue le tournoi partie par partie : chaque prédiction n'utilise que ce qui était connu avant la partie.
     recs : drafts gol.gg reliées ; flat_worlds : toutes les parties API du tournoi (picks connus sans gol.gg).
-    Renvoie (bans : [(équipe visée, top 10, vrais bans)], picks : [(rang du champion joué ou None)])."""
+    Renvoie (bans : [(équipe visée, top 10, vrais bans)], picks : [(rang du champion joué ou None)]).
+    keep (dict, facultatif) reçoit le prono de chaque partie : {id: {"bx": {équipe visée: 5 bans attendus contre elle},
+    "pt": [3 picks probables de chacun des 10 participants], "x": champions déjà joués dans la série}}."""
     st = (state_cls or State)(mp, mpr, par); burned = collections.defaultdict(set); bans, picks = [], []
     rec_of = {r["g"]["g"]: r for r in recs}
     for g in sorted(flat_worlds, key=lambda g: (t19(g["t"]), g.get("n", 1))):
@@ -325,17 +402,22 @@ def replay(recs, flat_worlds, pools, mp, mpr, par=P, opp=True, picks_on=True, st
         r = rec_of.get(g["g"])
         rs = [row(g, i) for i in range(10)]
         P10 = [(ident(g, i), rs[i]["role"], ck(rs[i]["C"]), rs[i]["W"]) for i in range(10)]
-        if r:
-            for X, O, lin, truth in ((r["B"], r["R"], [q[0] for q in P10[:5]], r["br"]), (r["R"], r["B"], [q[0] for q in P10[5:]], r["bb"])):
+        kb, kt = {}, []
+        if r or keep is not None:
+            tB, tR = (r["B"], r["R"]) if r else (team_of(g, "b", teams_by or {}), team_of(g, "r", teams_by or {}))
+            for X, O, lin, truth in ((tB, tR, [q[0] for q in P10[:5]], r["br"] if r else ()), (tR, tB, [q[0] for q in P10[5:]], r["bb"] if r else ())):
                 sc, _ = st.ban_base(X, lin, pools, t, un)
                 if opp: sc = {c: v + st.opp_term(O, c) for c, v in sc.items()}
                 top = sorted(sc, key=lambda c: (-sc[c], c))[:10]
-                bans.append((X, top, set(truth)))
+                if r: bans.append((X, top, set(truth)))
+                kb[X] = top[:5]
         rms = {}
         for x, role, c, w in (P10 if picks_on else ()):
             if role not in rms: rms[role] = st.role_meta(role)
             top, cnt, n = st.pick_rank(x, role, pools, t, un, rms[role])
             picks.append(top.index(c) + 1 if c in top[:10] else None)
+            kt.append(top[:3])
+        if keep is not None: keep[g["g"]] = {"bx": kb, "pt": kt, "x": sorted(un)}
         if r: st.add_bans(r)
         st.add_picks(P10, r)
         burned[g.get("m")] |= {q[2] for q in P10}
@@ -366,11 +448,150 @@ def matchups(FLAT, since=MU_SINCE, mn=MU_MIN):
             if a["gd15"] is not None: z[2] += a["gd15"]; z[3] += 1
     return {r: {k: v for k, v in d.items() if v[0] >= mn} for r, d in M.items()}
 
+# ---------- pronos de draft partie par partie : figés au coup d'envoi, puis comparés à la draft jouée ----------
+def ann_bans(st, A, B, order, sc, burned, tie, n=5):
+    """Bans attendus de A contre B, calculés exactement comme bansFor de l'appli : les 25 premiers de pb[B] et les champions
+    déjà bannis à ces Worlds (score publié, arrondi à 1e-4), + nu × bans déjà faits par A ; fearless de la série retiré."""
+    nu = st.par["nu"]; tg = st.tg[A]
+    cand = {c: round(10000 * sc[c]) / 1e4 for c in order[:25]}
+    cand.update({c: round(10000 * sc[c]) / 1e4 for c in order[25:] if st.sb[c]})
+    for c in st.by[A]:
+        if c not in cand: cand[c] = round(10000 * st.rate(c)) / 1e4
+    tot = {c: v + nu * st.by[A][c] / (tg + 1) for c, v in cand.items() if c not in burned}
+    return sorted(tot, key=lambda c: (-tot[c], tie(c)))[:n]
+
+def gm_freeze(ms, C, teams, teams_by, st, ppfull, pbord, tie, real_now):
+    """Fige dans ms["gm"] le prono de draft de la prochaine partie de chaque match des Worlds (ce que l'appli affiche) :
+    - match pas commencé, prévu dans les GM_AHEAD heures : prono de la partie 1, réécrit à chaque passage jusqu'au coup d'envoi ;
+    - série en cours : prono de la partie suivante, écrit une seule fois dès que la précédente est finie (ses champions,
+      lus par series_update, sont retirés : fearless), au plus tard quand l'API marque le match en cours ;
+    - jamais réécrit ensuite. Clé « match_numéro » : [heure UTC du gel, équipe A, équipe B, champions déjà joués dans la
+      série, 5 bans attendus de A, 5 de B, 3 picks probables de A par poste, 3 de B]. Renvoie le nombre d'écritures."""
+    E = C.get("events") or {}; sr = (C.get("gg") or {}).get("sr") or {}
+    if not isinstance(ms.get("gm"), dict): ms["gm"] = {}   # état abîmé : on repart de zéro plutôt que de tout perdre
+    G = ms["gm"]; now = t19(real_now); year = now[:4]
+    lin = {}
+    for t in teams:
+        for p in t["players"]: lin.setdefault(t["id"], {}).setdefault(p["role"], p["key"])
+    def pred(A, B, burned):
+        if A not in pbord or B not in pbord: return None
+        return [sorted(burned), ann_bans(st, A, B, *pbord[B], burned, tie), ann_bans(st, B, A, *pbord[A], burned, tie),
+                [[c for c in ppfull.get(lin[A].get(r), []) if c not in burned][:3] for r in ROLES],
+                [[c for c in ppfull.get(lin[B].get(r), []) if c not in burned][:3] for r in ROLES]]
+    nw = 0
+    for mid, e in sorted(E.items(), key=lambda kv: kv[1].get("t", "")):
+        try:
+            if e.get("l") != "worlds" or str(e.get("t", ""))[:4] != year: continue
+            tm = e.get("tm") or []
+            if len(tm) != 2: continue
+            A, B = teams_by.get(norm(tm[0][0])), teams_by.get(norm(tm[1][0]))
+            if not A or not B or A == B or A not in lin or B not in lin: continue
+            bo = e.get("bo") or 1
+            if e.get("st") == "unstarted":
+                if t19(e.get("t")) > shift(now, hours=GM_AHEAD): continue
+                k = mid + "_1"; x = pred(A, B, set())
+                if x and (k not in G or G[k][1:] != [A, B] + x): G[k] = [now[:16], A, B] + x; nw += 1
+            elif e.get("st") == "inProgress":
+                wins = [(t[2] or 0) if len(t) > 2 else 0 for t in tm]
+                if max(wins) > bo // 2: continue   # série jouée, le planning n'a pas encore suivi
+                got = (sr.get(mid) or {}).get("g") or {}
+                n = max([sum(wins)] + [int(i) for i in got if str(i).isdigit()]) + 1
+                if n > bo or (mid + "_%d" % n) in G: continue
+                # champions d'une partie précédente pas encore lus (ou flux incomplet) : on attend le prochain passage
+                if any(len((got.get(str(i)) or [None, None, []])[2]) != 10 for i in range(1, n)): continue
+                x = pred(A, B, {ck(q[0]) for i in range(1, n) for q in got[str(i)][2]})
+                if x: G[mid + "_%d" % n] = [now[:16], A, B] + x; nw += 1
+        except Exception: continue   # match mal renseigné : les autres sont gelés quand même
+    return nw
+
+def gm_publish(ms, C, FW, teams_by, gg, keep, ci, names):
+    """Clé « gm » de draft.json, une entrée par partie des Worlds commencée (« match_numéro ») : le prono de draft figé au
+    coup d'envoi (s = "g"), sinon recalculé après coup avec les seules données d'avant la partie (s = "r", rejeu de la
+    fiabilité), et ce qui a été joué : picks de l'API (série finie : FLAT ; en cours : series_update), bans de gol.gg dans
+    l'ordre (absents tant que gol.gg n'a pas publié). Champions passés par ci() (remplacés par leur index à la fin).
+    {t: [A, B], x: champions déjà joués dans la série, pb: [5 bans attendus de A, de B], pp: [[3 picks probables par poste]
+    de A, de B], rp: [picks joués par poste (None : inconnu)] de A, de B, rb: [bans de A dans l'ordre, de B],
+    bl: index de l'équipe côté bleu, w: index du vainqueur, e: fin de la partie (UTC), gid, f: heure du gel (s = "g")}"""
+    E = C.get("events") or {}; G = (ms or {}).get("gm") or {}; sr = (C.get("gg") or {}).get("sr") or {}
+    GS = C.get("games") or {}; have = gg_games(gg)
+    fl = {(g.get("m"), g.get("n", 1)): g for g in FW}
+    def tid(code): return teams_by.get(norm(code), code)
+    def sides(mid):   # équipes A et B dans l'ordre du planning (celui des pronos figés)
+        tm = (E.get(mid) or {}).get("tm") or []
+        return [tid(tm[0][0]), tid(tm[1][0])] if len(tm) == 2 else None
+    def real(mid, n, AB):
+        """(index de l'équipe bleue, picks par poste [A, B], 10 champions, vainqueur, fin, id) ou None."""
+        g = fl.get((mid, n))
+        if g:
+            rs = [row(g, i) for i in range(10)]
+            tb, trr = team_of(g, "b", teams_by), team_of(g, "r", teams_by)
+            bl = 0 if tb == AB[0] or trr == AB[1] else 1 if tb == AB[1] or trr == AB[0] else None
+            if bl is None: return None
+            P = [(r["role"], ck(r["C"])) for r in rs]
+            gs = GS.get(g["g"]) or {}
+            end = shift(gs["s"], minutes=float(gs.get("wmin", gs.get("min")) or 0))[:16] if gs.get("s") else None
+            return bl, P, 0 if rs[0]["W"] else 1, end, g["g"]
+        S = sr.get(mid) or {}; x = (S.get("g") or {}).get(str(n))
+        if x:
+            tb = tid((S.get("tm") or {}).get(x[3], "")); trr = tid((S.get("tm") or {}).get(x[4], ""))
+            bl = 0 if tb == AB[0] or trr == AB[1] else 1 if tb == AB[1] or trr == AB[0] else None
+            if bl is None: return None
+            for c in x[2]: names.setdefault(ck(c[0]), c[0])
+            return bl, [(q[1], ck(q[0])) for q in x[2]], None, x[1][:16], x[0]
+        return None
+    def add_real(o, mid, n, AB):
+        R = real(mid, n, AB)
+        if not R: return
+        bl, P, wb, end, gid = R
+        rp = [[None] * 5, [None] * 5]
+        for i, (role, c) in enumerate(P):
+            side = bl if i < 5 else 1 - bl
+            if role in ROLES and rp[side][ROLES.index(role)] is None: rp[side][ROLES.index(role)] = ci(c)
+        o.update(rp=rp, bl=bl, gid=gid)
+        if wb is not None: o["w"] = bl if wb == 0 else 1 - bl
+        if end: o["e"] = end
+        d = have.get(frozenset(c for _, c in P))
+        if d:
+            blue = {c for _, c in P[:5]}; L, Rr = d[2]["L"], d[2]["R"]
+            bc, rc = (L, Rr) if {ck(c) for c in L[3]} == blue else (Rr, L)
+            rb = [None, None]; rb[bl] = [ci(ck(c)) for c in bc[2]]; rb[1 - bl] = [ci(ck(c)) for c in rc[2]]
+            o["rb"] = rb
+    out = {}
+    for k, v in G.items():   # pronos figés
+        try:
+            mid, n = k.rsplit("_", 1); n = int(n); e = E.get(mid) or {}
+            if e.get("st") not in ("inProgress", "completed"): continue
+            f, A, B, x, ba, bb, pa, pb = v
+            o = {"s": "g", "f": f, "t": [A, B], "x": [ci(c) for c in x], "pb": [[ci(c) for c in ba], [ci(c) for c in bb]],
+                 "pp": [[[ci(c) for c in L] for L in pa], [[ci(c) for c in L] for L in pb]]}
+            add_real(o, mid, n, [A, B])
+            out[k] = o
+        except Exception: continue   # entrée abîmée : on passe
+    for g in FW:   # parties sans prono figé (jouées avant sa mise en service, ou robot arrêté) : prono recalculé
+        mid, n = g.get("m"), g.get("n", 1); k = "%s_%d" % (mid, n); K = keep.get(g["g"])
+        if k in out or not K: continue
+        try:
+            tb, trr = team_of(g, "b", teams_by), team_of(g, "r", teams_by)
+            AB = sides(mid) or [tb, trr]
+            if set(AB) != {tb, trr}: AB = [tb, trr]
+            bl = AB.index(tb); A, B = AB
+            pp = [[[] for _ in ROLES], [[] for _ in ROLES]]
+            for i in range(10):
+                r = row(g, i); side = bl if i < 5 else 1 - bl
+                if r and r["role"] in ROLES and i < len(K["pt"]): pp[side][ROLES.index(r["role"])] = [ci(c) for c in K["pt"][i]]
+            o = {"s": "r", "t": [A, B], "x": [ci(c) for c in K["x"]],
+                 "pb": [[ci(c) for c in K["bx"].get(B, [])], [ci(c) for c in K["bx"].get(A, [])]], "pp": pp}
+            add_real(o, mid, n, AB)
+            out[k] = o
+        except Exception: continue
+    return out
+
 # ---------- bloc publié ----------
-def draft_block(C, FLAT, teams, now_iso, log=print):
+def draft_block(C, FLAT, teams, now_iso, log=print, ms=None, real_now=None):
     """Contenu de data/draft.json. now_iso : heure de référence (début du dernier match terminé, avancée jusqu'à la
     dernière partie de FLAT : rien ne bouge sans nouvelle donnée). Chaque partie est facultative : en cas d'erreur, elle
-    manque et l'erreur est notée dans « err ». Renvoie None si la base même est illisible (le robot garde l'ancien fichier)."""
+    manque et l'erreur est notée dans « err ». Renvoie None si la base même est illisible (le robot garde l'ancien fichier).
+    ms : état des modèles du robot (pronos de draft figés, ms["gm"]) ; real_now : heure réelle UTC (par défaut : maintenant)."""
     err = []; out = {"v": 1}
     try:
         # le robot passe le début du dernier match terminé : on avance jusqu'à la dernière partie connue (même résultat sans nouvelle donnée)
@@ -427,23 +648,23 @@ def draft_block(C, FLAT, teams, now_iso, log=print):
     except Exception as e: err.append("picks du tournoi : %s" % str(e)[:160])
     # pool 90 jours et picks probables de nos titulaires
     try:
-        pool, pp = {}, {}
+        pool, pp, ppfull = {}, {}, {}
         rms = {r: st.role_meta(r) for r in ROLES}
         for t in teams:
             for p in t["players"]:
                 cnt, win, n = pools.get(p["key"], shift(now, seconds=1))
                 pool[p["key"]] = [n, sum(win.values()), [[ci(c), v, win[c]] for c, v in sorted(cnt.items(), key=lambda kv: (-kv[1], -win[kv[0]], kv[0]))[:10]]]
                 top, cnt, n = st.pick_rank(p["key"], p["role"], pools, shift(now, seconds=1), (), rms.get(p["role"]))
-                pp[p["key"]] = [[ci(c), cnt[c]] for c in top[:12]]
+                pp[p["key"]] = [[ci(c), cnt[c]] for c in top[:12]]; ppfull[p["key"]] = top[:12]
         out["pool"], out["pp"] = pool, pp
     except Exception as e: err.append("picks probables : %s %s" % (type(e).__name__, str(e)[:160]))
     # bans probables contre chaque équipe (sans le terme de l'adversaire, ajouté par l'appli) et bans faits par chacune
     try:
-        pb, tb = {}, {}
+        pb, tb, pbord = {}, {}, {}
         for t in teams:
             lin = [p["key"] for p in t["players"]]
             sc, best = st.ban_base(t["id"], lin, pools, shift(now, seconds=1))
-            rows_ = []; order = sorted(sc, key=lambda c: (-sc[c], c))
+            rows_ = []; order = sorted(sc, key=lambda c: (-sc[c], c)); pbord[t["id"]] = (order, sc)
             for c in order[:25]:
                 x = best.get(c)   # joueur visé : au moins 2 parties et 8 % de ses parties sur ce champion
                 tg = x if x and x[1] >= 2 and x[1] / max(1, x[2]) >= 0.08 else None
@@ -456,8 +677,9 @@ def draft_block(C, FLAT, teams, now_iso, log=print):
         out["pb"], out["tb"] = pb, tb
     except Exception as e: err.append("bans probables : %s %s" % (type(e).__name__, str(e)[:160]))
     # fiabilité sur le tournoi en cours (rejeu, mêmes fonctions) et celle mesurée sur les Worlds 2025
+    keep = {}
     try:
-        b, p, _ = replay(recs, FW, pools, mp, mpr)
+        b, p, _ = replay(recs, FW, pools, mp, mpr, keep=keep, teams_by=teams_by)
         out["fi"] = [summarize_fi(b, p, year), FI_2025]
         out["cb"] = BAN_FI
     except Exception as e: err.append("fiabilité : %s %s" % (type(e).__name__, str(e)[:160]))
@@ -468,6 +690,14 @@ def draft_block(C, FLAT, teams, now_iso, log=print):
         for r in ROLES:
             out["mu"][r] = [[ci(a), ci(b), v[0], v[1], v[2], v[3]] for (a, b), v in sorted(M[r].items(), key=lambda kv: -kv[1][0])]
     except Exception as e: err.append("matchups : %s %s" % (type(e).__name__, str(e)[:160]))
+    # pronos de draft figés au coup d'envoi de chaque partie, et ce qui a été joué (clé « gm »)
+    try:
+        if ms is not None and "pp" in out and "pb" in out:   # gel seulement sur des pronos complets
+            rn = real_now or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+            tie = lambda c: norm(names.get(c, c))   # même départage que l'appli (rang dans « ch »)
+            gm_freeze(ms, C, teams, teams_by, st, ppfull, pbord, tie, rn)
+        out["gm"] = gm_publish(ms, C, FW, teams_by, gg, keep, ci, names)
+    except Exception as e: err.append("drafts partie par partie : %s %s" % (type(e).__name__, str(e)[:160])); out.pop("gm", None)
     # index des champions : remplace les clés par leur rang dans « ch »
     try:
         ch = sorted(used, key=lambda c: norm(names.get(c, c)))
@@ -486,6 +716,13 @@ def draft_block(C, FLAT, teams, now_iso, log=print):
             for x in v[1]: x[0] = ix[x[0]]
         for r in ROLES:
             for x in out.get("mu", {}).get(r, []): x[0] = ix[x[0]]; x[1] = ix[x[1]]
+        try:
+            for o in out.get("gm", {}).values():
+                o["x"] = [ix[c] for c in o["x"]]; o["pb"] = [[ix[c] for c in L] for L in o["pb"]]
+                o["pp"] = [[[ix[c] for c in L] for L in T] for T in o["pp"]]
+                if "rp" in o: o["rp"] = [[ix[c] if c is not None else None for c in L] for L in o["rp"]]
+                if "rb" in o: o["rb"] = [[ix[c] for c in L] if L is not None else None for L in o["rb"]]
+        except Exception as e: err.append("drafts partie par partie (index) : %s %s" % (type(e).__name__, str(e)[:160])); out.pop("gm", None)
     except Exception as e:   # sans index cohérent, le fichier serait illisible pour l'appli : on garde l'ancien
         log("  draft.json : index des champions impossible, ancien fichier conservé :", type(e).__name__, str(e)[:160])
         return None

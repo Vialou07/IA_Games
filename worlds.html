@@ -993,6 +993,57 @@ html.mv-on .rkhr em,html.mv-on .simr .ti b,html.mv-on .robot .wpl b,html.mv-on #
 .l2ic{width:22px;height:22px;border-radius:4px;box-shadow:0 0 0 1px rgba(200,170,110,.35);background:var(--panel2)}
 .l2bw{margin-top:8px}
 /* <<< live2 */
+/* >>> draft2 */
+.d2g{margin-top:10px;border-top:1px solid rgba(200,170,110,.16)}
+.d2g>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr 22px;gap:1px 8px;align-items:center;padding:9px 0 7px;min-height:44px}
+.d2g>summary::-webkit-details-marker{display:none}
+.d2g>summary>b{font-family:var(--title);font-size:13.5px;letter-spacing:.4px;color:var(--gold2)}
+.d2g>summary>span{grid-column:1;font-size:12.5px;color:var(--muted);line-height:1.35}
+.d2g>summary>span em{font-style:normal;font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums}
+.d2g>summary::after{content:"›";grid-column:2;grid-row:1/3;justify-self:end;color:var(--gold);font-size:22px;line-height:1;transition:transform .2s}
+.d2g[open]>summary::after{transform:rotate(90deg)}
+.d2g>div{padding:0 0 6px;animation:viewIn .3s ease both}
+.d2fl{margin-top:4px;border-top:0}
+.d2fl>summary>b{font-size:15px;color:var(--gold)}
+.d2lv{margin-top:14px}
+.d2h{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 8px;margin:10px 0 4px;font-family:var(--title);font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--gold)}
+.d2h small{font-family:var(--body);font-size:11px;font-weight:500;letter-spacing:0;color:var(--muted)}
+.d2bt{display:grid;grid-template-columns:64px 1fr;gap:3px 8px;align-items:center;padding:4px 0}
+.d2bt .tm{display:flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:700;font-size:14px;color:var(--text);min-width:0}
+.d2k{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.d2k>span{display:inline-flex;border-radius:7px}
+.d2k>span .chi{opacity:.45;filter:grayscale(.8)}
+.d2k>span.hit .chi{opacity:1;filter:none;box-shadow:0 0 0 2px var(--gold),0 0 10px rgba(200,170,110,.55)}
+.d2k.dim>span .chi{opacity:.8;filter:none}
+.d2ms{grid-column:2;display:flex;align-items:center;gap:3px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.d2ms .chi{opacity:.6}
+.d2pk{display:grid;grid-template-columns:1fr 44px 1fr;gap:6px 4px;align-items:center}
+.d2pk .hd{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--text)}
+.d2pk .hd.r{text-align:right}
+.d2pk .rl{font-style:normal;font-family:var(--title);font-size:10px;font-weight:700;color:var(--gold);text-align:center}
+.d2pk .s{display:flex;align-items:center;gap:4px;min-width:0}
+.d2pk .s.r{justify-content:flex-end}
+.d2pk .real{display:inline-flex;min-width:26px;min-height:26px;border-radius:7px}
+.d2pk .real.hit .chi{box-shadow:0 0 0 2px var(--gold),0 0 10px rgba(200,170,110,.55)}
+.d2pk .rk{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.d2pk .rk.hit{color:var(--gold2);font-weight:700}
+.d2pk .pr{display:flex;gap:2px}
+.d2pk .pr .chi{opacity:.4;filter:grayscale(.6)}
+.d2pk .pr .on .chi{opacity:1;filter:none;box-shadow:0 0 0 1.5px var(--gold)}
+.d2n{font-size:11.5px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+.d2f{margin:2px 0 10px}
+.d2ft{display:flex;align-items:center;gap:6px;margin:10px 0 4px;font-size:11.5px;color:var(--muted)}
+.d2ft b{font-family:var(--disp);font-size:14px;color:var(--text)}
+.d2fk{display:flex;flex-wrap:wrap;gap:4px}
+.d2fk .chi{filter:grayscale(1);opacity:.55}
+.d2fp{display:grid;grid-template-columns:52px minmax(0,1fr) auto;grid-template-areas:"rl nm rs" "rl ls ls";gap:2px 8px;align-items:center;padding:6px 0;border-top:1px solid rgba(200,170,110,.08)}
+.d2fp .rl{grid-area:rl;font-style:normal;font-family:var(--title);font-size:10px;font-weight:700;color:var(--gold)}
+.d2fp .nm{grid-area:nm;font-family:var(--disp);font-size:15px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d2fp .rs{grid-area:rs;display:flex;align-items:center;gap:3px}
+.d2fp .rs small{font-size:10.5px;color:var(--muted);margin-right:2px}
+.d2fp .ls{grid-area:ls;display:flex;align-items:center;flex-wrap:wrap;gap:3px;font-size:11.5px;color:var(--muted)}
+.d2fp .ls .chi{filter:grayscale(1);opacity:.5}
+/* <<< draft2 */
 </style>
 </head>
 <body>
@@ -1839,7 +1890,7 @@ function matchSheet(id,quiet){
   h+=S==="soon"?mine+duelMatchHTML(m,"sc")+pre+duelMatchHTML(m,"lg")
     :S==="live"?live+mine+duelMatchHTML(m)+pre+games
     :mine+duelMatchHTML(m)+man+games+pre;
-  h+=amRolesHTML(m)+amDraftSecHTML(m)+amTeamSecHTML(m);
+  /* >>> draft2 */h+=d2FearlessSheet(m);/* <<< draft2 */h+=amRolesHTML(m)+amDraftSecHTML(m)+amTeamSecHTML(m);
   const prev=MATCHES.filter(x=>x!==m&&x.winner&&((x.t1===m.t1&&x.t2===m.t2)||(x.t1===m.t2&&x.t2===m.t1)));
   if(prev.length)h+=`<h2>Déjà croisés à ces Worlds</h2><div class="list">${prev.map(matchRow).join("")}</div>`;
   setSheet(h,quiet);
@@ -3274,6 +3325,166 @@ function amBetweenRender(m){return D=>{
 /* fiabilité des picks probables en une phrase (draft.json fi : tournoi en cours, sinon Worlds 2025) */
 function amFiShort(){try{const f=(DJ&&DJ.fi)||[],x=f.find(z=>z.y===DJ.y&&z.pn)||f.find(z=>z.pn);if(!x)return"";
   return `Le pick joué figurait dans les 3 picks probables ${amPc(x.p3)} du temps ${x.y===String(new Date().getFullYear())?"à ces Worlds":"aux Worlds "+x.y} (${amNf(x.pn)} picks). `}catch(e){return""}}
+/* >>> draft2 */
+/* ===================== DRAFT JOUÉE CONTRE PRONO, FEARLESS DE LA SÉRIE (lot draft2) =====================
+   Données : DJ.gm (draft.json, robot tools/draft_block.py gm_publish), une entrée par partie « match_numéro » :
+   t [A, B] ; x champions déjà joués dans la série avant la partie ; pb [5 bans attendus de A, de B] ; pp [[3 picks probables
+   par poste] de A, de B] ; rp picks joués par poste ; rb bans joués dans l'ordre (gol.gg, absents avant sa publication) ;
+   bl index de l'équipe côté bleu ; w vainqueur ; e fin de la partie (UTC) ; s « g » figé au coup d'envoi, « r » recalculé
+   après coup avec les seules données d'avant la partie ; f heure du gel (UTC). Champions : index dans DJ.ch.
+   Rendus : d2GameHTML (feuille de chaque partie terminée, dans renderGames), d2LiveHTML (direct, dès que les champions sont
+   connus), d2FearlessHTML (« Plus jouables dans cette série » : entre deux manches, pendant une partie, fiche en attente).
+   Branchements sans toucher au corps des fonctions d'origine : surcouches de amBetweenRender et amLiveDraftHTML (plus bas).
+   Réutilise DJ, loadDJ, ckey, djCh, picksFor, bansFor, matchGames, teamPlayers, ablock, AK, amO, amTid, LV.
+   Aucune exception ne remonte : chaque rendu retombe sur rien. */
+const D2R={top:"TOP",jungle:"JGL",mid:"MID",bottom:"BOT",support:"SUP"};
+const d2Nm=c=>{if(c==null)return"";const n=typeof djCh==="function"?djCh(c):c;return typeof CH!=="undefined"&&CH&&CH.nm&&CH.nm[n]?CH.nm[n]:n};
+const d2Same=(a,b)=>!!a&&!!b&&ckey(a)===ckey(b);
+const d2Mid=m=>m&&/^le\d/.test(String(m.id))?String(m.id).slice(2):null;
+const d2Hm=f=>{try{const d=new Date(String(f).slice(0,16)+":00Z");if(isNaN(d))return"";return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",timeZone:AM_TZ}).replace(":"," h ")}catch(e){return""}};
+const d2Ic=(c,sz,cls,tt)=>`<span class="${cls||""}"${tt?` title="${esc(tt)}"`:""}>${champ(d2Nm(c),sz)}</span>`;
+/* parties déjà finies de la série d'après le direct (sinon le score affiché) */
+const d2N=m=>{const L=typeof LV!=="undefined"&&LV.games&&LV.games[m.key];return (L&&L.teams||[]).reduce((s,t)=>s+(t.w||0),0)||((m.s1||0)+(m.s2||0))};
+
+/* prono de draft d'une partie : figé par le robot (DJ.gm) ; à défaut, pendant le match seulement (rien de la série n'est encore
+   dans draft.json), ce que l'appli a affiché avant la partie (« Avant la partie », « Draft »), ou son calcul pour une 1re partie */
+function d2Pred(m,num,live){
+  const mid=d2Mid(m),D=typeof DJ!=="undefined"?DJ:null;if(!mid||!D)return null;
+  const o=D.gm&&D.gm[mid+"_"+num],ch=i=>i==null||i<0?null:D.ch[i];
+  if(o&&Array.isArray(o.t)&&Array.isArray(o.pb)&&Array.isArray(o.pp))
+    return {src:o.s,f:o.f,t:o.t,o,x:(o.x||[]).map(ch),ban:o.pb.map(L=>(L||[]).map(ch)),pk:o.pp.map(T=>ROLE_ORDER.map((r,i)=>((T||[])[i]||[]).map(ch)))};
+  if(!live||!m.t1||!m.t2)return null;
+  const prev=num-1,lane=(d,r,k)=>{const l=(d.lanes||[]).find(z=>z.r===r);return l?(l[k]||[]).slice(0,3).map(z=>z.c):[]};
+  for(const k of ["amb_"+m.key+"_"+prev,"dj_"+m.key+"_"+prev]){const a=AK[k],d=a&&a.st==="ok"&&a.data;
+    if(d&&d.lanes&&d.b1&&d.b2)return {src:"app",t:[m.t1,m.t2],x:d.burned||[],ban:[d.b2.map(z=>z.c),d.b1.map(z=>z.c)],pk:[ROLE_ORDER.map(r=>lane(d,r,"A")),ROLE_ORDER.map(r=>lane(d,r,"B"))]}}
+  if(num===1){const pl=t=>ROLE_ORDER.map(r=>{const p=teamPlayers(t).find(q=>q.role===r);return p?picksFor(p.key,[],3).map(z=>z.c):[]});
+    return {src:"app",t:[m.t1,m.t2],x:[],ban:[bansFor(m.t1,m.t2,[]).map(z=>z.c),bansFor(m.t2,m.t1,[]).map(z=>z.c)],pk:[pl(m.t1),pl(m.t2)]}}
+  return null;
+}
+/* picks joués, rangés comme le prono : {pk: [[5 champions par poste] de A, de B], bl: index de A ou B côté bleu} */
+function d2RealGame(P,x){
+  const o=P.o;if(o&&Array.isArray(o.rp)&&o.rp[0]&&o.rp[1])return {pk:o.rp.map(L=>ROLE_ORDER.map((r,i)=>L[i]==null?null:DJ.ch[L[i]])),bl:o.bl===1?1:0};
+  // sans le robot : ordre des participants du flux (haut, jungle, mid, ADC, support)
+  const sd=t=>x.b.our===t?x.b:x.r.our===t?x.r:null,A=sd(P.t[0]),B=sd(P.t[1]);if(!A||!B||A===B)return null;
+  return {pk:[A,B].map(s=>ROLE_ORDER.map((r,i)=>s.p&&s.p[i]?s.p[i].c:null)),bl:A===x.b?0:1};
+}
+function d2RealLive(P,L){
+  const md=L.meta||{},get=sd=>{const o={};((md[sd+"TeamMetadata"]||{}).participantMetadata||[]).forEach(p=>{const r=D2R[p.role];if(r)o[r]=p.championId});return ROLE_ORDER.map(r=>o[r]||null)};
+  const b=get("blue"),r=get("red");
+  if(L.blue===P.t[0]&&L.red===P.t[1])return {pk:[b,r],bl:0};
+  if(L.blue===P.t[1]&&L.red===P.t[0])return {pk:[r,b],bl:1};
+  return null;
+}
+/* comparaison : bans annoncés tombés (par équipe), picks joués dans le top 3 du joueur */
+function d2Cmp(P,R){
+  const o=P.o,bans=[0,1].map(s=>{const rb=o&&o.rb&&o.rb[s];if(!Array.isArray(rb)||!rb.length)return null;
+    const real=rb.map(i=>DJ.ch[i]),pred=P.ban[s]||[];
+    return {real,pred,hit:real.filter(c=>pred.some(p=>d2Same(p,c))).length,miss:pred.filter(p=>!real.some(c=>d2Same(p,c)))}});
+  const picks=[0,1].map(s=>ROLE_ORDER.map((r,i)=>{const c=R.pk[s][i]||null,pr=P.pk[s][i]||[];return {r,c,pr,k:c?pr.findIndex(p=>d2Same(p,c)):-1}}));
+  let ph=0,pn=0;picks.forEach(L=>L.forEach(x=>{if(x.c&&x.pr.length){pn++;if(x.k>=0)ph++}}));
+  return {bans:bans[0]&&bans[1]?bans:[null,null],picks,ph,pn};
+}
+/* niveau 1 : « Bans annoncés : BLG 4/5, T1 2/5 · 3 picks sur 10 dans nos top 3 » */
+function d2Sum(P,C,R,ctx,late){
+  const ord=R.bl===1?[1,0]:[0,1],b=C.bans,pk=C.pn?`<em>${C.ph}</em> pick${C.ph>1?"s":""} sur ${C.pn} dans nos top 3`:"";
+  const bn=b[0]?`bans annoncés : ${ord.map(s=>`<em>${amTid(P.t[s])} ${b[s].hit}/${b[s].real.length}</em>`).join(", ")}`
+    :ctx==="live"?"bans publiés environ une heure après la partie":late?"bans pas encore publiés par gol.gg":"bans publiés d’ici une heure";
+  const s=b[0]?[bn,pk]:[pk,bn];
+  return s.filter(Boolean).join(" · ").replace(/^./,c=>c.toUpperCase());
+}
+/* niveau 2 : bans réels (en or, ceux qu'on avait annoncés), picks par poste face aux 3 picks probables du joueur */
+function d2Detail(P,C,R,ctx){
+  const ord=R.bl===1?[1,0]:[0,1],tm=s=>P.t[s];let h="";
+  if(C.bans[0])h+=`<div class="d2h">Bans de chaque équipe, dans l’ordre <small>en or : annoncés</small></div>`+ord.map(s=>{const b=C.bans[s];
+    return `<div class="d2bt"><span class="tm">${logo(tm(s),18)}${amTid(tm(s))}</span><span class="d2k">${b.real.map(c=>d2Ic(c,26,b.pred.some(p=>d2Same(p,c))?"hit":"")).join("")}</span>${b.miss.length?`<span class="d2ms">attendus aussi : ${b.miss.map(c=>d2Ic(c,16)).join("")}</span>`:""}</div>`}).join("");
+  else h+=`<div class="d2h">Bans attendus de chaque équipe <small>${ctx==="live"?"les vrais bans arrivent environ une heure après la partie (gol.gg)":"les vrais bans arrivent d’ici une heure (gol.gg)"}</small></div>`
+    +ord.map(s=>`<div class="d2bt"><span class="tm">${logo(tm(s),18)}${amTid(tm(s))}</span><span class="d2k dim">${(P.ban[s]||[]).map(c=>d2Ic(c,22)).join("")}</span></div>`).join("");
+  const cell=(s,i,rev)=>{const x=C.picks[s][i],pr=`<span class="pr">${x.pr.map(p=>d2Ic(p,16,x.c&&d2Same(p,x.c)?"on":"")).join("")}</span>`,
+    rc=`<span class="real${x.c&&x.pr.length?(x.k>=0?" hit":" miss"):""}">${x.c?champ(d2Nm(x.c),26):""}</span>`,
+    rk=x.c&&x.pr.length?`<small class="rk${x.k>=0?" hit":""}">${x.k===0?"1er":x.k>0?(x.k+1)+"e":"hors top"}</small>`:"";
+    return `<span class="s${rev?" r":""}">${rev?pr+rk+rc:rc+rk+pr}</span>`};
+  h+=`<div class="d2h">Picks <small>en or : dans les 3 picks probables du joueur</small></div><div class="d2pk"><span class="hd">${amTid(tm(ord[0]))}</span><span></span><span class="hd r">${amTid(tm(ord[1]))}</span>`
+    +ROLE_ORDER.map((r,i)=>cell(ord[0],i,false)+`<i class="rl">${esc(ROLES[r])}</i>`+cell(ord[1],i,true)).join("")+`</div>`;
+  return h;
+}
+const d2Foot=P=>(P.src==="g"?`Prono figé par le robot au coup d’envoi${P.f?` (${d2Hm(P.f)})`:""}.`:P.src==="r"?"Prono recalculé après coup, avec les seules données d’avant la partie (il n’avait pas été figé en direct).":"Bans et picks probables affichés par l’appli avant la partie (le robot n’avait pas encore figé les siens).")
+  +(P.x&&P.x.length?` Les ${P.x.length} champions déjà joués dans la série en étaient retirés (fearless).`:"")+" Petites icônes : les 3 picks probables du joueur. Bans : gol.gg ; picks : API LoL Esports.";
+
+/* feuille d'une partie terminée (renderGames) : DJ peut arriver après le rendu, la ligne se pose alors à sa place */
+const D2W=new Map();let d2P=null;
+function d2GameHTML(m,x){try{
+  const mid=d2Mid(m);if(!mid||!x||x.none||x.err||!x.b||!x.r)return"";
+  const key=mid+"_"+x.num;
+  if(typeof DJ==="undefined"||!DJ){D2W.set(key,{m,x});
+    if(!d2P&&typeof loadDJ==="function")d2P=loadDJ().then(()=>{document.querySelectorAll("[data-d2g]").forEach(el=>{const r=D2W.get(el.dataset.d2g);if(r&&DJ)el.outerHTML=d2GameInner(r.m,r.x,el.dataset.d2g)})}).catch(()=>{}).finally(()=>{d2P=null});
+    return `<div data-d2g="${esc(key)}"></div>`}
+  return d2GameInner(m,x,key);
+}catch(e){console.warn("draft2",e);return""}}
+function d2GameInner(m,x,key){try{
+  const P=d2Pred(m,x.num,m.state==="live");if(!P)return"";
+  const R=d2RealGame(P,x);if(!R)return"";
+  const C=d2Cmp(P,R);if(!C.pn&&!C.bans[0])return"";
+  const end=P.o&&P.o.e?Date.parse(P.o.e+":00Z"):NaN,late=!isNaN(end)&&Date.now()-end>3*3600e3,id="d2g_"+key;
+  return `<details class="d2g" data-uo="${esc(id)}"${amO(id)}><summary><b>Draft</b><span>${d2Sum(P,C,R,"game",late)}</span></summary><div>${d2Detail(P,C,R,"game")}<p class="d2n">${d2Foot(P)}</p></div></details>`;
+}catch(e){console.warn("draft2",e);return""}}
+/* direct : dès que les champions de la partie sont connus (L.meta), picks joués contre nos top 3 */
+function d2LiveHTML(L,m){try{
+  if(!L||!L.meta||!m||!L.num||typeof DJ==="undefined"||!DJ)return"";
+  const P=d2Pred(m,L.num,true);if(!P)return"";
+  const R=d2RealLive(P,L);if(!R)return"";
+  const C=d2Cmp(Object.assign({},P,{o:null}),R);if(!C.pn)return"";
+  const id="d2l_"+(L.gid||m.key);
+  return `<details class="d2g d2lv" data-uo="${esc(id)}"${amO(id)}><summary><b>Draft contre nos pronos</b><span>${d2Sum(P,C,R,"live")}</span></summary><div>${d2Detail(P,C,R,"live")}<p class="d2n">${d2Foot(P)}</p></div></details>`;
+}catch(e){console.warn("draft2 direct",e);return""}}
+
+/* « Plus jouables dans cette série » : champions déjà pris (fearless : vérifié sur 1 989 séries 2025-2026 du cache du robot,
+   aucun champion rejoué dans une même série), par équipe ; pour chaque joueur, ses favoris (5 champions les plus joués sur
+   90 jours, DJ.pool) déjà pris et ses 3 picks probables restants (picksFor, champions pris retirés) */
+async function d2FearlessData(m,n){
+  if(typeof loadDJ==="function")await loadDJ().catch(()=>null);
+  let games=null;const a=AK["games_"+m.key+"_"+n];
+  if(a&&a.st==="ok"&&a.data&&Array.isArray(a.data.games))games=a.data.games;
+  if(!games){try{games=(await matchGames(m)).games}catch(e){games=null}}
+  const by={},add=(t,c,k)=>{if(t&&c)(by[t]=by[t]||[]).push([c,k])};
+  (games||[]).forEach(g=>{if(g&&!g.none&&!g.err&&g.b&&g.r&&g.num<=n)[g.b,g.r].forEach(sd=>(sd.p||[]).forEach(p=>add(sd.our,p.c,g.num)))});
+  const D=typeof DJ!=="undefined"?DJ:null,mid=d2Mid(m);
+  if(!Object.keys(by).length&&D&&D.gm&&mid)for(let k=1;k<=n;k++){const o=D.gm[mid+"_"+k];if(o&&Array.isArray(o.rp))o.t.forEach((t,s)=>(o.rp[s]||[]).forEach(i=>{if(i!=null)add(t,D.ch[i],k)}))}
+  if(!Object.keys(by).length)throw new Error("champions de la série pas encore disponibles");
+  const got=new Set(Object.values(by).flat().map(z=>z[1]));
+  return {by,n,ng:got.size,nocache:got.size<n};
+}
+function d2FearlessRender(m,ctx){return D=>{
+  const all=new Set();Object.values(D.by).forEach(L=>L.forEach(z=>all.add(ckey(z[0]))));
+  const teams=[m.t1,m.t2].filter(t=>D.by[t]),dj=typeof DJ!=="undefined"&&DJ,N=all.size;
+  const pl=t=>teamPlayers(t).slice().sort((a,b)=>ROLE_ORDER.indexOf(a.role)-ROLE_ORDER.indexOf(b.role)).map(p=>{
+    const P=dj&&dj.pool&&dj.pool[p.key],fav=P?P[2].slice(0,5).map(z=>dj.ch[z[0]]):[],lost=fav.filter(c=>all.has(ckey(c)));
+    return {p,fav,lost,rest:dj?picksFor(p.key,all,3):[]}});
+  const rows=teams.map(t=>[t,pl(t)]),top=rows.flatMap(x=>x[1]).filter(x=>x.lost.length).sort((a,b)=>b.lost.length-a.lost.length||b.lost.length/b.fav.length-a.lost.length/a.fav.length)[0];
+  const sub=top?`${N} champion${N>1?"s":""} · ${esc(top.p.id)} : ${top.lost.length} de ses ${top.fav.length} favoris pris`:`${N} champion${N>1?"s":""} déjà pris`;
+  const parts=L=>{const g=[...new Set(L.map(z=>z[1]))].sort((a,b)=>a-b);return g.length>1?"parties "+g.slice(0,-1).join(", ")+" et "+g[g.length-1]:"partie "+g[0]};
+  const team=t=>`<div class="d2ft">${logo(t,18)}<b>Pris par ${amTid(t)}</b><small>${parts(D.by[t])}</small></div><div class="d2fk">${D.by[t].map(z=>d2Ic(z[0],24,"",d2Nm(z[0])+", partie "+z[1])).join("")}</div>`;
+  const prow=x=>`<div class="d2fp"><i class="rl">${esc(ROLES[x.p.role]||x.p.role)}</i><b class="nm">${esc(x.p.id)}</b>`
+    +`<span class="rs">${x.rest.length?`<small>reste</small>${x.rest.map(z=>d2Ic(z.c,22,"",`${d2Nm(z.c)} : ${z.long}`)).join("")}`:""}</span>`
+    +`<span class="ls">${!x.fav.length?"pas de partie depuis 90 jours":x.lost.length?`${x.lost.length} de ses ${x.fav.length} favoris pris : ${x.lost.map(c=>d2Ic(c,16)).join("")}`:`aucun de ses ${x.fav.length} favoris pris`}</span></div>`;
+  const id="d2f_"+m.key;
+  return `<details class="d2g d2fl" data-uo="${esc(id)}"${amO(id)}><summary><b>Plus jouables dans cette série</b><span>${sub}</span></summary><div>
+    <p class="d2n" style="margin:0 0 4px">Fearless : un champion joué dans une partie ne peut plus être choisi dans la suite de la série, ni par une équipe ni par l’autre.${ctx==="live"?" S’y ajouteront les 10 champions de la partie en cours.":""}${D.ng<D.n?` Partie${D.n-D.ng>1?"s":""} pas encore lue${D.n-D.ng>1?"s":""} dans le flux : liste incomplète.`:""}</p>
+    ${teams.map(team).join("")}${Object.keys(D.by).filter(t=>!teams.includes(t)).map(t=>`<div class="d2fk">${D.by[t].map(z=>d2Ic(z[0],24)).join("")}</div>`).join("")}
+    ${dj&&rows.length?`<div class="d2h">Leurs favoris <small>5 champions les plus joués sur 90 jours</small></div>${rows.map(([t,L])=>`<div class="d2ft">${logo(t,16)}<b>${amTid(t)}</b></div>${L.map(prow).join("")}`).join("")}
+    <p class="d2n">Grisés : favoris déjà pris. « reste » : ses 3 picks probables, champions déjà pris retirés. Règle vérifiée sur 1 989 séries 2025-2026 lues par le robot (toutes ligues, Worlds compris) : jamais un champion rejoué dans une même série.</p>`:""}</div></details>`;
+}}
+function d2FearlessHTML(m,ctx,n){try{
+  if(!m||!(m.bo>1)||!m.t1||!m.t2||!d2Mid(m)||!(n>0))return"";
+  return `<div class="d2f">${ablock("d2f_"+m.key+"_"+n,()=>d2FearlessData(m,n),d2FearlessRender(m,ctx),1)}</div>`;
+}catch(e){console.warn("draft2 fearless",e);return""}}
+/* fiche d'un match en série hors direct (match en attente du résultat) : le bloc à sa place, avant les postes */
+function d2FearlessSheet(m){try{return m&&m.state==="wait"?d2FearlessHTML(m,"sheet",d2N(m)):""}catch(e){return""}}
+
+/* surcouches : entre deux manches, le bloc remplace la liste brute des champions brûlés ; pendant une partie, la ligne
+   « Draft contre nos pronos » et le bloc fearless suivent la draft du direct */
+if(typeof amBetweenRender==="function"){const d2B0=amBetweenRender;amBetweenRender=function(m){const r=d2B0(m);return D=>{let f="";try{f=d2FearlessHTML(m,"between",d2N(m))}catch(e){}return f?f+r(Object.assign({},D,{burned:[]})):r(D)}}}
+if(typeof amLiveDraftHTML==="function"){const d2L0=amLiveDraftHTML;amLiveDraftHTML=function(L,m){const h=d2L0(L,m);if(!h||!L||!L.amd||L.amd.err)return h;let x="";try{x=d2LiveHTML(L,m)+(m&&m.bo>1&&L.num>1?d2FearlessHTML(m,"live",L.num-1):"")}catch(e){}return h+x}}
+/* <<< draft2 */
 function amBetweenHTML(m,L){try{
   if(!m||!(m.bo>1)||typeof draftMatchData!=="function")return"";
   const n=(L&&L.teams||[]).reduce((s,t)=>s+(t.w||0),0)||((m.s1||0)+(m.s2||0));if(!n)return"";
@@ -4420,7 +4631,7 @@ function renderGames(m){return D=>{
      <div class="lvsc"><div class="lvt">${logo(x.b.our,34)}<b>${esc(T[x.b.our]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${x.b.k}</b><i>kills</i><b>${x.r.k}</b></div><div class="lvt">${logo(x.r.our,34)}<b>${esc(T[x.r.our]?.id||"")}</b><span class="side r">rouge</span></div></div>
      <div class="lvobj">${[["Or",fx1(x.b.g/1000)+" k",fx1(x.r.g/1000)+" k"],["Tours",x.b.to,x.r.to],["Dragons",`${x.b.dragons.length} ${drg(x.b.dragons)}${kfSoulTag(x.b.dragons)}`,`${kfSoulTag(x.r.dragons)}${drg(x.r.dragons)} ${x.r.dragons.length}`],["Barons",x.b.ba,x.r.ba],["Inhibiteurs",x.b.in,x.r.in]].map(([l,a,b])=>`<div><span>${a}</span><em>${l}</em><span>${b}</span></div>`).join("")}</div>
      <div class="lvp"><div>${gsh(x.b.our,false)}${x.b.p.map(pp=>prow(pp,x.b,false)).join("")}</div><div>${gsh(x.r.our,true)}${x.r.p.map(pp=>prow(pp,x.r,true)).join("")}</div></div>
-     ${flLine(x)}
+     ${flLine(x)}${/* >>> draft2 */d2GameHTML(m,x)/* <<< draft2 */}
      ${x.fin?"":`<p class="small" style="margin-top:6px">Le flux s’est arrêté avant la fin : chiffres de la dernière image disponible.</p>`}</div>`}).join("")
    +`<p class="small" style="margin-top:8px">Flux officiel LoL Esports. Le pourcentage est la part des dégâts de l’équipe. Le vainqueur de chaque partie est déduit de l’état final et du score de la série. Touche un joueur pour sa fiche.</p>`;
 }}
@@ -4592,7 +4803,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v13, 24/10/2026";
+const APP_VERSION="v13.1, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}

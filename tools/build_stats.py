@@ -836,7 +836,7 @@ def aux_blocks(C, teams, now_iso):
     out = {}
     if not FLAT: return out   # jamais de fichier vide publié par-dessus un bon
     for name, fn in (("fiche", lambda: __import__("fiche_block").fiche_block(FLAT, teams, now_iso, C)),
-                     ("draft", lambda: __import__("draft_block").draft_block(C, FLAT, teams, now_iso))):
+                     ("draft", lambda: __import__("draft_block").draft_block(C, FLAT, teams, now_iso, ms=MS))):
         try:
             t = time.time(); out[name] = fn(); log("bloc %s : %.1f s" % (name, time.time() - t))
         except ImportError: pass
@@ -938,6 +938,8 @@ def main():
     except Exception as e: log("équipes LoL Esports injoignables :", str(e)[-120:])
     try:   # bans et ordre des picks des Worlds (gol.gg), gardés dans la mémoire : 0 requête quand rien de nouveau
         import draft_block
+        r = draft_block.series_update(C, datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"), log=log)
+        if r.get("req") or r.get("err"): log("séries en cours (fearless) :", r)   # champions des parties finies d'une série pas finie
         r = draft_block.golgg_update(C, datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"), budget_s=60, log=log)
         log("gol.gg :", r.get("msg"), "(%d requête(s))" % r.get("req", 0))
     except Exception as e: log("gol.gg indisponible :", type(e).__name__, str(e)[:120])
