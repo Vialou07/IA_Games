@@ -447,6 +447,7 @@ nav.tabs button{position:relative}
 .fiab{padding:12px}.fiab .big{font-family:var(--disp);font-size:26px;color:var(--gold2)}.fbl{display:grid;gap:4px;margin:8px 0}
 .fbr{display:grid;grid-template-columns:48px 1fr auto 18px;gap:6px;align-items:center;font-size:12px;padding:5px 6px;background:rgba(5,11,24,.5);border-radius:6px;border-left:3px solid var(--muted)}
 .fbr.w{border-left-color:var(--teal)}.fbr.l{border-left-color:var(--red)}.fbr .tn{display:flex;align-items:center;gap:4px;min-width:0}.fbr .fw{color:var(--gold2)}.fbr i{font-style:normal;font-weight:800;text-align:center}.fbr.w i{color:var(--teal)}.fbr.l i{color:var(--red)}
+.wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
 .rc5.w{border-left-color:var(--teal)}.rc5.l{border-left-color:var(--red)}.rc5 .d{font-size:12px;font-weight:700;line-height:1.15;display:flex;flex-direction:column}.rc5 .d small{font-size:10px;color:var(--muted);font-weight:600}
@@ -1632,6 +1633,13 @@ function fiabHTML(){
    <p class="small">${R.some(r=>r[7]==="g")?"Pronos figés au coup d’envoi. ":""}${R.some(r=>r[7]==="r")?"Les premiers matchs sont recalculés avec les seules données d’avant le match. ":""}Le gagnant est en or.</p></details>
    ${E&&L?`<p class="small" style="margin-top:8px">Avant les Worlds, testé à l’aveugle sur ${E.g[0]} parties internationales : bon favori ${Math.round(E.g[3]*100)} % du temps, autant que la règle « la ligue la plus forte gagne » (${Math.round(L.g[3]*100)} %), mais avec des pourcentages plus justes${cal.length?" : "+cal.slice(-2).join(", "):""}.</p>`:""}</div>`;
 }
+// ces Worlds, ligue contre ligue : séries terminées entre équipes de ligues différentes (calculé sur les résultats officiels)
+function wlgHTML(NM){
+  const R={};MATCHES.filter(m=>m.winner&&m.t1&&m.t2&&T[m.t1]&&T[m.t2]&&T[m.t1].league!==T[m.t2].league).forEach(m=>{
+    const w=T[m.winner].league,l=T[m.winner===m.t1?m.t2:m.t1].league;(R[w]=R[w]||[0,0])[0]++;(R[l]=R[l]||[0,0])[1]++});
+  const L=Object.entries(R).sort((a,b)=>b[1][0]/(b[1][0]+b[1][1])-a[1][0]/(a[1][0]+a[1][1])||b[1][0]-a[1][0]);if(!L.length)return"";
+  return `<h3 class="h3">Ces Worlds, ligue contre ligue</h3><div class="wlg">${L.map(([l,[w,d]])=>`<div class="wlr"><b>${esc(l)}</b><span class="split mini"><i style="width:${w/(w+d)*100}%;background:var(--teal)"></i><i style="width:${d/(w+d)*100}%;background:var(--red)"></i></span><em>${w}-${d}</em></div>`).join("")}</div><p class="small">Séries gagnées et perdues contre les autres ligues, play-in compris.</p>`;
+}
 function lgrHTML(NM){
   const G=SJ.lgr&&(SJ.lgr["2025"]||SJ.lgr["2024"]);if(!G)return"";
   const rows=Object.entries(G).filter(([k,v])=>k.split("|").every(l=>NM[l])&&v[0]+v[1]>=6).slice(0,8);if(!rows.length)return"";
@@ -1644,7 +1652,7 @@ function leaguesHTML(){
   const L=Object.entries(m.lg).filter(([l])=>NM[l]).sort((a,b)=>b[1]-a[1]),mx=L[0][1],mn=L[L.length-1][1],al=(m.logit||[0,.64])[1];
   const vs=(a,b)=>Math.round(100/(1+Math.exp(-al*5*(a-b))));
   return `<h2>Force des ligues</h2><p class="sub">Mesurée sur les matchs internationaux depuis 2024, en comparant les performances des joueurs. C’est elle qui rend les ligues comparables.</p>
-   <div class="lgt frame hx">${L.map(([l,v])=>`<div class="lgr"><b>${esc(NM[l])}</b><span class="br"><i style="width:${(v-mn)/(mx-mn||1)*92+8}%"></i></span><em>${fxs(v)}</em></div>`).join("")}${lgrHTML(NM)}</div>
+   <div class="lgt frame hx">${L.map(([l,v])=>`<div class="lgr"><b>${esc(NM[l])}</b><span class="br"><i style="width:${(v-mn)/(mx-mn||1)*92+8}%"></i></span><em>${fxs(v)}</em></div>`).join("")}${wlgHTML(NM)}${lgrHTML(NM)}</div>
    <p class="small" style="margin-top:6px">Pour se faire une idée : une équipe LCK moyenne battrait une équipe LEC moyenne ${vs(m.lg.LCK,m.lg.LEC)} fois sur 100, et une équipe LEC moyenne une équipe CBLOL moyenne ${vs(m.lg.LEC,m.lg.CBLOL)} fois sur 100. Un même KDA ne vaut donc pas la même chose d’une ligue à l’autre.</p>`;
 }
 /* ---- stats 2026 par joueur : classements au poste et comparaison (robot, API LoL Esports) ---- */
