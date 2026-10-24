@@ -896,6 +896,22 @@ details.amk[open]>summary::after{transform:rotate(90deg)}
 .rkhr>i{position:absolute;left:0;bottom:2px;height:2px;border-radius:1px;background:linear-gradient(90deg,var(--gold),rgba(200,170,110,.25));animation:grow 1s cubic-bezier(.2,.9,.3,1) backwards}
 .rkhome>p.small{margin:4px 0 0;font-size:11.5px}
 .ami::after,.qi::after,.lsv-i::after,.lsv-nx::after{content:"";position:absolute;inset:-9px}.qi,.lsv-i,.lsv-nx{position:relative}
+/* >>> motion */
+/* ===== motion : cinq moments animés (bloc JS « motion »), actifs seulement quand le script a posé html.mv-on ===== */
+html.mv-on .rkhr>i{animation:none;transform-origin:0 50%}
+html.mv-on .rkhr em,html.mv-on .simr .ti b,html.mv-on .robot .wpl b,html.mv-on #livebox .wpl b,html.mv-on #herolive .wpl span,html.mv-on .lvk b,html.mv-on .hlive b,html.mv-on .lbr em{font-variant-numeric:tabular-nums}
+/* éclat doré : un seul passage de lumière (favori du robot, favori du titre, ta remontée dans la ligue) */
+.mv-glint{position:relative;overflow:hidden}
+.mv-glint::after{content:"";position:absolute;top:0;bottom:0;left:0;width:42%;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(closest-side,rgba(255,236,190,.55),rgba(200,170,110,.18) 55%,transparent);transform:translateX(-100%) skewX(-20deg);animation:mvGlint 1.1s cubic-bezier(.45,0,.2,1) forwards}
+@keyframes mvGlint{to{transform:translateX(240%) skewX(-20deg)}}
+/* score qui claque : kills du direct, score de la série, points de la ligue */
+.mv-hit{position:relative;animation:mvHit .55s cubic-bezier(.3,1.6,.5,1)}
+.mv-hit::after{content:"";position:absolute;left:50%;top:50%;width:2.4em;height:2.4em;margin:-1.2em 0 0 -1.2em;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(240,230,210,.6),rgba(200,170,110,.25) 55%,transparent);opacity:0;animation:mvFlash .7s ease-out}
+@keyframes mvHit{from{transform:scale(1.5)}}
+@keyframes mvFlash{from{opacity:1;transform:scale(.35)}to{opacity:0;transform:scale(1.5)}}
+.lbr.mv-up{position:relative;z-index:1}
+@media (prefers-reduced-motion:reduce){.mv-glint::after,.mv-hit::after{display:none}}
+/* <<< motion */
 </style>
 </head>
 <body>
@@ -4276,7 +4292,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.12, 24/10/2026";
+const APP_VERSION="v12.13, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
@@ -4345,6 +4361,149 @@ champMap();
 loadSJ().then(s=>{if(s)renderAll();else loadTeamNames().then(()=>renderAll()).catch(()=>{})});
 if(lg)duelConnect();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&lg)duelWake()});
+/* >>> motion */
+/* ===================== MOTION : cinq moments animés, pas plus =====================
+   1. Pronostic du robot (fiche de match) : la barre part de 50/50 et glisse jusqu'au verdict, les % défilent, éclat doré sur le favori.
+   2. Chances de titre (accueil « Qui va gagner », tableau de l'onglet Suisse) : barres en cascade, % qui défilent, éclat sur le favori.
+   3. Duels par poste et forme (fiches) : les pastilles des dernières rencontres tombent en cascade, après l'arrivée de leur ligne.
+   4. Direct : kills et score de la série qui claquent quand ils changent, barre de victoire qui glisse depuis la valeur précédente.
+   5. Ligue : le classement glisse depuis l'ordre que tu as vu la dernière fois (mémorisé sur le téléphone), points qui défilent.
+   Règles : transform et opacity seulement (Web Animations, composité) ; une fois à l'apparition (IntersectionObserver) ou sur un vrai
+   changement de valeur ; les re-rendus (synchro 60 s, direct 10 s) ne rejouent rien ; rien en boucle ; prefers-reduced-motion : rien.
+   Branché par un MutationObserver sur l'accueil, l'onglet Suisse et les fiches : aucune fonction de rendu n'est modifiée. */
+(function motion(){
+  if(RM||!window.IntersectionObserver||!window.MutationObserver||!Element.prototype.animate)return;
+  document.documentElement.classList.add("mv-on");
+  const EZ="cubic-bezier(.22,1,.36,1)",POP="cubic-bezier(.3,1.6,.5,1)";
+  const SEEN=new Map(),DONE=new WeakSet(),PLAY=new WeakMap(),HOLD=new Set();
+  let EP=0,EPt=0;   // ouverture de fiche : les entrées de fiche se rejouent à chaque ouverture (comme le face-à-face), jamais aux re-rendus discrets
+  if(typeof openSheet==="function"){const o=openSheet;openSheet=function(){EP++;EPt=performance.now();return o.apply(this,arguments)}}
+  const sk=()=>EP+"|"+(sheetState?sheetState.k+":"+sheetState.id:"");
+  // dans une fiche qui vient de s'ouvrir : attendre que le face-à-face (ou la carte du joueur) ait atterri
+  const late=el=>el.closest("#sheet")?Math.max(0,EPt+950-performance.now()):0;
+  /* ---- nombres qui défilent : un seul requestAnimationFrame pour tous, texte d'origine remis à la fin ---- */
+  const TW=[];let raf=0;
+  const parseN=s=>{const m=/^([^\d<>+]*)(\d+(?:[.,]\d+)?)(\s*%?)$/.exec(String(s).trim());if(!m)return null;
+    return {pre:m[1],v:parseFloat(m[2].replace(",",".")),dec:(m[2].split(/[.,]/)[1]||"").length,sep:m[2].includes(",")?",":".",suf:m[3]}};
+  const fmtN=(n,v)=>n.pre+(n.dec?v.toFixed(n.dec).replace(".",n.sep):String(Math.round(v)))+n.suf;
+  function tick(t){raf=0;
+    for(let i=TW.length-1;i>=0;i--){const w=TW[i];if(!w.el.isConnected){TW.splice(i,1);continue}
+      const k=(t-w.t0)/w.d;if(k<0)continue;if(k>=1){w.el.textContent=w.fin;TW.splice(i,1);continue}
+      w.el.textContent=fmtN(w.n,w.a+(w.n.v-w.a)*(1-Math.pow(1-k,4)))}
+    if(TW.length)raf=requestAnimationFrame(tick)}
+  // affiche tout de suite la valeur de départ ; renvoie go(durée, délai) ou null (rien à faire défiler)
+  function counter(el,from){if(!el||el.children.length||from==null||isNaN(from))return null;const n=parseN(el.textContent);
+    if(!n||Math.abs(from-n.v)<(n.dec?.05:.5))return null;const fin=el.textContent;el.textContent=fmtN(n,from);
+    return (d,dl)=>{TW.push({el,n,a:from,d,t0:performance.now()+(dl||0),fin});if(!raf)raf=requestAnimationFrame(tick)}}
+  /* ---- animation tenue à son premier état jusqu'au signal, puis jouée (l'état de départ est posé avant le premier affichage) ---- */
+  // (état de départ tenu par un style en ligne, moins coûteux qu'une animation en pause ; retiré dès que l'animation le prend en charge)
+  function stage(el,kf){const k0=kf[0];for(const q in k0)el.style[q]=k0[q];
+    return (d,dl,ez)=>{const a=el.animate(kf,{duration:d,delay:dl||0,easing:ez||EZ,fill:"backwards"});for(const q in k0)el.style[q]="";return a}}
+  // barre à deux segments (A | B) : la frontière glisse de from à to (part de A), chaque segment se met à l'échelle depuis son bord
+  function split(bar,from,to){const [a,b]=bar.children;a.style.transformOrigin="0 50%";b.style.transformOrigin="100% 50%";
+    const ga=stage(a,[{transform:`scaleX(${(from/to).toFixed(4)})`},{transform:"none"}]),gb=stage(b,[{transform:`scaleX(${((1-from)/(1-to)).toFixed(4)})`},{transform:"none"}]);
+    return (d,dl)=>{ga(d,dl);gb(d,dl)}}
+  const glint=(el,at)=>setTimeout(()=>{if(el.isConnected&&!document.hidden)el.classList.add("mv-glint")},at);
+  /* ---- à l'apparition : une fois, à moitié visible ; en attente sous l'intro ou sous une fiche ouverte ---- */
+  const blocked=el=>!!document.getElementById("intro")||(document.body.classList.contains("lock")&&!el.closest("#sheet"));
+  const IO=new IntersectionObserver(es=>{const go=[];
+    es.forEach(e=>{const el=e.target;if(!el.isConnected){IO.unobserve(el);PLAY.delete(el);return}if(!e.isIntersecting)return;
+      IO.unobserve(el);if(blocked(el))HOLD.add(el);else go.push(el)});
+    go.sort((a,b)=>a.compareDocumentPosition(b)&2?1:-1).forEach((el,i)=>{const f=PLAY.get(el);PLAY.delete(el);if(f)try{f(i)}catch(e){console.warn("motion",e)}})},{threshold:.5});
+  const watch=(el,f)=>{PLAY.set(el,f);IO.observe(el)};
+  new MutationObserver(()=>{if(!HOLD.size)return;[...HOLD].forEach(el=>{if(!el.isConnected){HOLD.delete(el);PLAY.delete(el)}else if(!blocked(el)){HOLD.delete(el);IO.observe(el)}})})
+    .observe(document.body,{attributes:true,attributeFilter:["class"],childList:true});
+  /* ---- branchement : chaque nouveau nœud des vues suivies passe une fois par les règles ---- */
+  const KINDS=[];const on=(s,f)=>KINDS.push([s,f]);
+  const run=(f,e)=>{if(DONE.has(e))return;DONE.add(e);try{f(e)}catch(err){console.warn("motion",err)}};
+  let ALL="";const hit=e=>{for(const [s,f] of KINDS)if(e.matches(s))run(f,e)};
+  const scan=n=>{if(n.matches(ALL))hit(n);n.querySelectorAll(ALL).forEach(hit)};   // une seule recherche par nœud ajouté
+
+  /* 1. pronostic du robot : de 50/50 au verdict (ou de l'ancienne valeur si elle a changé pendant que la fiche était ouverte) */
+  on(".robot .wpbar",bar=>{
+    const s=bar.children;if(s.length!==2)return;const p=parseFloat(s[0].style.width)/100;if(!(p>.01&&p<.99))return;
+    const key="rb|"+sk(),old=SEEN.get(key);if(old!=null&&Math.abs(old-p)<.005)return;
+    const from=old==null?.5:old,nums=[...bar.parentNode.querySelectorAll(".wpl b")];
+    const gs=split(bar,from,p),cs=[counter(nums[0],from*100),counter(nums[1],(1-from)*100)];
+    watch(bar,i=>{SEEN.set(key,p);const d=old==null?1000:800,dl=i*80+(old==null?150:0)+late(bar);gs(d,dl);cs.forEach(c=>c&&c(d,dl));
+      if(old==null&&Math.abs(p-.5)>=.06)glint(s[p>=.5?0:1],dl+d-200)});
+  });
+  /* 2. chances de titre : une ligne par équipe, barre et % ensemble, en cascade ; éclat sur le favori de l'accueil */
+  function odds(row,team,bar,num,base,pre,fav){
+    const w=parseFloat(bar.style.width);if(!team||!(w>0))return;
+    const key=pre+team,o=SEEN.get(key),txt=num?num.textContent:"";if(o&&Math.abs(o.w-w)<.05&&o.t===txt)return;
+    const n0=o?parseN(o.t):null;bar.style.transformOrigin="0 50%";
+    const g=stage(bar,[{transform:base+`scaleX(${o?Math.min(4,o.w/w).toFixed(4):0})`},{transform:base||"none"}]),c=counter(num,o?(n0?n0.v:null):0);
+    watch(row,i=>{SEEN.set(key,{w,t:txt});const d=o?800:950,dl=i*(pre==="sim|"?45:90);g(d,dl);c&&c(d,dl);if(fav&&!o)glint(row,dl+d-150)});
+  }
+  on(".rkhome .rkhr",row=>{const b=row.querySelector("span b");odds(row,b&&b.textContent,row.querySelector(":scope>i"),row.querySelector("em"),"","rkh|",row.parentNode.querySelector(".rkhr")===row)});
+  on(".simt .simr[data-t]",row=>{const ti=row.querySelector(".ti");if(ti)odds(row,row.dataset.t,ti.querySelector("i"),ti.querySelector("b"),"translateY(-50%) ","sim|",false)});
+  /* 3. pastilles des dernières rencontres (duels par poste, forme des joueurs) : cascade, après l'arrivée de la ligne */
+  on(".amrow .amf,.amfm .amf,.fjf",g=>{
+    const it=[...g.children];if(!it.length)return;const row=g.closest(".amrow"),hd=g.closest(".amfm");
+    const key="pip|"+sk()+"|"+(row?row.dataset.vs:(hd&&hd.querySelector("b")?hd.querySelector("b").textContent:""))+"|"+it.map(x=>x.className+x.textContent).join("");
+    if(SEEN.has(key))return;
+    const gs=it.map(x=>stage(x,[{opacity:0,transform:"scale(.3)"},{opacity:1,transform:"none"}]));
+    const st=Math.min(60,320/it.length);
+    watch(g,i=>{SEEN.set(key,1);const fire=base=>gs.forEach((f,j)=>f(320,base+j*st,POP));
+      const ra=row&&row.getAnimations?row.getAnimations().filter(a=>a.playState==="running"):[];
+      if(ra.length)Promise.all(ra.map(a=>a.finished)).then(()=>fire(0),()=>fire(0));else fire(i*90+late(g))});
+  });
+  /* 4. direct : barre de victoire qui glisse, % qui suivent, kills et score de série qui claquent (seulement sur un vrai changement) */
+  on("#livebox .wpbar,#herolive .wpbar",bar=>{
+    const box=bar.closest("[data-k]"),s=bar.children;if(!box||s.length!==2)return;const p=parseFloat(s[0].style.width)/100;if(!(p>=0&&p<=1))return;
+    const key="wp|"+box.id+"|"+box.dataset.k,old=SEEN.get(key);SEEN.set(key,p);
+    if(old==null||Math.abs(old-p)<.005||p<.01||p>.99||document.hidden)return;
+    const w=box.querySelector(".wpl"),nums=box.id==="livebox"?[...box.querySelectorAll(".wpl b")]:w?[w.firstElementChild,w.lastElementChild]:[];
+    split(bar,old,p)(800,0);[counter(nums[0],old*100),counter(nums[1],(1-old)*100)].forEach(c=>c&&c(800,0));
+  });
+  on(".lvk b,.hlive b",b=>{
+    const box=b.closest("[data-k]");if(!box)return;const all=[...box.querySelectorAll(".lvk b,.hlive b")];
+    const key="k|"+box.id+"|"+box.dataset.k+"|"+all.indexOf(b),v=parseInt(b.textContent,10),old=SEEN.get(key);if(isNaN(v))return;SEEN.set(key,v);
+    if(old!=null&&v>old&&!document.hidden)b.classList.add("mv-hit");
+  });
+  on(".hero .mid .score,.slam.noanim .mid .score",el=>{
+    const vs=el.closest(".vs"),ts=vs?[...vs.querySelectorAll("[data-t]")].map(x=>x.dataset.t).join("-"):"";
+    const key="sc|"+(el.closest(".hero")?"h":"s")+"|"+ts,v=el.textContent.trim(),old=SEEN.get(key);SEEN.set(key,v);
+    if(old!=null&&old!==v&&!document.hidden)el.classList.add("mv-hit");
+  });
+  on(".slam:not(.noanim) .mid .score",el=>{const vs=el.closest(".vs");if(vs)SEEN.set("sc|s|"+[...vs.querySelectorAll("[data-t]")].map(x=>x.dataset.t).join("-"),el.textContent.trim())});
+  /* 5. ligue : glissement depuis l'ordre vu la dernière fois, points qui défilent et claquent, éclat sur toi si tu remontes */
+  on(".duelbox .lboard",box=>{
+    const code=typeof lg!=="undefined"&&lg&&lg.code;if(!code)return;
+    const rows=[...box.children].filter(r=>r.classList.contains("lbr"));if(rows.length<2)return;
+    const nm=r=>{const b=r.querySelector(".lnm b");return b&&b.firstChild?String(b.firstChild.nodeValue||"").trim():""};
+    const cur=rows.map(r=>{const e=r.querySelector(":scope>em");return {r,n:nm(r),e,p:e?parseInt(e.textContent,10)||0:0}});
+    const key="w26_mv_lb_"+code;let prev=SEEN.get(key);
+    if(prev===undefined){try{prev=JSON.parse(localStorage.getItem(key)||"null")}catch(e){prev=null}SEEN.set(key,prev)}
+    const now={o:cur.map(x=>x.n),p:{}};cur.forEach(x=>now.p[x.n]=x.p);
+    const save=()=>{SEEN.set(key,now);try{localStorage.setItem(key,JSON.stringify(now))}catch(e){}};
+    if(!prev||!Array.isArray(prev.o)||!prev.p){watch(box,save);return}
+    if(prev.o.join("\n")===now.o.join("\n")&&now.o.every(n=>prev.p[n]===now.p[n]))return;
+    const P=box.offsetParent&&rows[1].offsetTop-rows[0].offsetTop>0?rows[1].offsetTop-rows[0].offsetTop:0,acts=[];let meUp=null;
+    cur.forEach((x,i)=>{const j=prev.o.indexOf(x.n);
+      if(j<0)acts.push(stage(x.r,[{opacity:0,transform:"translateY(8px)"},{opacity:1,transform:"none"}]));
+      else if(j!==i){if(j>i){x.r.classList.add("mv-up");if(x.r.classList.contains("me"))meUp=x.r}
+        acts.push(stage(x.r,P?[{transform:`translateY(${(j-i)*P}px)`},{transform:"none"}]:[{opacity:0,transform:`translateY(${j>i?10:-10}px)`},{opacity:1,transform:"none"}]));
+        const k=x.r.querySelector(".lrk");if(k){const gk=stage(k,[{opacity:0},{opacity:1}]);acts.push((d,dl)=>gk(300,dl+d-250))}}   // le rang apparaît à l'arrivée
+      const op=prev.p[x.n];if(op!=null&&x.p>op){const c=counter(x.e,op);if(c)acts.push((d,dl)=>{c(d,dl);setTimeout(()=>{if(x.e.isConnected)x.e.classList.add("mv-hit")},dl+d)})}});
+    if(!acts.length){SEEN.set(key,now);return}
+    watch(box,()=>{save();const d=800;acts.forEach(f=>f(d,120));if(meUp)glint(meUp,120+d)});
+  });
+  /* « Mes paris » : l'anneau se remplit une fois, quand on le voit (il se rejouait à chaque synchro de l'accueil) */
+  on("#ringP",c=>{
+    const off=parseFloat(c.dataset.off),C=parseFloat(c.getAttribute("stroke-dashoffset")),rv=c.parentNode.parentNode.querySelector(".rv");
+    if(isNaN(off)||isNaN(C))return;c.style.transition="none";const o=SEEN.get("ring"),from=o==null?C:o;
+    if(Math.abs(from-off)<.5){SEEN.set("ring",off);return}
+    const cn=counter(rv,o==null?0:(1-o/C)*100);c.dataset.off=from;   // renderHome pose data-off à l'image suivante : l'anneau attend à son départ
+    watch(c.closest(".pron")||c,()=>{SEEN.set("ring",off);c.dataset.off=off;c.style.strokeDashoffset=off;c.animate([{strokeDashoffset:from},{strokeDashoffset:off}],{duration:1200,easing:EZ});cn&&cn(1200,0)});
+  });
+
+  ALL=KINDS.map(k=>k[0]).join(",");
+  const MOB=new MutationObserver(rs=>{for(const r of rs)for(const n of r.addedNodes)if(n.nodeType===1)scan(n)});
+  ["#v-home","#v-swiss","#sheetBody"].forEach(s=>{const el=$(s);if(el){MOB.observe(el,{childList:true,subtree:true});scan(el)}});
+})();
+/* <<< motion */
 </script>
 </body>
 </html>
