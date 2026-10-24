@@ -680,6 +680,11 @@ def main():
 
     out = build(C, teams)
     now_iso = max((e["t"] for e in C["events"].values() if e["st"] == "completed"), default="")
+    try:   # faits « Le saviez-vous ? » : FLAT rempli par build(), règle des 2 passages dans MS["fx"]
+        import facts_block as FX
+        last = max((s["s"] for s in C["games"].values() if "s" in s), default=None)
+        out["fx"] = FX.facts_block(FLAT, teams, MS.setdefault("fx", {}), last, C=C, log=log)
+    except Exception as e: log("faits indisponibles :", type(e).__name__, str(e)[:160])
     for name, blk in aux_blocks(C, teams, now_iso).items():
         if blk is None: continue
         with open(os.path.join(ROOT, "data", name + ".json"), "w", encoding="utf-8") as f: json.dump(blk, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)

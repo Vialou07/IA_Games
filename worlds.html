@@ -567,6 +567,30 @@ details.manual summary{cursor:pointer;font-size:13.5px;color:var(--muted);font-w
 .mrow .tm .nite{display:block;font-size:9.5px;color:var(--gold);font-weight:700;line-height:1}
 @media (min-width:700px){.facts{grid-template-columns:repeat(4,1fr)}.fact.wide{grid-column:span 2}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}#intro{display:none}.arc{stroke-dashoffset:0}}
+/* ===== le saviez-vous ? (SJ.fx) ===== */
+.lsv{margin-top:14px;padding:12px 14px;cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.lsv-hd{display:flex;align-items:center;gap:8px;min-height:28px}
+.lsv-hd>b{font-family:var(--title);font-weight:700;font-size:13px;letter-spacing:.6px;color:var(--gold)}
+.lsv-nw{display:inline-block;font-size:10.5px;font-weight:800;line-height:16px;color:#04211F;background:var(--teal);border-radius:5px;padding:0 6px;box-shadow:0 0 10px rgba(10,200,185,.45);vertical-align:1px}
+.lsv-ct{margin-left:auto;font-family:var(--disp);font-weight:700;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lsv-i,.lsv-nx{width:28px;height:28px;display:grid;place-items:center;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--gold2);transition:background .2s,color .2s,border-color .2s}
+.lsv-i{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:700;font-size:15px}
+.lsv-i[aria-expanded="true"]{background:var(--gold);border-color:var(--gold2);color:#1A1205}
+.lsv-nx{font-size:19px;line-height:1}
+.lsv-nx:active,.lsv-i:active{transform:scale(.92)}
+.lsv-tx{margin:8px 0 0;font-size:15.5px;line-height:1.45;color:var(--text);min-height:4.35em}
+.lsv-tx.in{animation:lsvIn .28s cubic-bezier(.2,.9,.3,1) both}
+.lsv-tx.in.back{animation-name:lsvBack}
+@keyframes lsvIn{from{opacity:0;transform:translateX(14px)}}
+@keyframes lsvBack{from{opacity:0;transform:translateX(-14px)}}
+.lsv-ft{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.lsv-ft .chip{padding:4px 10px;font-size:12.5px}
+.lsv-calc{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:12.5px;line-height:1.45;color:var(--muted);cursor:auto;-webkit-user-select:text;user-select:text}
+.lsv-calc b{display:block;font-family:var(--title);font-size:11.5px;font-weight:700;letter-spacing:.4px;color:var(--gold);margin-bottom:3px}
+.lsv-m{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:start;margin:8px 0}
+.lsv-m>p{margin:0;line-height:1.45}
+.lsv-m .lsv-calc{grid-column:1/-1;margin-top:4px}
+@media (prefers-reduced-motion:reduce){.lsv-tx.in{animation:none}}
 </style>
 </head>
 <body>
@@ -979,6 +1003,7 @@ function renderHome(){
   const m=nextMatch(), R=records();
   let h="";
   h+=m?heroBlock(m):`<div class="note">Aucun match programmé pour l’instant. Les affiches de la ronde suivante apparaissent dès le tirage.</div>`;
+  h+=lsvCard();
   h+=duelHome();
   const ref=m?new Date(m.start):new Date(), dk=dayKeyL(ref);
   const today=MATCHES.filter(x=>dayKeyL(new Date(x.start))===dk);
@@ -1014,6 +1039,68 @@ function renderHome(){
   requestAnimationFrame(()=>{const r=$("#ringP");if(r)r.style.strokeDashoffset=r.dataset.off});
   if(!ui.counted){ui.counted=true;countUp($("#facts"))}
 }
+/* ===================== le saviez-vous ? =====================
+   SJ.fx (robot, tools/facts_block.py) : [[id, fam, txt, calcul, n, wow, keys, nouveau], ...] trié par intérêt.
+   Accueil : une carte, un fait à la fois (toucher, « › » ou glisser à gauche : suivant ; glisser à droite : précédent),
+   « i » déplie le calcul et l'échantillon, « nouveau » si le fait est né au dernier passage du robot.
+   Fiches équipe et joueur : 2 faits au plus, choisis par keys. Rien du tout si SJ.fx est absent ou vide. */
+const LSV={i:0,open:false,sig:"",L:[],sw:0,x0:null,y0:0};
+const lsvFx=()=>SJ&&Array.isArray(SJ.fx)?SJ.fx.filter(f=>Array.isArray(f)&&f.length>=8&&f[2]):[];
+const lsvHas=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+function lsvList(){
+  const F=lsvFx(),sig=F.map(f=>f[0]+(f[7]?"*":"")).join("|");
+  if(sig!==LSV.sig){
+    const cur=LSV.L[LSV.i]&&LSV.L[LSV.i][0];
+    LSV.L=[...F.filter(f=>f[7]),...F.filter(f=>!f[7])];   // les faits nés au dernier passage d'abord
+    let i=LSV.L.findIndex(f=>f[0]===cur);
+    if(i<0){if(LSV.L.some(f=>f[7]))i=0;else{const j=LSV.L.findIndex(f=>f[0]===LS.get("lsv",null));i=j<0?0:(j+1)%LSV.L.length}}   // sinon : le fait d'après la dernière visite
+    LSV.i=Math.max(0,i);LSV.sig=sig;
+  }
+  return LSV.L;
+}
+function lsvChips(keys){
+  const out=[],seen=new Set();
+  (Array.isArray(keys)?keys:[]).forEach(k=>{if(out.length>=3||seen.has(k))return;seen.add(k);
+    if(lsvHas(T,k))out.push(`<button class="chip" data-t="${esc(k)}">${logo(k,16)}${esc(T[k].id)}</button>`);
+    else{const p=PLAYERS.find(x=>x.key===k);if(p)out.push(`<button class="chip" data-p="${esc(p.key)}">${logo(p.team,16)}${esc(p.id)}</button>`)}});
+  return out.join("");
+}
+function lsvInner(f,L,anim){
+  const ch=lsvChips(f[6]);
+  return `<div class="lsv-hd"><b>Le saviez-vous ?</b>${f[7]?`<span class="lsv-nw">nouveau</span>`:""}<span class="lsv-ct">${LSV.i+1}/${L.length}</span><button class="lsv-i" data-lsv-i aria-expanded="${LSV.open}" aria-label="Comment c’est calculé">i</button><button class="lsv-nx" data-lsv-nx aria-label="Fait suivant">›</button></div>
+    <p class="lsv-tx${anim}" aria-live="polite">${esc(f[2])}</p>${ch?`<div class="lsv-ft">${ch}</div>`:""}
+    <div class="lsv-calc"${LSV.open?"":" hidden"}><b>Comment c’est calculé</b>${esc(f[3])}</div>`;
+}
+/* carte de l'accueil (à appeler dans renderHome, juste sous le bloc du direct) */
+function lsvCard(){
+  const L=lsvList();if(!L.length)return"";
+  LSV.i%=L.length;LS.set("lsv",L[LSV.i][0]);
+  return `<section class="lsv frame hx" data-lsv aria-label="Le saviez-vous ?">${lsvInner(L[LSV.i],L,"")}</section>`;
+}
+function lsvGo(d){
+  const L=LSV.L,c=document.querySelector("#v-home [data-lsv]");if(!L.length||!c)return;
+  LSV.i=(LSV.i+d+L.length)%L.length;LS.set("lsv",L[LSV.i][0]);
+  c.innerHTML=lsvInner(L[LSV.i],L,RM?"":d<0?" in back":" in");vib(8);
+}
+/* fiches : au plus 2 faits dont keys contient la première clé (l'équipe, le joueur), puis les autres clés (ses joueurs) */
+function lsvSheet(keys){
+  const F=lsvFx();if(!F.length||!keys||!keys.length)return"";
+  const K=new Set(keys.filter(Boolean)),k0=keys[0],has=(f,k)=>Array.isArray(f[6])&&f[6].includes(k);
+  const L=[...F.filter(f=>has(f,k0)),...F.filter(f=>!has(f,k0)&&Array.isArray(f[6])&&f[6].some(k=>K.has(k)))].slice(0,2);
+  if(!L.length)return"";
+  return `<h2>Le saviez-vous ?</h2>`+L.map(f=>`<div class="note lsv-m"><p>${f[7]?`<span class="lsv-nw">nouveau</span> `:""}${esc(f[2])}</p><button class="lsv-i" data-lsv-i aria-expanded="false" aria-label="Comment c’est calculé">i</button><div class="lsv-calc" hidden><b>Comment c’est calculé</b>${esc(f[3])}</div></div>`).join("");
+}
+document.addEventListener("click",e=>{
+  const c=e.target.closest("[data-lsv],.lsv-m");if(!c)return;
+  if(e.target.closest("[data-t],[data-p],a"))return;   // puce équipe ou joueur : la fiche s'ouvre (gestionnaire général)
+  const i=e.target.closest("[data-lsv-i]");
+  if(i){const k=c.querySelector(".lsv-calc"),o=k.hidden;k.hidden=!o;i.setAttribute("aria-expanded",String(o));if(c.matches("[data-lsv]"))LSV.open=o;vib(6);return}
+  if(!c.matches("[data-lsv]")||e.target.closest(".lsv-calc")||Date.now()-LSV.sw<500)return;
+  lsvGo(1);
+});
+document.addEventListener("touchstart",e=>{const c=e.target.closest("[data-lsv]");if(!c||e.touches.length>1||e.target.closest(".lsv-calc")){LSV.x0=null;return}LSV.x0=e.touches[0].clientX;LSV.y0=e.touches[0].clientY},{passive:true});
+document.addEventListener("touchend",e=>{if(LSV.x0==null)return;const t=e.changedTouches[0],dx=t.clientX-LSV.x0,dy=t.clientY-LSV.y0;LSV.x0=null;
+  if(Math.abs(dx)>40&&Math.abs(dx)>1.5*Math.abs(dy)){LSV.sw=Date.now();lsvGo(dx<0?1:-1)}},{passive:true});
 /* ---- mes paris : à parier en un geste, en attente, derniers résultats ---- */
 function qbRow(m){const st=new Date(m.start),today=dayKeyL(st)===dayKeyL(new Date());
   const b=t=>`<button class="qbt hx" data-pick="${t}" data-mk="${esc(m.key)}" style="--c1:${col(t)}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,24)}${esc(T[t].id)}</button>`;
@@ -1249,6 +1336,7 @@ function teamSheet(id,quiet){
   <div class="note">${esc(t.note)}</div>
   <h2>Les cinq</h2><div class="hscroll">${teamPlayers(id).map((p,i)=>pcard(p,i)).join("")}</div>
   <dl class="kv frame hx"><dt>Qualification</dt><dd>${esc(t.seed)}</dd><dt>Entrée</dt><dd>${t.entry==="pi"?"Play-In":"Phase suisse"}</dd><dt>Bilan suisse</dt><dd>${R[id].sw.w}-${R[id].sw.l}</dd><dt>Nationalités</dt><dd>${[...new Set(teamPlayers(id).map(p=>p.cc))].map(c=>flag(c)+" "+esc(cname(c))).join(" ")}</dd></dl>`;
+  h+=lsvSheet([id,...teamPlayers(id).map(p=>p.key)]);
   h+=`<h2>Saison 2026</h2>`+ablock("ts_"+id,()=>teamSeasonC(id),renderTeamSeason(id),3);
   if(ms.length)h+=`<h2>Ses matchs à ces Worlds</h2><div class="list">${ms.map(matchRow).join("")}</div>`;
   h+=`<p style="margin-top:16px"><button class="btn${fav===id?" gold":""}" data-fav="${id}">${fav===id?"Mon équipe":"Suivre cette équipe"}</button></p>`;
@@ -1267,7 +1355,7 @@ function playerSheet(key,quiet){
   let h=`<div class="bigwrap"><div class="bigcard">${pcard(p)}</div></div>
   ${p.titles.length?`<div class="note">🏆 Champion du monde ${p.titles.join(", ")}.</div>`:""}
   <dl class="kv frame hx">${p.realName?`<dt>Nom</dt><dd>${esc(p.realName)}${p.native?" ("+esc(p.native)+")":""}</dd>`:""}${a!=null?`<dt>Âge</dt><dd>${a} ans <small>(né le ${esc(new Date(p.birth+"T12:00:00Z").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}))})</small></dd>`:""}${p.worlds?`<dt>Worlds</dt><dd>${p.worlds.length===1?"premiers Worlds":p.worlds.length+"e participation"}${p.worlds.length>1?`<small> (${p.worlds.filter(y=>y<2026).join(", ")})</small>`:""}</dd>`:""}<dt>Poste</dt><dd>${ROLES[p.role]}</dd><dt>Nationalité</dt><dd>${flag(p.cc)} ${esc(cname(p.cc))}</dd><dt>Équipe</dt><dd><button data-t="${t.id}" style="display:inline-flex;align-items:center;gap:6px;color:var(--teal);font-weight:700">${logo(t.id,20)}${esc(t.name)}</button></dd><dt>Ligue</dt><dd>${esc(t.league)} ${flag(t.cc)}</dd>${p.cc!==t.cc?`<dt>Expatrié</dt><dd>joue loin de son pays</dd>`:""}</dl>
-  ${duel}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
+  ${lsvSheet([p.key])}${duel}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
   setSheet(h,quiet);
 }
 
@@ -2380,7 +2468,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v11.3, 24/10/2026";
+const APP_VERSION="v11.4, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
