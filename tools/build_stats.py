@@ -567,7 +567,7 @@ def build(C, teams):
     return {"v": 2, "src": "lolesports", "since": SINCE[:4], "teams": teams_out, "h2h": h2h, "duels": duels, "players": players, "tourney": tourney,
             "champs": champs, "mastery": mastery, "names": names, "logos": R["logos"], "pinfo": R["pinfo"],
             "dr": {k: sorted(v, key=lambda x: (x[0], x[1]), reverse=True)[:5] for k, v in recent.items()},
-            "m": X.get("m"), "sim": X.get("sim"), "lane": X.get("lane"), "fiab": X.get("fiab"), "lgr": X.get("lgr"),
+            "m": X.get("m"), "sim": X.get("sim"), "lane": X.get("lane"), "fiab": X.get("fiab"), "lgr": X.get("lgr"), "rk": X.get("rk"),
             "cover": cover, "errors": [], "stale": {},
             # planning des Worlds vu par le robot : secours de l'appli quand l'API LoL Esports ne répond pas au téléphone
             "sched": [[m, e["t"], e["st"], e.get("bn", ""), e["bo"]] + (e.get("tm") or [])[:2]
@@ -579,7 +579,8 @@ def aux_blocks(C, teams, now_iso):
     """data/fiche.json (duels, rencontres, champions, forme des joueurs) et data/draft.json (méta, bans et picks probables, matchups) :
     trop lourds pour stats.json, lus à la demande. Chaque bloc est facultatif."""
     out = {}
-    for name, fn in (("fiche", lambda: __import__("fiche_block").fiche_block(FLAT, teams, now_iso)),
+    if not FLAT: return out   # jamais de fichier vide publié par-dessus un bon
+    for name, fn in (("fiche", lambda: __import__("fiche_block").fiche_block(FLAT, teams, now_iso, C)),
                      ("draft", lambda: __import__("draft_block").draft_block(C, FLAT, teams, now_iso))):
         try:
             t = time.time(); out[name] = fn(); log("bloc %s : %.1f s" % (name, time.time() - t))
@@ -614,6 +615,11 @@ def models_block(C, teams, W):
         if raw: X.freeze_pronos(MS, C, raw, last)
         out["fiab"], _ = X.fiab_block(MS, C, W, R, raw)
     except Exception as e: log("fiabilité indisponible :", type(e).__name__, str(e)[:160])
+    try:   # classements par poste avec le pourquoi, « spécial Worlds », qui va gagner (rank_block, ~5 s)
+        t = time.time(); import rank_block
+        out["rk"] = rank_block.rank_block(FLAT, teams, R, out["m"], out.get("sim"), last)
+        T["classements"] = round(time.time() - t, 1)
+    except Exception as e: log("classements indisponibles :", type(e).__name__, str(e)[:160])
     try: out["lgr"] = {"2025": X.league_record(C, W, "2025-01-01"), "2024": X.league_record(C, W, "2024-01-01")}
     except Exception as e: log("bilan des ligues indisponible :", type(e).__name__, str(e)[:160])
     log("modèles :", T)
@@ -673,6 +679,11 @@ def main():
     if not complete: log("passage incomplet, la suite au prochain")
     try: ensure_roster(C, teams)
     except Exception as e: log("équipes LoL Esports injoignables :", str(e)[-120:])
+    try:   # bans et ordre des picks des Worlds (gol.gg), gardés dans la mémoire : 0 requête quand rien de nouveau
+        import draft_block
+        r = draft_block.golgg_update(C, datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"), budget_s=60, log=log)
+        log("gol.gg :", r.get("msg"), "(%d requête(s))" % r.get("req", 0))
+    except Exception as e: log("gol.gg indisponible :", type(e).__name__, str(e)[:120])
     # mtime=0 : même contenu, même fichier (pas de publication inutile)
     with gzip.GzipFile(CACHE, "wb", mtime=0) as f: f.write(json.dumps(C, separators=(",", ":")).encode("utf-8"))
     if not C.get("roster"):
@@ -680,6 +691,11 @@ def main():
 
     out = build(C, teams)
     now_iso = max((e["t"] for e in C["events"].values() if e["st"] == "completed"), default="")
+    try:   # clés des matchs à venir (≈ 0,1 s) : faits utiles et leurs taux mesurés
+        import prematch
+        mt = (out.get("sim") or {}).get("mt") or []
+        out["pm"] = prematch.prematch_block(FLAT, teams, out, out.get("m"), [[x[0], x[1], x[2], x[3], x[6], x[7]] for x in mt], now_iso)
+    except Exception as e: log("clés des matchs indisponibles :", type(e).__name__, str(e)[:160])
     try:   # faits « Le saviez-vous ? » : FLAT rempli par build(), règle des 2 passages dans MS["fx"]
         import facts_block as FX
         last = max((s["s"] for s in C["games"].values() if "s" in s), default=None)
