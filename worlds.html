@@ -1281,6 +1281,7 @@ async function sharePicks(){
 /* ===================== interactions ===================== */
 const TABS=["home","matchs","swiss","stats","teams","players"];let statsOpen=false;
 document.addEventListener("click",e=>{
+  const lph=e.target.closest("[data-leadph]");if(lph){ui.leadPh=lph.dataset.leadph;renderStats();return}
   const mo=e.target.closest("[data-more]");if(mo){mo.parentElement.classList.add("all");mo.remove();return}
   askGyro();
   const tab=e.target.closest("nav.tabs button");
@@ -1773,12 +1774,14 @@ function renderTourney(D){
   const dur=v=>Math.floor(v)+":"+String(Math.round(v%1*60)).padStart(2,"0");
   const lb=(title,list,fmt)=>`<div class="lead hx"><h4>${title}</h4>${list.map((x,i)=>{const p=playerByLink(x.L);return `<button class="lrow" ${p?`data-p="${p.key}"`:""}><span class="rk">${i+1}</span>${p?photo(p,"ava",34):`<span class="mono" style="width:34px;height:34px;background:var(--panel2)">?</span>`}<span class="ln2"><b>${esc(p?p.id:x.L)}</b><small>${esc(p?T[p.team].id:x.tm)}, ${x.g} p.</small></span><em>${fmt(x.v)}</em></button>`}).join("")}</div>`;
   const tn=n=>{const id=idOfName(n);return id?T[id].id:esc(n)};
+  const PH=[["main","Phase principale"],["pi","Play-In"]].filter(([k])=>D.lead2&&D.lead2[k]),ph=PH.some(([k])=>k===ui.leadPh)?ui.leadPh:PH.length?(D.lead2.main&&D.lead2.main.n>=4?"main":PH[PH.length-1][0]):null,L=ph?D.lead2[ph]:D.lead;
   return `${tiles([[D.n,"parties jouées"],[dur(D.avg),"durée moyenne"],[pct(D.blue,D.n)+" %","victoires côté bleu"],[D.champs.length?esc(D.champs[0].c):"–","champion le plus présent"]])}
    <div class="split big" style="margin-top:10px"><i style="width:${D.blue/D.n*100}%;background:#2F7CF6"></i><i style="width:${D.red/D.n*100}%;background:#E84057"></i></div><p class="small" style="display:flex;justify-content:space-between;margin:4px 0 0"><span>Bleu ${D.blue}</span><span>Rouge ${D.red}</span></p>
-   <h2>Les leaders</h2><div class="leads">${lb("KDA",D.lead.kda,fx2)}${lb("Kills",D.lead.kills,v=>v)}${lb("CS par minute",D.lead.csm,fx1)}${D.lead.dmg?lb("Part des dégâts",D.lead.dmg,v=>Math.round(v)+" %"):lb("Dégâts par minute",D.lead.dpm,v=>Math.round(v))}${lb("Participation aux kills",D.lead.kp,v=>Math.round(v)+" %")}</div>
-   <p class="small">Minimum 3 parties, sauf pour les kills.</p>
+   <h2>Les leaders</h2>${PH.length>1?`<div class="chips">${PH.map(([k,l])=>`<button class="chip" data-leadph="${k}" aria-pressed="${k===ph}">${l} (${D.lead2[k].n} parties)</button>`).join("")}</div>`:""}
+   <div class="leads">${lb("KDA",L.kda,fx2)}${lb("Kills",L.kills,v=>v)}${lb("CS par minute",L.csm,fx1)}${L.dmg?lb("Part des dégâts",L.dmg,v=>Math.round(v)+" %"):lb("Dégâts par minute",L.dpm,v=>Math.round(v))}${lb("Participation aux kills",L.kp,v=>Math.round(v)+" %")}</div>
+   <p class="small">Minimum ${L.mn||3} partie${(L.mn||3)>1?"s":""}, sauf pour les kills.</p>
    <h2>Champions</h2><p class="sub">${D.nobans?"Présence = parties où le champion a été choisi (LoL Esports ne publie pas les bans).":"Présence = choisi ou banni, rapporté au nombre de parties."} En Fearless Draft, un champion joué disparaît pour le reste de la série.</p>
-   <div class="ctab">${D.champs.map(c=>`<div class="ct">${champ(c.c,34)}<span class="cn">${esc(c.c)}<small>${c.p} pick${c.p>1?"s":""}, ${c.b} ban${c.b>1?"s":""}${c.p?`, ${pct(c.w,c.p)} % de victoires`:""}</small></span><span class="cw"><i style="width:${Math.min(100,c.pr)}%"></i></span><b>${Math.round(c.pr)} %</b></div>`).join("")}</div>
+   <div class="ctab">${D.champs.map(c=>`<div class="ct">${champ(c.c,34)}<span class="cn">${esc(c.c)}<small>${c.p} pick${c.p>1?"s":""}${D.nobans?"":`, ${c.b} ban${c.b>1?"s":""}`}${c.p?`, ${pct(c.w,c.p)} % de victoires`:""}</small></span><span class="cw"><i style="width:${Math.min(100,c.pr)}%"></i></span><b>${Math.round(c.pr)} %</b></div>`).join("")}</div>
    <h2>Records</h2><div class="recs">
     ${D.longest?`<div class="tile hx"><b>${dur(D.longest.gl)}</b><span>partie la plus longue, ${tn(D.longest.b1)} contre ${tn(D.longest.b2)}</span></div>`:""}
     ${D.shortest?`<div class="tile hx"><b>${dur(D.shortest.gl)}</b><span>partie la plus courte, ${tn(D.shortest.b1)} contre ${tn(D.shortest.b2)}</span></div>`:""}
@@ -2358,7 +2361,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v11.1, 24/10/2026";
+const APP_VERSION="v11.2, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
