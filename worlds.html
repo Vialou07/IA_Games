@@ -484,6 +484,7 @@ nav.tabs button{position:relative}
 .fltm{padding:10px 12px;margin:10px 0}.fltm summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;list-style:none}.fltm summary::-webkit-details-marker{display:none}.fltm summary b{font-family:var(--disp);color:var(--gold2)}.fltm summary span{font-size:12.5px;color:var(--muted)}.fltm p{margin:8px 0 0}
 .flx{margin-top:8px}.flo{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}.flo b{color:var(--gold2);font-weight:700;margin-right:3px}
 .flc{display:block;width:100%;height:56px;margin-top:8px}.flcl{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--muted)}.flb{font-style:normal;color:var(--gold2);font-weight:700}
+.dav.dbot{display:inline-grid;place-items:center;background:var(--panel2);border:1px solid var(--gold3)}.dav.dbot svg.bot{width:60%;height:60%;margin:0}
 .mvl{display:block;width:100%;margin-top:8px;font-size:12px;color:var(--teal);text-align:center;padding:6px 0}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
@@ -3617,7 +3618,19 @@ function pts(w,sc,m){
   return p;
 }
 const scoreOpts=bo=>bo===3?["2-0","2-1"]:bo===5?["3-0","3-1","3-2"]:[];
-function members(){return [{id:lg.me.id,name:lg.me.name,p:myBets(),me:true},...Object.entries(lg.players).map(([id,x])=>({id,name:x.name,p:x.p,ts:x.ts}))]}
+// le robot joue dans la ligue (sur ce téléphone seulement, rien n'est envoyé) : pour les matchs joués, son prono figé avant le match
+// (bilan du robot, SJ.fiab) ; pour les autres, son prono du moment. Les points se comptent comme pour tout le monde.
+function robotBets(H){
+  const p={};if(!SJ)return p;
+  const F=(SJ.fiab&&SJ.fiab.w26&&SJ.fiab.w26.m)||[],tid=c=>T[c]?c:(typeof resolveTeam==="function"?resolveTeam(c,c):null);
+  F.forEach(r=>{const m=MATCHES.find(x=>x.id==="le"+r[0]);const w=tid(r[5]>=.5?r[2]:r[3]);if(m&&w&&(w===m.t1||w===m.t2))p[m.key]={w}});
+  MATCHES.forEach(m=>{if(p[m.key]||!m.t1||!m.t2)return;const q=robotProb(m);if(q!=null)p[m.key]={w:q>=.5?m.t1:m.t2}});
+  // à armes égales : sur les matchs déjà joués, il ne compte que ceux où quelqu'un de la ligue a parié
+  if(H)MATCHES.forEach(m=>{if(m.winner&&p[m.key]&&!H.some(u=>u.p[m.key]))delete p[m.key]});
+  return p;
+}
+function members(){const L=[{id:lg.me.id,name:lg.me.name,p:myBets(),me:true},...Object.entries(lg.players).map(([id,x])=>({id,name:x.name,p:x.p,ts:x.ts}))];
+  if(SJ&&(SJ.fiab||SJ.sim))L.push({id:"robot",name:"Le robot",p:robotBets(L),bot:true});return L}
 function standings(){
   const all=members(),done=MATCHES.filter(m=>m.winner&&!m.manual&&m.t1&&m.t2);
   all.forEach(u=>{u.pts=0;u.ex=0;u.ok=0;u.n=0;u.form=[];u.streak=0;u.bold=0;
@@ -3656,7 +3669,7 @@ function readDuelParams(){
 }
 
 /* ---- rendu ---- */
-const avatar=(u,size=34)=>`<span class="dav" style="width:${size}px;height:${size}px;font-size:${size*.48}px;background:linear-gradient(180deg,#fff8,transparent),${pcol(u.id)}">${esc((u.name||"?").trim().charAt(0).toUpperCase())}</span>`;
+const avatar=(u,size=34)=>u.bot?`<span class="dav dbot" style="width:${size}px;height:${size}px">${BOT}</span>`:`<span class="dav" style="width:${size}px;height:${size}px;font-size:${size*.48}px;background:linear-gradient(180deg,#fff8,transparent),${pcol(u.id)}">${esc((u.name||"?").trim().charAt(0).toUpperCase())}</span>`;
 const fdots=f=>`<span class="fdots">${f.slice(-5).map(x=>`<i class="${x?"w":"l"}"></i>`).join("")}</span>`;
 function duelHome(full){
   if(!lg)return `<div class="duelbox frame hx"><div class="dcta"><b>Ligue de paris</b><p>Crée une ligue, envoie le code à tes potes, et pariez sur tous les matchs. 1 point par bon vainqueur, 1 point bonus pour le score exact en Bo3 et Bo5. Classement en direct.</p>
@@ -4247,7 +4260,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.7, 24/10/2026";
+const APP_VERSION="v12.8, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
