@@ -483,6 +483,7 @@ nav.tabs button{position:relative}
 .rres .lo{opacity:.45}.rres em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:14px;color:var(--gold2)}.rres.ok{border-left-color:var(--teal)}.rres.ko{border-left-color:var(--red)}
 .flx{margin-top:8px}.flo{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}.flo b{color:var(--gold2);font-weight:700;margin-right:3px}
 .flc{display:block;width:100%;height:56px;margin-top:8px}.flcl{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--muted)}.flb{font-style:normal;color:var(--gold2);font-weight:700}
+.mvl{display:block;width:100%;margin-top:8px;font-size:12px;color:var(--teal);text-align:center;padding:6px 0}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
@@ -1065,6 +1066,32 @@ let regionName; try{regionName=new Intl.DisplayNames(["fr"],{type:"region"})}cat
 const cname = cc => {if(!cc)return"?";try{return regionName?regionName.of(cc.toUpperCase()):cc.toUpperCase()}catch(e){return cc.toUpperCase()}};
 const flag = (cc,cls="flag") => cc?`<img class="${cls}" src="https://flagcdn.com/${esc(cc)}.svg" alt="${esc(cname(cc))}" title="${esc(cname(cc))}" loading="lazy">`:"";
 const LS = {get(k,d){try{const v=localStorage.getItem("w26_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("w26_"+k,JSON.stringify(v))}catch(e){}}};
+// profil emporté d'un autre navigateur (lien « …#moi=… ») : chaque navigateur a sa propre mémoire (Messenger, Chrome, icône
+// d'écran d'accueil…). On le reprend avant de lire quoi que ce soit, puis on efface le lien de la barre d'adresse.
+const MOVE_KEYS=["league","picks","manual","scores","fav","myname"];
+let IMPORTED=null;
+(function importProfile(){
+  if(!location.hash.startsWith("#moi="))return;
+  try{
+    const d=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(5).replace(/-/g,"+").replace(/_/g,"/")))));
+    const cur=LS.get("league",null),who=(d.league&&d.league.me&&d.league.me.name)||d.myname||"ce lien";
+    if(d&&d.v===1&&(!cur||!cur.me||(d.league&&d.league.me&&cur.me.id===d.league.me.id)||confirm(`Remplacer le profil de ce navigateur (${cur.me.name}) par celui de ${who} ?`))){
+      MOVE_KEYS.forEach(k=>{if(d[k]!==undefined)LS.set(k,d[k])});IMPORTED=who;
+    }
+  }catch(e){}
+  history.replaceState(null,"",location.pathname+location.search);
+})();
+function moveLink(){
+  const d={v:1};MOVE_KEYS.forEach(k=>{const v=LS.get(k,undefined);if(v!==undefined)d[k]=v});
+  const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  let x=enc(d);if(x.length>12000&&d.league){d.league={...d.league,players:{}};x=enc(d)}   // les paris des autres reviennent par la ligue
+  return location.origin+location.pathname+"#moi="+x;
+}
+async function moveProfile(){
+  const url=moveLink(),text="Mon profil Worlds 2026 (ligue et paris) : ouvre ce lien dans le navigateur où tu veux continuer.";
+  try{if(navigator.share){await navigator.share({title:"Mon profil Worlds",text,url});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(url);toast("Lien copié : colle-le dans l’autre navigateur")}catch(e){prompt("Copie ce lien et ouvre-le dans l’autre navigateur :",url)}
+}
 const lpFile = (f,w) => "https://lol.fandom.com/wiki/Special:FilePath/"+encodeURIComponent(String(f).replace(/ /g,"_"))+(w?"?width="+w:"");
 
 window.imgFail = el => {
@@ -3653,7 +3680,8 @@ function duelHome(full){
     ${list}
     ${aw.length?`<div class="awards">${aw.map(a=>`<p>${a}</p>`).join("")}</div>`:""}
     ${up.length&&!solo?`<details class="rb-d lgup" data-uo="lg_up"${amO("lg_up")}><summary>Qui a parié sur les prochains matchs</summary><div class="dlh"><span>Prochains matchs</span><span>✓ = a parié, révélé au coup d’envoi</span></div>${upHTML}</details>`:""}
-    <div class="drow2"><button class="btn gold" data-duel="share">Inviter</button><button class="btn" data-duel="sync">Synchroniser</button><button class="btn" data-duel="quit">Quitter</button></div></div>`;
+    <div class="drow2"><button class="btn gold" data-duel="share">Inviter</button><button class="btn" data-duel="sync">Synchroniser</button><button class="btn" data-duel="quit">Quitter</button></div>
+    <button class="mvl" data-duel="move">Tu changes de navigateur ou de téléphone ? Emporte ton profil ›</button></div>`;
 }
 function renderDuelOnly(){const b=document.querySelector("#v-home .duelbox");if(b)b.outerHTML=duelHome()}
 function duelSheet(mode,pre={},md){
@@ -3671,6 +3699,7 @@ function duelSheet(mode,pre={},md){
 function duelAction(a){
   if(a==="create"||a==="join"){duelSheet(a);return}
   if(a==="share"){shareDuel();return}
+  if(a==="move"){moveProfile();return}
   if(a==="sync"){toast("Synchro…");duelWake();publish(false);return}
   if(a==="quit"){if(confirm("Quitter la ligue ? Le classement sera effacé sur ce téléphone (tes pronos restent).")){duelStop();lg=null;LS.set("league",null);LS.set("lgRank",null);renderHome()}return}
   const name=($("#dName")?.value||"").trim().slice(0,14);
@@ -4199,7 +4228,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.3, 24/10/2026";
+const APP_VERSION="v12.4, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
@@ -4262,6 +4291,7 @@ MATCHES=finalize(EMBED.map(m=>({...m})));
 intro();
 readDuelParams();
 renderAll();
+if(IMPORTED)setTimeout(()=>toast("Profil de "+IMPORTED+" repris sur ce navigateur"),1500);
 sync(false);
 champMap();
 loadSJ().then(s=>{if(s)renderAll();else loadTeamNames().then(()=>renderAll()).catch(()=>{})});
