@@ -1116,6 +1116,69 @@ details.amk>summary,.amkx>summary{padding:11px 0;margin:-11px 0}
 button.fnbgs{position:relative}button.fnbgs::after{content:"";position:absolute;inset:-8px -4px}
 .rkii>summary,.fji>summary{position:relative}.rkii>summary::after,.fji>summary::after{content:"";position:absolute;inset:-11px}
 /* <<< uxg */
+/* >>> hud */
+/* direct : HUD de partie (fiche du match) */
+.hud{position:relative;margin:0 0 8px;padding:8px 10px 6px;border-radius:10px;background:rgba(5,11,24,.62);border:1px solid rgba(200,170,110,.2)}
+.hud::before{content:"";position:absolute;left:-1px;right:-1px;top:-1px;height:3px;border-radius:10px 10px 0 0;background:linear-gradient(90deg,var(--c1) 0 50%,var(--c2) 50% 100%);opacity:.9}
+.hudt{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px}
+.hudt .badge{padding:2px 9px}
+.hudt .small{font-size:11.5px}
+.hudsc{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:6px;margin:2px 0 0}
+.hudtm{display:flex;align-items:center;gap:7px;min-width:0}
+.hudtm.r{flex-direction:row-reverse;text-align:right}
+.hudtm>span{display:flex;flex-direction:column;min-width:0;line-height:1.1}
+.hudtm.r>span{align-items:flex-end}
+.hudtm b{font-family:var(--disp);font-weight:800;font-size:21px;color:var(--gold2);letter-spacing:.3px;white-space:nowrap}
+.hudtm small{font-size:11px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hudtm i{font-style:normal;font-weight:800;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;line-height:1.2}.hudtm i.hb{color:#5E9BFF}.hudtm i.hr{color:#FF6B7F}
+.hudtm .logo,.hudtm img{flex:none}
+.hudc{display:flex;flex-direction:column;align-items:center;line-height:1}
+.hudclk{font-family:var(--disp);font-weight:700;font-size:17px;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:.4px}
+.hud .lvk{gap:8px;margin-top:1px}
+.hud .lvk b{font-size:42px}
+.hud .lvk i{font-size:11px}
+.hudgd{display:flex;align-items:center;justify-content:center;gap:7px;min-height:22px;margin:3px 0 2px;font-size:13px;color:var(--text);white-space:nowrap;min-width:0;overflow:hidden}
+.hudgd .hudgl{flex:none}
+.hudgd .hudgl b{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--gold2)}
+.hudgd small{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.hudsp{display:block;flex:none;overflow:visible}
+.hudwp.wpl{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:8px;margin:4px 0 0}
+.hudwp.wpl b{font-family:var(--disp);font-size:16px;color:var(--gold2);min-width:34px}
+.hudwp.wpl b:last-child{text-align:right}
+.hud .wpbar{height:6px;border-radius:3px}
+.hudwl{display:flex;align-items:center;justify-content:center;gap:6px;min-height:24px;font-size:11.5px;color:var(--muted)}
+.hudob{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:22px;margin-top:1px;padding-top:5px;border-top:1px solid rgba(200,170,110,.12)}
+.hudos{display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px;min-width:0}
+.hudos.r{justify-content:flex-end}
+.hudo{display:inline-flex;align-items:center;gap:3px;font-family:var(--disp);font-weight:700;font-size:15px;line-height:1;color:var(--gold2);font-variant-numeric:tabular-nums}
+.hudo.t::before,.hudo.b::before,.hudo.i::before{content:"";width:11px;height:11px;flex:none;background:center/contain no-repeat}
+.hudo.t::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23C8AA6E' d='M2.6 1h1.6v1.3h1V1h1.6v1.3h1V1h1.6v3.2L8.3 5.4V9.6h1.3V11H2.4V9.6h1.3V5.4L2.6 4.2z'/%3E%3C/svg%3E")}
+.hudo.b::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23B391F0' d='M6 1.4c2.7 0 4.6 2 4.6 4.7V11H8.2V7.6C8.2 6.3 7.3 5.4 6 5.4S3.8 6.3 3.8 7.6V11H1.4V6.1C1.4 3.4 3.3 1.4 6 1.4zM2.3 2.6.6.8l2.6.9zm7.4 0 1.7-1.8-2.6.9z'/%3E%3C/svg%3E")}
+.hudo.i::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%239FD8E8' d='M6 .8l3.6 5.2L6 11.2 2.4 6zm0 2.6L4.3 6 6 8.6 7.7 6z'/%3E%3C/svg%3E")}
+.hudd{gap:2px}
+.hudg{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none}
+.hudg.e{box-shadow:inset 0 0 0 1px rgba(240,230,210,.4)}
+.hudg.el{box-shadow:0 0 0 1px var(--gold)}
+.hudd .kfso{margin:0 1px}
+/* héros de l'accueil */
+.hudhg{display:inline-flex;align-items:center;gap:5px}
+.hlive em small{font-size:11px;opacity:.85}
+#herolive .hudob{border-top-color:rgba(255,255,255,.14);margin-top:4px}
+#herolive .hudo{color:#fff}
+/* mini-HUD collant : hauteur nulle, il apparaît au-dessus du contenu quand le HUD sort de l'écran */
+.hudm{position:sticky;top:56px;z-index:5;height:0;margin:0}
+.hudm>.hudmb{position:absolute;left:-16px;right:-16px;top:0;display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;column-gap:10px;min-height:66px;padding:26px 16px 8px;border-radius:0;background:#0A1730;border:0;border-bottom:1px solid rgba(200,170,110,.4);box-shadow:0 8px 20px rgba(0,0,0,.45);color:var(--text);text-align:left;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .18s,transform .18s,visibility 0s .18s;pointer-events:none}
+.hudm.on>.hudmb{opacity:1;visibility:visible;transform:none;transition:opacity .18s,transform .18s;pointer-events:auto}
+.hudmc{font-family:var(--disp);font-weight:700;font-size:16px;color:var(--gold);font-variant-numeric:tabular-nums}
+.hudmk{display:inline-flex;align-items:center;gap:5px;font-family:var(--disp);font-weight:800;font-variant-numeric:tabular-nums}
+.hudmk b{font-size:21px;color:var(--gold2);line-height:1}.hudmk i{font-style:normal;color:var(--muted)}
+.hudmg{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.hudmp{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--muted);white-space:nowrap}.hudmp b{font-size:16px;color:var(--gold2)}
+.hudmw{position:absolute;left:16px;right:16px;bottom:4px;display:flex;gap:2px;height:3px;border-radius:2px;overflow:hidden}
+.hudmw s{display:block;height:100%}
+@media (max-width:380px){.hud .lvk b{font-size:37px}.hud .lvk{gap:6px}.hudsc{column-gap:4px}}
+@media (prefers-reduced-motion:reduce){.hudm>.hudmb,.hudm.on>.hudmb{transition:none;transform:none}}
+/* <<< hud */
 </style>
 </head>
 <body>
@@ -1954,7 +2017,7 @@ function matchSheet(id,quiet){
   // l'ordre suit l'état : à venir, parier d'abord ; en direct (et entre deux manches), le direct d'abord ; fini, le résultat et les paris, puis la feuille de match
   const S=m.state;
   const pre=S!=="done"?robotHTML(m)+amKeysHTML(m):"";
-  const live=S==="live"?`<h2>En direct</h2><div id="livebox" class="livebox frame hx" data-k="${esc(m.key)}">${liveBoxHTML(m)}</div>`:"";
+  const live=S==="live"?`${/* >>> hud */hudMiniHTML(m)/* <<< hud */}<h2>En direct</h2><div id="livebox" class="livebox frame hx" data-k="${esc(m.key)}">${liveBoxHTML(m)}</div>`:"";
   const games=S!=="soon"&&/^le\d/.test(m.id)&&(S==="done"||(m.s1||0)+(m.s2||0)>0)?`<h2>Feuille de match</h2>`+ablock("games_"+m.key+"_"+((m.s1||0)+(m.s2||0)),()=>matchGames(m),renderGames(m),S==="done"?24:.03):"";
   let mine="";
   if(S==="soon")mine=`<h2>Ton prono</h2><div class="picks">${[m.t1,m.t2].map(t=>`<button class="pickbtn hx" data-pick="${t}" data-mk="${esc(m.key)}" aria-pressed="${picks[m.key]===t}">${logo(t,28)}${esc(T[t].id)}</button>`).join("")}</div>`;
@@ -4665,9 +4728,142 @@ function l2BetweenHTML(m,L){try{
   return `<div class="l2 l2bw"><div class="l2r"><div class="l2s"><span class="l2h">Partie ${esc(L.num||"")} · joueur du match</span><span class="l2pg">${champ(x.c,24)}<b>${esc(x.n)}</b><small>${l2sd(x.team)} · ${l2Kda(x.s)}</small><b class="l2g">${x.sc.v} pts</b></span></div></div></div>`;
 }catch(e){console.warn("live2 entre deux parties",e);return""}}
 /* <<< live2 */
+/* >>> hud */
+/* ===================== DIRECT : HUD de partie (façon écran de diffusion) et mini-HUD collant =====================
+   HUD (fiche du match, en tête du direct) : une carte, logos et codes des deux équipes (bleu à gauche, rouge à droite), temps de
+   jeu, kills en grand, or de chaque équipe, écart d'or et sa tendance sur les dernières minutes (mesures du direct, L.samples),
+   chances de victoire (barre fine, même estimation qu'avant : winProb), puis en petites icônes chiffrées : tours, dragons (couleur
+   du type, cases vides jusqu'à l'âme, « âme » quand elle est prise), Barons, inhibiteurs. Il remplace le score et les rangées
+   Or / Tours / Dragons / Barons / Inhibiteurs : mêmes chiffres, rien de retiré.
+   Héros de l'accueil : même tendance d'or et même rangée d'objectifs sous la barre.
+   Mini-HUD : bandeau collé en haut de la fiche (temps, kills, écart d'or, chances), visible seulement quand le HUD est sorti
+   de l'écran par le haut ; un toucher ramène au HUD. Hauteur nulle dans la page : rien ne bouge quand il apparaît.
+   Branchement : hudBoxHTML et hudHeroHTML sont essayés en tête de liveBoxHTML et heroLiveHTML ; s'ils rendent null (pas
+   d'image du flux, pause, souci quelconque), l'ancien rendu s'affiche tel quel. Animations « motion » gardées (.lvk b, .wpbar, .wpl b). */
+const HUDM={raf:0,top:0};
+const hudK=v=>fx1(Math.abs(v)/1000)+" k";
+const hudSd=id=>esc(T[id]?T[id].id:"");
+const HUD_DN={ocean:"Océan",infernal:"Infernal",mountain:"Montagne",cloud:"Nuages",hextech:"Hextech",chemtech:"Chimtech",elder:"Ancestral"};
+/* écart d'or des dernières minutes (mesures du direct) : {pts, span (min), d (variation pour l'équipe qui mène)} ou null */
+function hudTrend(L){const S=L.samples;if(!S||S.length<3)return null;
+  const tN=S[S.length-1].t,pts=S.filter(s=>s.t>=tN-5);if(pts.length<3)return null;
+  const span=tN-pts[0].t;if(span<1.5)return null;
+  const gN=pts[pts.length-1].gd,lead=gN>=0?1:-1;return {pts,span,d:(gN-pts[0].gd)*lead,lead}}
+function hudSpark(L,tr,w,h){if(!tr)return"";const P=tr.pts,t0=P[0].t,dt=Math.max(.01,tr.span),mx=Math.max(800,...P.map(s=>Math.abs(s.gd)));
+  const X=t=>((t-t0)/dt*(w-3)+1).toFixed(1),Y=g=>(h/2-g/mx*(h/2-2)).toFixed(1),l=P[P.length-1];
+  return `<svg class="hudsp" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="rgba(240,230,210,.28)" stroke-dasharray="2 2"/><polyline points="${P.map(s=>X(s.t)+","+Y(s.gd)).join(" ")}" fill="none" stroke="#F0E6D2" stroke-width="1.4" stroke-linejoin="round"/><circle cx="${X(l.t)}" cy="${Y(l.gd)}" r="2.2" fill="${l.gd>=0?col(L.blue):col(L.red)}" stroke="#F0E6D2" stroke-width=".8"/></svg>`}
+function hudGold(L,f,tr){const gd=f.blueTeam.totalGold-f.redTeam.totalGold,ld=gd>=0?L.blue:L.red;
+  const lead=Math.abs(gd)<100?`Or à égalité`:`<b>${hudSd(ld)} +${hudK(gd)}</b> d’or`;
+  const tt=tr?Math.abs(tr.d)<300?`stable sur ${Math.round(tr.span)} min`:`${tr.d>0?"+":"−"}${hudK(tr.d)} en ${Math.round(tr.span)} min`:"";
+  return `<span class="hudgl">${lead}</span>${tr?hudSpark(L,tr,52,18):""}${tt?`<small>${tt}</small>`:""}`}
+/* dragons d'une équipe : un rond par dragon (couleur du type), cases vides jusqu'à l'âme (tant que personne ne l'a), « âme » */
+function hudDrag(own,opp,rev){const el=(own||[]).filter(x=>x!=="elder"),ed=(own||[]).filter(x=>x==="elder").length;
+  const so=typeof kfSoul==="function"?kfSoul(own):null,oso=typeof kfSoul==="function"?kfSoul(opp):null;
+  const free=so||oso?0:Math.max(0,4-el.length);
+  const dots=el.map(x=>`<i class="hudg" style="background:${DRAG[x]||"#888"}"></i>`).join("")+"<i class=\"hudg e\"></i>".repeat(free)+`<i class="hudg el" style="background:${DRAG.elder}"></i>`.repeat(ed);
+  const tag=so?`<b class="kfso" style="--c:${DRAG[so]||"#888"}">âme</b>`:"";
+  const nm=(own||[]).map(x=>HUD_DN[x]||x).join(", ");
+  const ti=`Dragons : ${(own||[]).length}${nm?" ("+nm+")":""}${so?", âme "+(HUD_DN[so]||so):free&&el.length?", âme à 4":""}`;
+  return `<span class="hudo hudd" title="${esc(ti)}" aria-label="${esc(ti)}">${rev?tag+dots:dots+tag}</span>`}
+function hudObj(t,o,rev){
+  const st=(c,n,v)=>`<span class="hudo ${c}" title="${n}" aria-label="${n} : ${v}">${v}</span>`;
+  const it=[st("t","Tours détruites",t.towers||0),hudDrag(t.dragons,o.dragons,rev),st("b","Barons",t.barons||0),st("i","Inhibiteurs détruits",t.inhibitors||0)];
+  return `<span class="hudos${rev?" r":""}">${(rev?it.reverse():it).join("")}</span>`}
+const hudObjRow=f=>`<div class="hudob">${hudObj(f.blueTeam,f.redTeam,false)}${hudObj(f.redTeam,f.blueTeam,true)}</div>`;
+/* la carte du HUD (fiche du match) */
+function hudCard(L,f,p){
+  const B=f.blueTeam,R=f.redTeam,tr=hudTrend(L),c1=col(L.blue),c2=col(L.red);
+  const tm=(id,s,g)=>`<div class="hudtm${s?" r":""}">${logo(id,30)}<span><i class="${s?"hr":"hb"}">${s?"rouge":"bleu"}</i><b>${hudSd(id)}</b><small>${fx1(g/1000)} k d’or</small></span></div>`;
+  return `<div class="hud" style="--c1:${c1};--c2:${c2}">
+    <div class="hudt"><span class="badge live">Partie ${L.num||""}</span><span class="small">${L.status==="ended"?"Partie terminée":"≈ 30 s de décalage"}</span></div>
+    <div class="hudsc">${tm(L.blue,0,B.totalGold||0)}<div class="hudc"><b class="hudclk">${gtime(L)}</b><div class="lvk"><b>${B.totalKills||0}</b><i>kills</i><b>${R.totalKills||0}</b></div></div>${tm(L.red,1,R.totalGold||0)}</div>
+    <div class="hudgd">${hudGold(L,f,tr)}</div>
+    <div class="hudwp wpl"><b>${Math.round(p*100)} %</b><div class="wpbar"><i style="width:${p*100}%;background:${c1}"></i><i style="width:${(1-p)*100}%;background:${c2}"></i></div><b>${Math.round((1-p)*100)} %</b></div>
+    <div class="hudwl">chances de victoire ${amI("lvwp")}</div>
+    ${hudObjRow(f)}</div>`}
+/* fil du match : comme kfHTML (3 derniers événements, puis « Tout le fil » replié), mais le contenu replié n'est construit
+   qu'au toucher (jusqu'à 77 lignes de moins à chaque repeinture de 10 s) ; une fois ouvert, il est rendu en entier comme avant */
+function hudKfHTML(L,mk){
+  const K=L.kf;if(!K||!K.ev||!K.ev.length)return "";
+  const ev=K.ev.slice().reverse(),key=e=>e.k+e.ms+"|"+(e.v??e.s)+(e.ty||""),top=ev.slice(0,3),rest=ev.slice(3,80);
+  const row=e=>{const k=key(e),f=K.seen.size>0&&!K.seen.has(k);return kfRow(L,e,f)};
+  const h=`<div class="kf">${top.map(row).join("")}${rest.length?`<details class="kfm" data-k="${esc(mk||"")}"${K.open?" open":` data-hudlazy="1"`}><summary>Tout le fil (${ev.length} événements)</summary>${K.open?rest.map(row).join(""):""}</details>`:""}</div>`;
+  ev.forEach(e=>K.seen.add(key(e)));
+  return h}
+if(typeof document!=="undefined")document.addEventListener("click",e=>{try{
+  const sm=e.target&&e.target.closest&&e.target.closest("summary"),d=sm&&sm.parentElement;if(!d||!d.dataset||!d.dataset.hudlazy||d.open)return;
+  delete d.dataset.hudlazy;const L=LV.games[d.dataset.k],K=L&&L.kf;if(!K||!K.ev)return;
+  d.insertAdjacentHTML("beforeend",K.ev.slice().reverse().slice(3,80).map(x=>kfRow(L,x,false)).join(""))}catch(err){console.warn("hud fil",err)}},true);
+/* le direct de la fiche, partie en cours ou finie : HUD puis le reste, dans le même ordre qu'avant (sans le score ni les rangées) */
+function hudBoxHTML(m){try{
+  const L=LV.games[m.key];if(!L||!L.frame||L.status==="nolive"||L.status==="waiting"||L.status==="starting"||L.status==="between")return null;
+  const f=L.frame,B=f.blueTeam,R=f.redTeam,mins=gameMins(L),p=winProb(f,mins);if(!B||!R||!isFinite(p))return null;
+  const md=L.meta||{},bp=(md.blueTeamMetadata?.participantMetadata)||[],rp=(md.redTeamMetadata?.participantMetadata)||[];
+  const allP=[...(B.participants||[]),...(R.participants||[]),...(f.participants||[])];
+  const part=id=>allP.find(x=>x.participantId===id)||{};
+  const prow=(pm,rev)=>{const s=part(pm.participantId),pl=playerFromSummoner(pm.summonerName,rev?L.red:L.blue),cn=CH&&CH.nm?CH.nm[pm.championId]||pm.championId:pm.championId;
+    return `<div class="lpr${rev?" r":""}${kfDead(s)?" dead":""}">${kfFace(s,pm.championId,30)}<span class="lpn"><b>${esc(pl?pl.id:String(pm.summonerName||"").split(" ").slice(1).join(" ")||pm.summonerName||"")}${pl?rankTag(pl):""}</b><small>${esc(cn)}</small></span><span class="lps"><b>${s.kills??0}/${s.deaths??0}/${s.assists??0}</b><small>${s.creepScore??0} CS</small></span></div>`};
+  const fn=(g,...a)=>{try{return typeof g==="function"?g(...a)||"":""}catch(e){console.warn("hud",e);return""}};
+  const card=hudCard(L,f,p);
+  return `${card}${amIP("lvwp",`<p>Estimation maison à partir de l’écart d’or, des tours, inhibiteurs, barons et dragons (âme comprise), ajustée selon la durée de la partie. Ce n’est pas un chiffre officiel.</p><p>Or : total de chaque équipe sous son nom ; tendance : variation de l’écart d’or pour l’équipe qui mène, sur les dernières minutes suivies par l’appli (jusqu’à 5).</p>`)}
+   ${fn(typeof l2BasHTML==="function"?l2BasHTML:null,L,m)}${fn(hudKfHTML,L,m.key)}${fn(typeof l2BoxHTML==="function"?l2BoxHTML:null,L,m)}
+   ${fn(goldChart,L)}
+   <div class="lvp"><div>${gsh(L.blue,false)}${bp.map(x=>prow(x,false)).join("")}</div><div>${gsh(L.red,true)}${rp.map(x=>prow(x,true)).join("")}</div></div>
+   ${fn(amLiveDraftHTML,L,m)}`;
+}catch(e){console.warn("hud",e);return null}}
+/* héros de l'accueil : comme avant, plus la tendance d'or et la rangée d'objectifs */
+function hudHeroHTML(m){try{
+  const L=LV.games[m.key];if(!L||!L.frame)return null;
+  const f=L.frame,p=winProb(f,gameMins(L)),gd=f.blueTeam.totalGold-f.redTeam.totalGold,tr=hudTrend(L);if(!isFinite(p))return null;
+  return `<div class="hlive"><span>${logo(L.blue,20)}<b>${f.blueTeam.totalKills}</b></span><em>Partie ${L.num||""} · ${gtime(L)}<br><span class="hudhg">${gd>=0?hudSd(L.blue):hudSd(L.red)} +${fx1(Math.abs(gd)/1000)} k or${hudSpark(L,tr,40,14)}</span></em><span><b>${f.redTeam.totalKills}</b>${logo(L.red,20)}</span></div>
+    <div class="wpbar"><i style="width:${p*100}%;background:${col(L.blue)}"></i><i style="width:${(1-p)*100}%;background:${col(L.red)}"></i></div>
+    <p class="small wpl"><span>${Math.round(p*100)} %</span><span>chances de victoire (estimation)</span><span>${Math.round((1-p)*100)} %</span></p>${hudObjRow(f)}${typeof kfLast==="function"?kfLast(L):""}`;
+}catch(e){console.warn("hud héros",e);return null}}
+/* héros caché sous une fiche ouverte : repeint à la fermeture de la fiche plutôt que toutes les 10 s (même rendu, moins de travail) */
+function hudHeroLater(h){try{if(!document.body.classList.contains("lock"))return false;h.dataset.hudLater="1";return true}catch(e){return false}}
+if(typeof document!=="undefined"&&window.MutationObserver)new MutationObserver(()=>{try{
+  if(document.body.classList.contains("lock"))return;const h=document.getElementById("herolive");if(!h||!h.dataset.hudLater)return;
+  delete h.dataset.hudLater;const m=typeof MATCHES!=="undefined"&&MATCHES.find(x=>x.key===h.dataset.k);if(m)h.innerHTML=heroLiveHTML(m)}catch(e){console.warn("hud héros",e)}})
+  .observe(document.body,{attributes:true,attributeFilter:["class"]});
+/* ---- mini-HUD collant ---- */
+function hudMiniIn(m){const L=LV.games[m.key];if(!L||!L.frame||L.status==="between"||L.status==="waiting"||L.status==="starting"||L.status==="nolive")return"";
+  const f=L.frame,p=winProb(f,gameMins(L)),gd=f.blueTeam.totalGold-f.redTeam.totalGold,fv=p>=.5?L.blue:L.red;if(!isFinite(p))return"";
+  return `<button class="hudmb" type="button" data-hudm aria-label="Revenir au direct"><span class="hudmc">${gtime(L)}</span><span class="hudmk">${logo(L.blue,18)}<b>${f.blueTeam.totalKills||0}</b><i>–</i><b>${f.redTeam.totalKills||0}</b>${logo(L.red,18)}</span><span class="hudmg">${Math.abs(gd)<100?"or =":`${hudSd(gd>=0?L.blue:L.red)} +${hudK(gd)}`}</span><span class="hudmp">${hudSd(fv)} <b>${Math.round(Math.max(p,1-p)*100)} %</b></span><i class="hudmw"><s style="width:${p*100}%;background:${col(L.blue)}"></s><s style="width:${(1-p)*100}%;background:${col(L.red)}"></s></i></button>`}
+function hudMiniHTML(m){try{
+  const cur=document.getElementById("hudmini"),sh=document.getElementById("sheet");
+  const on=!!(cur&&cur.dataset.k===m.key&&cur.classList.contains("on")&&sh&&sh.classList.contains("on"));
+  setTimeout(hudMiniSync,0);
+  return `<div id="hudmini" class="hudm${on?" on":""}" data-k="${esc(m.key)}" aria-hidden="${!on}">${on?hudMiniIn(m):""}</div>`;
+}catch(e){console.warn("hud mini",e);return""}}
+/* repeint seulement s'il est affiché (sinon marqué à refaire : il sera rempli au moment d'apparaître) */
+function hudMiniPaint(m){try{const x=document.getElementById("hudmini");if(!x||x.dataset.k!==m.key)return;
+  if(x.classList.contains("on"))x.innerHTML=hudMiniIn(m);else x.dataset.dirty="1";hudMiniSync()}catch(e){console.warn("hud mini",e)}}
+/* visible quand le bas du HUD est passé sous le bandeau du haut de la fiche */
+function hudMiniSync(){
+  if(HUDM.raf)return;
+  HUDM.raf=requestAnimationFrame(()=>{HUDM.raf=0;try{
+    const x=document.getElementById("hudmini");if(!x)return;
+    const sh=document.getElementById("sheet"),hd=sh&&sh.querySelector(".shead"),hud=document.querySelector("#livebox .hud");
+    const top=(sh?sh.getBoundingClientRect().top:0)+(hd?hd.offsetHeight:0);
+    if(hd&&HUDM.top!==hd.offsetHeight){HUDM.top=hd.offsetHeight;x.style.top=Math.max(0,HUDM.top-24)+"px"}
+    const want=!!(hud&&sh&&sh.classList.contains("on")&&hud.getBoundingClientRect().bottom<top+4);
+    if(want&&(x.dataset.dirty||!x.firstElementChild)){const m=typeof MATCHES!=="undefined"&&MATCHES.find(z=>z.key===x.dataset.k);x.innerHTML=m?hudMiniIn(m):"";delete x.dataset.dirty}
+    const on=want&&!!x.firstElementChild;
+    if(on!==x.classList.contains("on")){x.classList.toggle("on",on);x.setAttribute("aria-hidden",String(!on))}
+  }catch(e){console.warn("hud mini",e)}});
+}
+if(typeof document!=="undefined"){
+  const sh=document.getElementById("sheet");if(sh)sh.addEventListener("scroll",hudMiniSync,{passive:true});
+  addEventListener("resize",hudMiniSync,{passive:true});
+  document.addEventListener("click",e=>{const b=e.target&&e.target.closest&&e.target.closest("[data-hudm]");if(!b)return;
+    const sh=document.getElementById("sheet"),hud=document.querySelector("#livebox .hud");if(!sh||!hud)return;
+    const hd=sh.querySelector(".shead"),y=sh.scrollTop+hud.getBoundingClientRect().top-sh.getBoundingClientRect().top-(hd?hd.offsetHeight:0)-6;
+    sh.scrollTo({top:Math.max(0,y),behavior:typeof RM!=="undefined"&&RM?"auto":"smooth"})});
+}
+/* <<< hud */
 function paintLive(m){
   const b=$("#livebox");if(b&&b.dataset.k===m.key)b.innerHTML=liveBoxHTML(m);
-  const h=$("#herolive");if(h&&h.dataset.k===m.key)h.innerHTML=heroLiveHTML(m);
+  const h=$("#herolive");if(h&&h.dataset.k===m.key/* >>> hud */&&!hudHeroLater(h)/* <<< hud */)h.innerHTML=heroLiveHTML(m);/* >>> hud */hudMiniPaint(m);/* <<< hud */
 }
 /* probabilité de victoire : modèle maison sur l'or, les tours, les inhibiteurs, les barons et les dragons */
 function winProb(f,mins){
@@ -4692,7 +4888,7 @@ function goldChart(L){
     <polygon points="0,${H/2} ${pts} ${X(S[S.length-1].t).toFixed(1)},${H/2}" fill="url(#gcb)"/><polyline points="${pts}" fill="none" stroke="#F0E6D2" stroke-width="1.6"/></svg>
     <p class="small gl"><span>${esc(T[L.blue]?.id||"")} devant</span><span>écart d’or, max ${fx1(mx/1000)} k</span><span>${esc(T[L.red]?.id||"")} devant</span></p>`;
 }
-function heroLiveHTML(m){
+function heroLiveHTML(m){/* >>> hud */const hh=hudHeroHTML(m);if(hh!=null)return hh;/* <<< hud */
   const L=LV.games[m.key];
   if(!L||!L.frame)return `<p class="small" style="text-align:center;margin:8px 0 0;color:#fff">${L&&L.status==="between"?"Pause entre deux parties":"Stats en direct au lancement de la partie"}</p>`;
   const f=L.frame,p=winProb(f,gameMins(L)),gd=f.blueTeam.totalGold-f.redTeam.totalGold;
@@ -4700,7 +4896,7 @@ function heroLiveHTML(m){
     <div class="wpbar"><i style="width:${p*100}%;background:${col(L.blue)}"></i><i style="width:${(1-p)*100}%;background:${col(L.red)}"></i></div>
     <p class="small wpl"><span>${Math.round(p*100)} %</span><span>chances de victoire (estimation)</span><span>${Math.round((1-p)*100)} %</span></p>${kfLast(L)}`;
 }
-function liveBoxHTML(m){
+function liveBoxHTML(m){/* >>> hud */const hb=hudBoxHTML(m);if(hb!=null)return hb;/* <<< hud */
   const L=LV.games[m.key];
   if(!L)return skel(2);
   if(L.status==="nolive")return `<p class="small">Flux en direct introuvable pour ce match.</p>`;
@@ -5132,7 +5328,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="PRÉPROD v13.3, 24/10/2026";
+const APP_VERSION="PRÉPROD v13.4, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
