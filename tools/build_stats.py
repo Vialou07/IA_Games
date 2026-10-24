@@ -600,7 +600,7 @@ def build(C, teams):
     R = C["roster"]; our_team = R["teams"]; our_pl = R["players"]
     key_of = {p["key"]: p for t in teams for p in t["players"]}
     team_of_key = {p["key"]: t["id"] for t in teams for p in t["players"]}
-    LN = {"lck": "LCK", "lpl": "LPL", "lec": "LEC", "lcs": "LCS", "cblol-brazil": "CBLOL", "lcp": "LCP", "lta_n": "LTA North", "lta_s": "LTA South", "lta_cross": "LTA", "pcs": "PCS", "vcs": "VCS",
+    LN = {"lck": "LCK", "lpl": "LPL", "lec": "LEC", "lcs": "LCS", "cblol-brazil": "CBLOL", "lcp": "LCP", "lta_n": "LTA Nord", "lta_s": "LTA Sud", "lta_cross": "LTA", "pcs": "PCS", "vcs": "VCS",
           "kespa_cup": "KeSPA Cup"}
     # noms des champions (Data Dragon)
     try:

@@ -69,6 +69,22 @@ def _lean(s):
 def _unit(n, u):
     if n == 1: w = u.split(" ", 1); return w[0][:-1] + ((" " + w[1]) if len(w) > 1 else "") if w[0].endswith("s") else u
     return u
+def _typo(s):
+    """Typographie française du texte publié, comme dans l'appli : apostrophe typographique, espace insécable avant « : »,
+    espace fine insécable avant ; ? ! % » et après «, et dans les milliers (2 500). Appliquée à la sortie seulement :
+    l'empreinte des faits (règle des 2 passages, « nouveau ») reste calculée sur le texte brut, rien n'est republié."""
+    s = re.sub(r"(?<=[A-Za-zÀ-ÿ])'(?=[A-Za-zÀ-ÿ])", "\u2019", s)
+    s = re.sub(r" (?=:(\s|$))", "\u00a0", s)
+    s = re.sub(r" (?=[;?!»%])", "\u202f", s)
+    s = s.replace("« ", "«\u202f")
+    return re.sub(r"(?<=\d) (?=\d{3}(?!\d))", "\u202f", s)
+BN = {"Play-Ins": "Play-In", "Play In Knockouts": "Play-In", "Swiss": "phase suisse", "Knockouts": "phase finale", "Groups": "groupes",
+      "Finals": "finale", "Semifinals": "demi-finale", "Quarterfinals": "quart de finale", "Regional Qualifier": "qualification",
+      "Regular Season": "saison", "Playoffs": "playoffs", "Promotion": "promotion"}
+def _bn(s):
+    """nom de phase de LoL Esports en français (même table que fjPhase dans l'appli)"""
+    s = str(s or ""); m = re.match(r"(Week|Round) (\d+)$", s)
+    return BN.get(s) or ((("semaine " if m.group(1) == "Week" else "tour ") + m.group(2)) if m else s)
 
 
 # ---------- table des parties ----------
@@ -292,7 +308,7 @@ def _generate(P, Y, state):
             txt = "%s reste sur %d victoires de suite, toutes compétitions suivies confondues." % (tn(t), n)
             if not P.full: return hold("w.encours." + t, txt, "sans la mémoire du robot (C), une série absente du flux ne se voit pas")
             fact("w.encours." + t, "serie", Y, txt,
-                 "Parties de %s en %s dans l'ordre (avec au moins 3 titulaires actuels) ; la série démarre le %s (%s %s)." % (t, Y, dfr(seq[-n][0]), LS.get(seq[-n][2]["l"], seq[-n][2]["l"]), seq[-n][2]["bn"]),
+                 "Parties de %s en %s dans l'ordre (avec au moins 3 titulaires actuels) ; la série démarre le %s (%s %s)." % (t, Y, dfr(seq[-n][0]), LS.get(seq[-n][2]["l"], seq[-n][2]["l"]), _bn(seq[-n][2]["bn"])),
                  "série d'au moins 6 ; aucune partie officielle manquante dans la fenêtre", n, 4, "A", [t])
 
     @section
@@ -303,7 +319,7 @@ def _generate(P, Y, state):
         if best and best[0][0] >= 0.75:
             r, w, n, t = best[0]
             fact("w.bilan." + t, "worlds", WY, "%s : %d victoires en %d parties à ces Worlds, le meilleur bilan du tournoi." % (tn(t), w, n),
-                 "Toutes les parties des %s (play-in + phase suisse) de %s." % (WY, t), "au moins 5 parties ; pas de taux affiché en dessous", n, 3, "B", [t])
+                 "Toutes les parties des %s (Play-In + phase suisse) de %s." % (WY, t), "au moins 5 parties ; pas de taux affiché en dessous", n, 3, "B", [t])
 
     @section
     def w_records():  # 1d. records de parties (temps de jeu mesuré, pauses retirées)
@@ -397,7 +413,7 @@ def _generate(P, Y, state):
         y0 = min(g["y"] for g in G if g["l"] == "worlds")
         k, n = wg.most_common(1)[0]; ties = sorted((pid(x) for x, m in wg.items() if m == n), key=lambda x: x != "Faker")
         fact("w.veteran", "joueurs", "Worlds %s-%s" % (y0, Y), "%s : %d parties de Worlds depuis %s (%d victoires), le plus gros total des titulaires." % (" , ".join(ties).replace(" ,", ","), n, y0, ww[k]),
-             "Parties des Worlds %s à %s (play-in compris)." % (y0, Y), "horizon des données : %s" % y0, n, 2, "A", [x for x, m in wg.items() if m == n])
+             "Parties des Worlds %s à %s (Play-In compris)." % (y0, Y), "horizon des données : %s" % y0, n, 2, "A", [x for x, m in wg.items() if m == n])
         k, n = wk.most_common(1)[0]
         fact("w.tueur", "joueurs", "Worlds %s-%s" % (y0, Y), "%s a fait %d kills aux Worlds depuis %s, plus que tout autre titulaire." % (pid(k), n, y0), "Somme des kills.", "horizon %s" % y0, wg[k], 3, "A", [k])
 
@@ -556,7 +572,7 @@ def _generate(P, Y, state):
         cand = [(t, sd, g) for t, sd, g in TG if g["win"] == sd and fin(g)]
         if cand:
             t, sd, g = min(cand, key=lambda x: (x[2]["k"][x[1]], x[2]["k"][opp(x[1])]))
-            fact("s.radin." + t, "kills", Y, "Gagner sans tuer : %s a battu %s avec seulement %d kills (%d en face), %s %s." % (tn(t), tn(vs(g, t)), g["k"][sd], g["k"][opp(sd)], LS.get(g["l"], g["l"]), dfr(g["t"])),
+            fact("s.radin." + t, "kills", Y, "Gagner sans tuer : %s a battu %s avec seulement %d kill%s (%d en face), %s %s." % (tn(t), tn(vs(g, t)), g["k"][sd], "s" if g["k"][sd] > 1 else "", g["k"][opp(sd)], LS.get(g["l"], g["l"]), dfr(g["t"])),
                  "Kills de l'équipe gagnante.", "flux complet", len(TG), 3, "A", [t, vs(g, t)])
         cand = [(t, sd, g) for t, sd, g in TG if g["win"] != sd and fin(g) and certain(g)]
         if cand:
@@ -678,7 +694,7 @@ def _generate(P, Y, state):
             if not P.full: hold(fid, fid, "sans C : flux complet inconnu")
             return
         v, p, g = max(c, key=lambda x: (x[0], x[2]["t"]))
-        fact(fid, "record", Y, txt(v, p, g), "Maximum sur %d lignes joueur-partie de %s (nos 95 titulaires)." % (len(c), Y), cond, len(c), 4, "A", [p["key"]], "lignes joueur-partie")
+        fact(fid, "record", Y, txt(v, p, g), "Maximum sur %s lignes joueur-partie de %s (nos 95 titulaires)." % (sp(len(c)), Y), cond, len(c), 4, "A", [p["key"]], "lignes joueur-partie")
 
     @section
     def p_records():
@@ -740,7 +756,7 @@ def _generate(P, Y, state):
             if not c: continue
             v, k = max(c)
             fact("p.gd15.%s.%s" % (role, k), "intelligence", Y, "%s écrase sa lane : %s or d'avance en moyenne à 15 minutes sur %d parties, le meilleur %s des Worlds." % (
-                pid(k), sp(round(v)), A[k]["n15"], {"BOT": "tireur", "MID": "mid", "TOP": "top"}[role]),
+                pid(k), sp(round(v)), A[k]["n15"], {"BOT": "ADC", "MID": "mid", "TOP": "top"}[role]),
                  "Moyenne de l'écart d'or avec le vis-à-vis à 15 min de jeu (même méthode que gol.gg), parties de %s." % Y, "au moins 40 parties avec image de 15 min", A[k]["n15"], 3, "A", [k])
 
     # =====================================================================
@@ -791,7 +807,7 @@ def _generate(P, Y, state):
             for p in g["p"]: cc[p["C"]] += 1; cw[p["C"]] += p["W"]; roles[p["C"]][p["role"]] += 1
         if ng < 500: return
         c, n = cc.most_common(1)[0]
-        fact("c.top", "champions", Y, "%s est le champion de l'année : joué dans %s des %d parties de %s." % (c, pct(n, ng, 1), ng, Y), "Picks, toutes les parties des ligues suivies.", "au moins 500 parties", ng, 3, "A", [c])
+        fact("c.top", "champions", Y, "%s est le champion de l'année : joué dans %s des %s parties de %s." % (c, pct(n, ng, 1), sp(ng), Y), "Picks, toutes les parties des ligues suivies.", "au moins 500 parties", ng, 3, "A", [c])
         ok = [(wilson(cw[c], n), c, n) for c, n in cc.items() if n >= 100]
         if ok:
             (lo, hi), c, n = max(ok, key=lambda x: x[0][0])
@@ -804,8 +820,8 @@ def _generate(P, Y, state):
         if CN:
             never = sorted(set(CN) - set(cc))
             if never:
-                fact("c.jamais", "champions", Y, "%d champion%s n'%s été joué%s dans aucune des %d parties de %s : %s." % (
-                    len(never), "s" if len(never) > 1 else "", "ont" if len(never) > 1 else "a", "s" if len(never) > 1 else "", ng, Y, ", ".join(never)),
+                fact("c.jamais", "champions", Y, "%d champion%s n'%s été joué%s dans aucune des %s parties de %s : %s." % (
+                    len(never), "s" if len(never) > 1 else "", "ont" if len(never) > 1 else "a", "s" if len(never) > 1 else "", sp(ng), Y, ", ".join(never)),
                      "Liste officielle des champions (Data Dragon) moins les champions vus en %s." % Y, "périmètre : ligues suivies + internationaux (pas les ligues mineures)", ng, 4, "A", never)
         else: hold("c.jamais", "Champions jamais joués", "liste Data Dragon injoignable")
         rare = [(p["k"], p, g) for g in G if g["y"] == Y and fin(g) for p in g["p"] if cc[p["C"]] <= 3 and p["key"] and p["k"] >= 12]
@@ -838,7 +854,7 @@ def _row(f):
     calc = f["calc"].strip(); calc += "" if calc.endswith((".", "…")) else "."
     cond = f["cond"].strip().rstrip(".")
     det = "%s Condition : %s. Échantillon : %s %s." % (calc, cond, sp(f["n"]), _unit(f["n"], f["src"]))
-    return [f["id"], f["fam"], f["txt"], det, f["n"], f["wow"], f["keys"]]
+    return [f["id"], f["fam"], _typo(f["txt"]), _typo(det), f["n"], f["wow"], f["keys"]]
 
 def _interest(f, Y):
     """Effet waouh d'abord ; à note égale, le tournoi en cours (faits « w. ») puis la robustesse."""
