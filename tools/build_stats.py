@@ -574,6 +574,18 @@ def build(C, teams):
                       for m, e in sorted(E.items(), key=lambda kv: kv[1]["t"]) if e["l"] == "worlds" and e["t"] >= "2026-10-10"]}
 
 MS = {}   # état des modèles, chargé et sauvé par main()
+AUX = ("fiche", "draft")   # fichiers annexes publiés à côté de stats.json, chargés par l'appli seulement quand on ouvre une fiche
+def aux_blocks(C, teams, now_iso):
+    """data/fiche.json (duels, rencontres, champions, forme des joueurs) et data/draft.json (méta, bans et picks probables, matchups) :
+    trop lourds pour stats.json, lus à la demande. Chaque bloc est facultatif."""
+    out = {}
+    for name, fn in (("fiche", lambda: __import__("fiche_block").fiche_block(FLAT, teams, now_iso)),
+                     ("draft", lambda: __import__("draft_block").draft_block(C, FLAT, teams, now_iso))):
+        try:
+            t = time.time(); out[name] = fn(); log("bloc %s : %.1f s" % (name, time.time() - t))
+        except ImportError: pass
+        except Exception as e: log("bloc %s indisponible :" % name, type(e).__name__, str(e)[:160])
+    return out
 FLAT = []   # parties à plat (remplie par build) : {g, m, t, l, op, bn, bo, n, b, r, bc, rc, w, min, ks, pid, nm, rows{0..9}}
 def models_block(C, teams, W):
     """Note d'impact (avec 200 rééchantillonnages une fois par jour), phase de lane, simulation des Worlds, pronos figés au
@@ -667,6 +679,10 @@ def main():
         log("pas encore d'identifiants d'équipes, stats inchangées"); return 0
 
     out = build(C, teams)
+    now_iso = max((e["t"] for e in C["events"].values() if e["st"] == "completed"), default="")
+    for name, blk in aux_blocks(C, teams, now_iso).items():
+        if blk is None: continue
+        with open(os.path.join(ROOT, "data", name + ".json"), "w", encoding="utf-8") as f: json.dump(blk, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     with open(STATE, "w", encoding="utf-8") as f: json.dump(MS, f, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     left = sum(1 for m in C["details"].values() for g in m["g"] if g[2] == "completed" and g[0] not in C["games"])
     out["meta"] = {"queries": NQ[0], "seconds": round(time.time() - T0), "games": len(C["games"]), "left": left, "cover": out["cover"], "timed": sum(1 for s in C["games"].values() if s.get("tv")),

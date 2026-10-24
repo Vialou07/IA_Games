@@ -1380,6 +1380,13 @@ function loadSJ(){
   return SJp;
 }
 const sjOk=(s,sec)=>s&&!(s.errors||[]).some(e=>String(e).startsWith(sec+":"));
+// fichiers annexes du robot (fiche.json, draft.json), même branche que stats.json, chargés à la première fiche qui en a besoin
+const AUXD={},AUXP={};
+function loadAux(name){
+  const c=AUXD[name];if(c&&Date.now()-c.t<10*60e3)return Promise.resolve(c.d);if(AUXP[name])return AUXP[name];
+  return AUXP[name]=(async()=>{try{const r=await fetch(`https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/${name}.json`,{cache:"no-cache"});
+    if(r.ok){const d=await r.json();AUXD[name]={t:Date.now(),d};return d}}catch(e){}return c?c.d:null})().finally(()=>setTimeout(()=>{delete AUXP[name]},1000));
+}
 
 /* ---- blocs asynchrones : squelette, puis contenu, survivent aux re-rendus ---- */
 const AK={};

@@ -4,3 +4,5 @@ data/stats_log.txt
 data/cache.json.gz
 __pycache__/
 data/model_state.json
+data/fiche.json
+data/draft.json

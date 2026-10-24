@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
-      FILES: stats.json cache.json.gz model_state.json
+      FILES: stats.json cache.json.gz model_state.json fiche.json draft.json
       OUT_BRANCH: ${{ github.ref_name == 'main' && 'stats' || 'stats-preprod' }}
     steps:
       - uses: actions/checkout@v7
