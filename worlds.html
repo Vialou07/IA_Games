@@ -481,6 +481,8 @@ nav.tabs button{position:relative}
 .rres{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;padding:7px 6px;background:var(--panel);border:1px solid var(--line);border-left:3px solid transparent;border-radius:8px;font-size:12.5px}
 .rres span{display:flex;align-items:center;gap:4px;min-width:0}.rres span:last-child{justify-content:flex-end;flex-direction:row-reverse}.rres b{font-family:var(--disp);font-size:14px}
 .rres .lo{opacity:.45}.rres em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:14px;color:var(--gold2)}.rres.ok{border-left-color:var(--teal)}.rres.ko{border-left-color:var(--red)}
+.flx{margin-top:8px}.flo{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}.flo b{color:var(--gold2);font-weight:700;margin-right:3px}
+.flc{display:block;width:100%;height:56px;margin-top:8px}.flcl{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--muted)}.flb{font-style:normal;color:var(--gold2);font-weight:700}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
 .rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
@@ -4035,7 +4037,7 @@ async function matchGames(m){
         p:mt.participantMetadata.map(pm=>{const x=fp[pm.participantId]||{},d=dp[pm.participantId]||{};return {sn:pm.summonerName,c:pm.championId,k:x.kills||0,d:x.deaths||0,a:x.assists||0,cs:x.creepScore||0,gold:x.totalGold||0,ds:d.championDamageShare}})}};
     // rediffusion : la VF (sinon l'anglais) au début exact de la partie
     const v=(g.vods||[]).find(v=>v.locale==="fr-FR"&&v.provider==="youtube")||(g.vods||[]).find(v=>v.locale==="en-US"&&v.provider==="youtube");
-    return {num:g.number,fin:fe.gameState==="finished",mins:(Date.parse(fe.rfc460Timestamp)-start)/60000,b:side("blue"),r:side("red"),
+    return {num:g.number,gid:g.id,fin:fe.gameState==="finished",mins:(Date.parse(fe.rfc460Timestamp)-start)/60000,b:side("blue"),r:side("red"),
       vod:v?[v.parameter,Math.round((v.startMillis||0)/1000),v.locale==="fr-FR"?"VF":"VO"]:null};
   }));
   // vainqueur de chaque partie : l'API ne donne que le score de la série. Même règle que le robot :
@@ -4051,6 +4053,25 @@ async function matchGames(m){
   if(games.some(x=>x.err))throw new Error("flux LoL Esports injoignable");
   return {games,nocache:games.some(x=>x.none)};
 }
+/* débrief d'une partie des Worlds (robot, clé fl.w) : premiers objectifs, âme, courbe d'écart d'or, remontée */
+const DRN={o:"Océan",i:"Infernal",m:"Montagne",c:"Nuages",h:"Hextech",t:"Chimtech",e:"Ancestral"};
+function flLine(x){
+  const F=SJ&&SJ.fl&&SJ.fl.w&&x.gid&&SJ.fl.w[x.gid];if(!F)return"";
+  const [,,bc,rc,ws,,,,,pl,ob,cv]=F,tm=sd=>esc(sd?rc:bc),t=v=>Math.floor(v/60)+":"+String(Math.floor(v%60)).padStart(2,"0");
+  const nm=i=>{const k=pl&&pl[i],p=PLAYERS.find(q=>q.key===k);return esc(p?p.id:String(k||"?"))};
+  const [fb,ft,fd,fn,so]=ob||[],it=[];
+  if(fb)it.push(`<span><b>1er sang</b> ${t(fb[0])} · ${fb[1]>=0?`${nm(fb[1])} sur ${nm(fb[2])}`:`${nm(fb[2])} exécuté`}</span>`);
+  if(fd)it.push(`<span><b>1er dragon</b> ${t(fd[0])} · ${tm(fd[1])}${DRN[fd[2]]?` (${DRN[fd[2]]})`:""}</span>`);
+  if(ft)it.push(`<span><b>1re tour</b> ${t(ft[0])} · ${tm(ft[1])}</span>`);
+  if(fn)it.push(`<span><b>1er Baron</b> ${t(fn[0])} · ${tm(fn[1])}</span>`);
+  if(so)it.push(`<span><b>Âme</b> ${t(so[0])} · ${tm(so[1])}${DRN[so[2]]?` (${DRN[so[2]]})`:""}</span>`);
+  let curve="";
+  if(cv&&cv.length>2){const W=300,H=56,last=cv[cv.length-1][0]||1,mx=Math.max(1000,...cv.map(p=>Math.abs(p[1]))),X=v=>(v/last*W).toFixed(1),Y=v=>(H/2-v/mx*(H/2-3)).toFixed(1);
+    const pts=cv.map(p=>X(p[0])+","+Y(p[1])),area=`M0,${H/2} L${pts.join(" L")} L${W},${H/2} Z`,id="fc"+String(x.gid).slice(-6),hi=Math.max(0,...cv.map(p=>p[1])),lo=Math.min(0,...cv.map(p=>p[1]));
+    const behind=ws?hi:-lo,back=behind>=3000?`<em class="flb">Remontée : ${esc(ws?rc:bc)} mené de ${fx1(behind/1000)} k</em>`:"";
+    curve=`<svg class="flc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Écart d’or"><defs><clipPath id="${id}a"><rect width="${W}" height="${H/2}"/></clipPath><clipPath id="${id}b"><rect y="${H/2}" width="${W}" height="${H/2}"/></clipPath></defs><path d="${area}" fill="rgba(47,124,246,.38)" clip-path="url(#${id}a)"/><path d="${area}" fill="rgba(232,64,87,.38)" clip-path="url(#${id}b)"/><polyline points="${pts.join(" ")}" fill="none" stroke="var(--gold2)" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="rgba(255,255,255,.18)"/></svg><div class="flcl"><span>${esc(bc)} devant, jusqu’à ${fx1(hi/1000)} k</span>${back}<span>${esc(rc)} devant, jusqu’à ${fx1(-lo/1000)} k</span></div>`}
+  return it.length||curve?`<div class="flx">${it.length?`<div class="flo">${it.join("")}</div>`:""}${curve}</div>`:"";
+}
 function renderGames(m){return D=>{
   if(!D.games.length)return `<p class="small">Pas encore de partie terminée.</p>`;
   const dur=v=>Math.floor(v)+":"+String(Math.round(v%1*60)).padStart(2,"0");
@@ -4064,6 +4085,7 @@ function renderGames(m){return D=>{
      <div class="lvsc"><div class="lvt">${logo(x.b.our,34)}<b>${esc(T[x.b.our]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${x.b.k}</b><i>kills</i><b>${x.r.k}</b></div><div class="lvt">${logo(x.r.our,34)}<b>${esc(T[x.r.our]?.id||"")}</b><span class="side r">rouge</span></div></div>
      <div class="lvobj">${[["Or",fx1(x.b.g/1000)+" k",fx1(x.r.g/1000)+" k"],["Tours",x.b.to,x.r.to],["Dragons",`${x.b.dragons.length} ${drg(x.b.dragons)}${kfSoulTag(x.b.dragons)}`,`${kfSoulTag(x.r.dragons)}${drg(x.r.dragons)} ${x.r.dragons.length}`],["Barons",x.b.ba,x.r.ba],["Inhibiteurs",x.b.in,x.r.in]].map(([l,a,b])=>`<div><span>${a}</span><em>${l}</em><span>${b}</span></div>`).join("")}</div>
      <div class="lvp"><div>${gsh(x.b.our,false)}${x.b.p.map(pp=>prow(pp,x.b,false)).join("")}</div><div>${gsh(x.r.our,true)}${x.r.p.map(pp=>prow(pp,x.r,true)).join("")}</div></div>
+     ${flLine(x)}
      ${x.fin?"":`<p class="small" style="margin-top:6px">Le flux s’est arrêté avant la fin : chiffres de la dernière image disponible.</p>`}</div>`}).join("")
    +`<p class="small" style="margin-top:8px">Flux officiel LoL Esports. Le pourcentage est la part des dégâts de l’équipe. Le vainqueur de chaque partie est déduit de l’état final et du score de la série. Touche un joueur pour sa fiche.</p>`;
 }}
@@ -4232,7 +4254,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.2, 24/10/2026";
+const APP_VERSION="v12.3, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
