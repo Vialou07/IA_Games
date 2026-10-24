@@ -485,6 +485,7 @@ nav.tabs button{position:relative}
 .flx{margin-top:8px}.flo{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}.flo b{color:var(--gold2);font-weight:700;margin-right:3px}
 .flc{display:block;width:100%;height:56px;margin-top:8px}.flcl{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--muted)}.flb{font-style:normal;color:var(--gold2);font-weight:700}
 .dav.dbot{display:inline-grid;place-items:center;background:var(--panel2);border:1px solid var(--gold3)}.dav.dbot svg.bot{width:60%;height:60%;margin:0}
+.amln{display:block;font-size:10.5px;color:var(--muted);margin-top:1px;white-space:nowrap}
 .mvl{display:block;width:100%;margin-top:8px;font-size:12px;color:var(--teal);text-align:center;padding:6px 0}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
@@ -2951,6 +2952,9 @@ function amRoleRow(m,x,i,burned){
         :`<i class="${v>0?"w":"l"}" title="${d} : ${esc((v>0?a:b).id)} devant à 15 min, ${esc(res)} gagne">${v>0?"+":"−"}</i>`});
     mid=`<b class="amsc"><em class="${wa>wb?"ld":""}">${wa}</em>–<em class="${wb>wa?"ld":""}">${wb}</em></b>${pa.length?`<span class="amf">${pa.join("")}</span>`:""}${x.n5>=2?`<small>${amSg(x.gd5)} or à 15′</small>`:""}`}
   else mid=`<small class="amnv">jamais face à face</small>`;
+  // modèle de lane : probabilité d'être devant à l'or à 15 min (testé à l'aveugle, voir le « i »)
+  const ld=typeof laneDuel==="function"?laneDuel(a.key,b.key,x.r,false):null;
+  if(ld){const q=Math.max(ld.p,1-ld.p),W=ld.p>=.5?a:b;mid+=`<small class="amln" title="Probabilité d’être devant à l’or à 15 min (modèle de lane)">${q<.55?"lane équilibrée":`lane : ${esc(W.id)} ${Math.round(q*100)} %`}</small>`}
   return `<button class="amrow" data-vs="${esc(a.key+"|"+b.key)}" style="--i:${i};--c1:${col(m.t1)};--c2:${col(m.t2)}" aria-label="Duel ${esc(ROLES[x.r])} : ${esc(a.id)} contre ${esc(b.id)}">
     ${side(a,x.fa,x.pa,false)}<span class="amc"><i class="rl">${esc(ROLES[x.r])}</i>${mid}</span>${side(b,x.fb,x.pb,true)}</button>`;
 }
@@ -2966,6 +2970,7 @@ function amRolesHTML(m){try{
   const info=`<p>Bilan : parties officielles depuis 2024 où les deux joueurs étaient face à face au même poste (victoires de leur équipe), toutes compétitions, qualifications EWC absentes. Quand les effectifs n’ont pas bougé, ce bilan est le même à tous les postes : c’est celui des équipes.</p>
     <p>Pastilles : leurs 5 dernières rencontres, la plus récente à gauche ; « + » quand le joueur de gauche était devant à l’or à 15 min, « − » quand il était derrière, « · » écart non mesuré. Dessous : l’écart médian sur ces parties (une partie extrême ne fait pas le chiffre). Victoires et défaites partie par partie : dans le duel détaillé.</p>
     <p>Nom en or : le mieux noté des deux (note d’impact du robot, corrigée de la force des adversaires et des ligues, au moins 60 % de chances d’être le meilleur). Avec le côté, c’est le seul signal d’avant-match qui prédit le vainqueur (testé sur 2025-2026).${du?` Avoir dominé ses derniers duels n’ajoute rien : ${amPc(du[1]/du[0])} de victoires sur ${amNf(du[0])} parties, ${amPc(du[2]/du[0])} prévus par la note.`:""}</p>
+    <p>Lane : probabilité d’être devant à l’or à 15 min selon le modèle de lane (or et CS à 15 min de chaque joueur, corrigés des ligues). Testé à l’aveugle : le favori de lane était devant dans 56 % des 1 715 duels des internationaux 2025-2026, et devant aux CS dans 60 % des 13 875 duels de 2026. Une lane reste très incertaine.</p>
     <p>KDA récent : sur ses 10 dernières parties de ${new Date().getFullYear()} ; la flèche n’apparaît que si ses victoires et son or à 15 min s’écartent nettement de sa saison. La forme décrit le passé et ne prédit presque rien (corrélation 0,05 entre deux séries de 10 parties). Icônes : ses 3 picks les plus probables (90 derniers jours), champions déjà joués dans la série retirés.</p>`;
   return amH2("Duels par poste",id,info)+`<p class="sub">Au centre : bilan depuis 2024, puis leurs 5 derniers duels à 15 min (+ : celui de gauche devant) et l’écart médian. Nom en or : le mieux noté. Touche un poste pour le détail.</p>`
     +ablock("amr_"+m.t1+"_"+m.t2,()=>amRolesData(m),amRolesRender(m),3);
