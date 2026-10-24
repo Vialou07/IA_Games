@@ -485,6 +485,10 @@ nav.tabs button{position:relative}
 .flx{margin-top:8px}.flo{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}.flo b{color:var(--gold2);font-weight:700;margin-right:3px}
 .flc{display:block;width:100%;height:56px;margin-top:8px}.flcl{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;color:var(--muted)}.flb{font-style:normal;color:var(--gold2);font-weight:700}
 .dav.dbot{display:inline-grid;place-items:center;background:var(--panel2);border:1px solid var(--gold3)}.dav.dbot svg.bot{width:60%;height:60%;margin:0}
+.rkt{font-style:normal;font-family:var(--body,inherit);font-size:10px;font-weight:700;color:var(--gold);background:rgba(200,170,110,.12);border-radius:4px;padding:0 4px;margin-left:4px;vertical-align:1px;white-space:nowrap}.rkt sup{font-size:7px}
+.rkbig{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;margin:10px 0 4px;text-align:left}.rkbig>b{font-family:var(--disp);font-size:34px;line-height:1;color:var(--gold2)}.rkbig>b sup{font-size:14px}
+.rkbig span{display:flex;flex-direction:column;font-size:14px;font-weight:600}.rkbig small{font-size:11px;font-weight:500;color:var(--muted)}
+.amln{display:block;font-size:10.5px;color:var(--muted);margin-top:1px;white-space:nowrap}
 .mvl{display:block;width:100%;margin-top:8px;font-size:12px;color:var(--teal);text-align:center;padding:6px 0}
 .wlg{display:grid;gap:5px;margin:4px 0 6px}.wlr{display:grid;grid-template-columns:64px 1fr 44px;gap:8px;align-items:center;font-size:13px}.wlr .split.mini{height:7px;width:auto}.wlr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right}
 .lgv{display:grid;grid-template-columns:56px 64px 56px 1fr;gap:6px;align-items:center;font-size:12.5px;padding:3px 0}.lgv span{text-align:center;font-family:var(--disp);font-weight:800}.lgv small{color:var(--muted);text-align:right}
@@ -2309,6 +2313,8 @@ function pBetter(ka,kb,role){const A=SJ.m.p[ka],B=SJ.m.p[kb];if(!A||!B)return nu
 function laneDuel(ka,kb,role,cs){const L=SJ.lane,A=L&&L.p[ka],B=L&&L.p[kb];if(!A||!B)return null;const i=cs?0:2,g=L.sg[role];
   const e=A[i]-B[i];return {e,p:Phi(e/Math.sqrt(g[cs?1:0]**2+A[i+1]**2+B[i+1]**2))}}
 const IMP=p=>SJ&&SJ.m&&SJ.m.p&&SJ.m.p[p.key];
+// rang du joueur parmi les titulaires des Worlds au même poste (note d'impact, ligues comprises) : « 3e/19 »
+const rankTag=p=>{const x=p&&IMP(p);return x?`<i class="rkt" title="${x[2]}${x[2]===1?"er":"e"} des ${x[3]} ${esc(ROLEP[p.role].replace(/^des /,""))} des Worlds (note d’impact, ligues comprises)">${x[2]}<sup>${x[2]===1?"er":"e"}</sup>/${x[3]}</i>`:""};
 const PHI=x=>{const t=1/(1+.3275911*Math.abs(x)/Math.SQRT2),y=1-((((1.061405429*t-1.453152027)*t+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x/2);return x>=0?(1+y)/2:(1-y)/2};
 const fxs=v=>(v>0?"+":"")+fx2(v);
 // probabilité que t1 gagne le match (série complète, score en cours compris)
@@ -2448,7 +2454,7 @@ function renderTeamSeason(id){return S=>{
   if(!S.g)return `<p class="small">Pas de parties 2026 recensées.</p>`;
   const dur=v=>Math.floor(v)+" min "+String(Math.round(v%1*60)).padStart(2,"0");
   const vs=Object.entries(S.vs).sort((x,y)=>(y[1].w+y[1].l)-(x[1].w+x[1].l));
-  return tiles([[`${S.sw}-${S.sl}`,"séries"],[pct(S.gw,S.g)+" %",`des ${S.g} parties`],[pct(S.bw,S.bn)+" %","côté bleu"],[pct(S.rw,S.rn)+" %","côté rouge"],[fx1(S.k),"kills par partie"],[fx1(S.dr),"dragons par partie"],[(S.gd>0?"+":"")+fx1(S.gd/1000)+" k","écart d’or final"],[dur(S.gl),"durée moyenne"]])
+  return tiles([[`${S.sw}-${S.sl}`,"séries"],[pct(S.gw,S.g)+" %",`des ${S.g} parties`],[pct(S.bw,S.bn)+" %",`de victoires côté bleu (${S.bn} parties)`],[pct(S.rw,S.rn)+" %",`de victoires côté rouge (${S.rn} parties)`],[fx1(S.k),"kills par partie"],[fx1(S.dr),"dragons par partie"],[(S.gd>0?"+":"")+fx1(S.gd/1000)+" k","écart d’or final"],[dur(S.gl),"durée moyenne"]])
    +`<h3 class="h3">10 dernières séries</h3><div class="fopp wide">${S.last.map(x=>`<span class="${x.won?"w":"l"}" title="${esc(tourName(x.op))}, ${esc(fmtShort(x.dt))}">${x.oid?logo(x.oid,16):""}${esc(x.oid?T[x.oid].id:String(x.opp).slice(0,12))} ${x.s}-${x.o}</span>`).join("")}</div>`
    +(vs.length?`<h3 class="h3">En 2026 contre les équipes de ces Worlds</h3><div class="vsl">${vs.map(([o,r])=>`<button class="vsr" data-t="${o}">${logo(o,24)}<span>${esc(T[o].id)}</span><b class="${r.w>r.l?"w":r.w<r.l?"l":""}">${r.w}-${r.l}</b></button>`).join("")}</div>`:"");
 }}
@@ -2942,7 +2948,7 @@ function amRoleRow(m,x,i,burned){
   const B=amBetter(a,b),lead=B&&B.p>=.6?B.w:null,P=x.pair;
   const side=(p,F,pk,rev)=>{const ic=(pk||[]).filter(z=>!burned.has(ckey(z[0]))).slice(0,3);
     const fo=F?`<small title="KDA de ses ${F[1]} dernières parties">KDA récent ${fx1(F[0])}${F[2]?` <i class="${F[2]==="hausse"?"up":"dn"}" title="en ${F[2]}">${F[2]==="hausse"?"↗":"↘"}</i>`:""}</small>`:"";
-    return `<span class="amp${rev?" r":""}">${photo(p,"ava",38)}<span class="amn"><b class="${lead===p?"ld":""}">${esc(p.id)}</b>${fo}${ic.length?`<span class="ampk">${ic.map(z=>champ(z[0],18)).join("")}</span>`:""}</span></span>`};
+    return `<span class="amp${rev?" r":""}">${photo(p,"ava",38)}<span class="amn"><b class="${lead===p?"ld":""}">${esc(p.id)}</b>${rankTag(p)}${fo}${ic.length?`<span class="ampk">${ic.map(z=>champ(z[0],18)).join("")}</span>`:""}</span></span>`};
   let mid;
   if(P&&P.g){const wa=P.w,wb=P.g-P.w;
     // pastilles : qui était devant à 15 min dans chacune des 5 dernières rencontres (la plus récente à gauche)
@@ -2951,6 +2957,9 @@ function amRoleRow(m,x,i,burned){
         :`<i class="${v>0?"w":"l"}" title="${d} : ${esc((v>0?a:b).id)} devant à 15 min, ${esc(res)} gagne">${v>0?"+":"−"}</i>`});
     mid=`<b class="amsc"><em class="${wa>wb?"ld":""}">${wa}</em>–<em class="${wb>wa?"ld":""}">${wb}</em></b>${pa.length?`<span class="amf">${pa.join("")}</span>`:""}${x.n5>=2?`<small>${amSg(x.gd5)} or à 15′</small>`:""}`}
   else mid=`<small class="amnv">jamais face à face</small>`;
+  // modèle de lane : probabilité d'être devant à l'or à 15 min (testé à l'aveugle, voir le « i »)
+  const ld=typeof laneDuel==="function"?laneDuel(a.key,b.key,x.r,false):null;
+  if(ld){const q=Math.max(ld.p,1-ld.p),W=ld.p>=.5?a:b;mid+=`<small class="amln" title="Probabilité d’être devant à l’or à 15 min (modèle de lane)">${q<.55?"lane équilibrée":`lane : ${esc(W.id)} ${Math.round(q*100)} %`}</small>`}
   return `<button class="amrow" data-vs="${esc(a.key+"|"+b.key)}" style="--i:${i};--c1:${col(m.t1)};--c2:${col(m.t2)}" aria-label="Duel ${esc(ROLES[x.r])} : ${esc(a.id)} contre ${esc(b.id)}">
     ${side(a,x.fa,x.pa,false)}<span class="amc"><i class="rl">${esc(ROLES[x.r])}</i>${mid}</span>${side(b,x.fb,x.pb,true)}</button>`;
 }
@@ -2966,6 +2975,7 @@ function amRolesHTML(m){try{
   const info=`<p>Bilan : parties officielles depuis 2024 où les deux joueurs étaient face à face au même poste (victoires de leur équipe), toutes compétitions, qualifications EWC absentes. Quand les effectifs n’ont pas bougé, ce bilan est le même à tous les postes : c’est celui des équipes.</p>
     <p>Pastilles : leurs 5 dernières rencontres, la plus récente à gauche ; « + » quand le joueur de gauche était devant à l’or à 15 min, « − » quand il était derrière, « · » écart non mesuré. Dessous : l’écart médian sur ces parties (une partie extrême ne fait pas le chiffre). Victoires et défaites partie par partie : dans le duel détaillé.</p>
     <p>Nom en or : le mieux noté des deux (note d’impact du robot, corrigée de la force des adversaires et des ligues, au moins 60 % de chances d’être le meilleur). Avec le côté, c’est le seul signal d’avant-match qui prédit le vainqueur (testé sur 2025-2026).${du?` Avoir dominé ses derniers duels n’ajoute rien : ${amPc(du[1]/du[0])} de victoires sur ${amNf(du[0])} parties, ${amPc(du[2]/du[0])} prévus par la note.`:""}</p>
+    <p>Lane : probabilité d’être devant à l’or à 15 min selon le modèle de lane (or et CS à 15 min de chaque joueur, corrigés des ligues). Testé à l’aveugle : le favori de lane était devant dans 56 % des 1 715 duels des internationaux 2025-2026, et devant aux CS dans 60 % des 13 875 duels de 2026. Une lane reste très incertaine.</p>
     <p>KDA récent : sur ses 10 dernières parties de ${new Date().getFullYear()} ; la flèche n’apparaît que si ses victoires et son or à 15 min s’écartent nettement de sa saison. La forme décrit le passé et ne prédit presque rien (corrélation 0,05 entre deux séries de 10 parties). Icônes : ses 3 picks les plus probables (90 derniers jours), champions déjà joués dans la série retirés.</p>`;
   return amH2("Duels par poste",id,info)+`<p class="sub">Au centre : bilan depuis 2024, puis leurs 5 derniers duels à 15 min (+ : celui de gauche devant) et l’écart médian. Nom en or : le mieux noté. Touche un poste pour le détail.</p>`
     +ablock("amr_"+m.t1+"_"+m.t2,()=>amRolesData(m),amRolesRender(m),3);
@@ -3484,7 +3494,7 @@ function playerSheet(key,quiet){
         return `<div class="lane"><span class="rl">${SV2()?"Depuis "+esc(String(SJ.since||"2024").slice(0,4)):"Carrière"}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(p.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${t.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${T[opp].color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(o.id)}</b>
         <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face, KDA ${fx2(kdaV(x.ka,x.da,x.aa))} contre ${fx2(kdaV(x.kb,x.db,x.ab))}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`},12)
         +rkExp1(p.key,o.key)+(typeof encHTML==="function"?ablock("enc_"+p.key+"_"+o.key,()=>encData(p,o),encHTML(p,o,true),3):"")}}
-  const h=`<div class="bigwrap sm"><div class="bigcard">${pcard(p)}</div></div>${rkBriefHTML(p)}${duel}${flPlayerHTML(p)}${lsvSheet([p.key])}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}${typeof ficheDetailsHTML==="function"?ablock("fjd_"+p.key,()=>ficheData(p),ficheDetailsHTML(p),3):""}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
+  const h=`<div class="bigwrap sm"><div class="bigcard">${pcard(p)}</div></div>${(x=>x?`<button class="rkbig frame hx" data-rkrole="${p.role}"><b>${x[2]}<sup>${x[2]===1?"er":"e"}</sup></b><span>des ${x[3]} ${esc(ROLEP[p.role].replace(/^des /,""))} des Worlds<small>note d’impact, ligues comprises${x[4]!==x[5]?` · entre le ${x[4]}${x[4]===1?"er":"e"} et le ${x[5]}e`:""} · voir le classement ›</small></span></button>`:"")(IMP(p))}${rkBriefHTML(p)}${duel}${flPlayerHTML(p)}${lsvSheet([p.key])}${ablock("ps_"+p.key,()=>playerStats(p),renderPlayerStats(p),6)}${typeof ficheDetailsHTML==="function"?ablock("fjd_"+p.key,()=>ficheData(p),ficheDetailsHTML(p),3):""}<p style="margin-top:16px"><a class="btn" href="https://lol.fandom.com/wiki/${encodeURIComponent((p.page||p.id).replace(/ /g,"_"))}" target="_blank" rel="noopener">Fiche Leaguepedia</a></p>`;
   setSheet(h,quiet);
 }
 
@@ -3844,7 +3854,7 @@ function liveBoxHTML(m){
   const part=id=>allP.find(x=>x.participantId===id)||{};
   const drg=d=>(d||[]).map(x=>`<i class="drg" style="background:${DRAG[x]||"#888"}" title="${esc(x)}"></i>`).join("");
   const prow=(pm,rev)=>{const s=part(pm.participantId),pl=playerFromSummoner(pm.summonerName,rev?L.red:L.blue),cn=CH&&CH.nm?CH.nm[pm.championId]||pm.championId:pm.championId;
-    return `<div class="lpr${rev?" r":""}${kfDead(s)?" dead":""}">${kfFace(s,pm.championId,30)}<span class="lpn"><b>${esc(pl?pl.id:String(pm.summonerName||"").split(" ").slice(1).join(" ")||pm.summonerName||"")}</b><small>${esc(cn)}</small></span><span class="lps"><b>${s.kills??0}/${s.deaths??0}/${s.assists??0}</b><small>${s.creepScore??0} cs</small></span></div>`};
+    return `<div class="lpr${rev?" r":""}${kfDead(s)?" dead":""}">${kfFace(s,pm.championId,30)}<span class="lpn"><b>${esc(pl?pl.id:String(pm.summonerName||"").split(" ").slice(1).join(" ")||pm.summonerName||"")}${pl?rankTag(pl):""}</b><small>${esc(cn)}</small></span><span class="lps"><b>${s.kills??0}/${s.deaths??0}/${s.assists??0}</b><small>${s.creepScore??0} cs</small></span></div>`};
   return `<div class="lvhd"><span class="badge live">Partie ${L.num||""}</span><b>${gtime(L)}</b><span class="small">${L.status==="ended"?"Partie terminée":"≈ 30 s de décalage"}</span></div>
    <div class="lvsc"><div class="lvt">${logo(L.blue,40)}<b>${esc(T[L.blue]?.id||"")}</b><span class="side b">bleu</span></div><div class="lvk"><b>${B.totalKills}</b><i>kills</i><b>${R.totalKills}</b></div><div class="lvt">${logo(L.red,40)}<b>${esc(T[L.red]?.id||"")}</b><span class="side r">rouge</span></div></div>
    <div class="wpbar big"><i style="width:${p*100}%;background:${col(L.blue)}"></i><i style="width:${(1-p)*100}%;background:${col(L.red)}"></i></div>
@@ -4260,7 +4270,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v12.8, 24/10/2026";
+const APP_VERSION="v12.9, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
