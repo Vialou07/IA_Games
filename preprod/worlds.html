@@ -794,7 +794,7 @@ const LIVE_LOGO = {};
 const thumb=(u,w)=>u&&/^https?:\/\/static\.lolesports\.com\//.test(u)?`https://wsrv.nl/?url=${encodeURIComponent(u.replace(/^https?:\/\//,""))}&w=${w}&output=webp&q=80`:null;
 function logo(id,size=34){
   const t=T[id]; if(!t) return `<span class="mono" style="background:var(--panel2);width:${size}px;height:${size}px">?</span>`;
-  const w=size>100?320:160;
+  const w=size>100?320:size>48?160:96;   // 96 px suffit jusqu'à 48 px affichés (≈40 % plus léger)
   const le=LIVE_LOGO[id]||LE_LOGO[id];
   return imgTag([thumb(le,w),le,t.lpImg,lpFile(t.lp+"logo square.png",w),lpFile(t.lp+"logo std.png",w)],"logo",{text:t.id,bg:t.color,w:size+"px",style:"font-size:"+Math.max(11,size/3)+"px"},`width:${size}px;height:${size}px`);
 }
@@ -2498,7 +2498,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="PRÉPROD v11.6, 24/10/2026";
+const APP_VERSION="PRÉPROD v11.7, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
