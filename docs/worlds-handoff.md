@@ -109,6 +109,14 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 
 **Appli** : avant-match (clés, une ligne par poste, duel détaillé daté), direct (fil du match, draft avant/après, fearless entre deux manches), classements par poste avec le pourquoi, spécial Worlds, qui va gagner, fiche joueur « En bref » (âge et Worlds : constante `BIO`, Liquipedia et Leaguepedia croisés), vrais bans dans Stats › Champions, sursis avant l'élimination, « Revoir en VF », fluidité (seul l'onglet visible est dessiné tout de suite, animations hors écran en pause).
 
+**Après-midi du 24/10 (v12.1 → v12.8)** :
+- L'appli s'adapte au moment (`homeMoment`) : le matin, le bilan de la veille ; avant un match, ton prono et la clé du match en haut ; en direct, les paris de la ligue ; les jours sans match, « qui va gagner » et les classements.
+- Paris refusés après le coup d'envoi même fiche ouverte ; un match en retard reste « à venir » tant que l'API ne l'a pas lancé.
+- « Emporte ton profil » : chaque navigateur a sa propre mémoire (Messenger, Chrome, icône d'écran d'accueil). Le lien `…#moi=…` transporte ligue, paris et favori avec le même identifiant de joueur (pas de doublon dans la ligue).
+- Le robot joue dans la ligue (sur chaque téléphone, rien n'est envoyé) : pronos figés avant le match (`fiab`), comptés seulement sur les matchs pariés par la ligue.
+- Fiches équipe et joueur : début de partie (premier sang, tours, dragons, âmes ; part des kills avant 15 min) depuis la clé `fl`.
+- **Robot en chaîne** : GitHub n'a lancé aucun passage programmé du 24/10 06:26 au soir. La dernière étape du workflow attend 8 min puis relance le robot (`gh workflow run`, branche main seulement, jusqu'au 16/11). Les créneaux programmés restent en secours. Pour arrêter la chaîne : désactiver le workflow dans l'onglet Actions ou retirer cette étape.
+
 **Tests** (dossier de travail, Playwright en émulation Pixel 7) : parcours complet avec ligue à 3 téléphones, écrans clés avec données locales interceptées, direct rejoué sur de vraies parties. Toujours : préprod, tests, puis prod ; `node --check` sur le script extrait ; monter `APP_VERSION`.
 
 ## 3. Sources externes et ce qui est vérifié
