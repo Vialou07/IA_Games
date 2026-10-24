@@ -435,6 +435,10 @@ nav.tabs button{position:relative}
 .mch{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(200,170,110,.08);font-size:12.5px;min-width:0}
 .mch span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mch small{color:var(--muted);white-space:nowrap}
 .lane[data-cmp]{cursor:pointer}
+.rc5s{display:grid;gap:6px;margin-bottom:10px}.rc5{display:grid;grid-template-columns:62px 1fr 22px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 6px;padding:7px 8px;background:rgba(5,11,24,.5);border-radius:8px;border-left:3px solid var(--muted)}
+.rc5.w{border-left-color:var(--teal)}.rc5.l{border-left-color:var(--red)}.rc5 .d{font-size:12px;font-weight:700;line-height:1.15;display:flex;flex-direction:column}.rc5 .d small{font-size:10px;color:var(--muted);font-weight:600}
+.rc5 .c{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-size:15px}.rc5 .c.r{justify-content:flex-end}.rc5 i{font-style:normal;font-family:var(--disp);font-weight:800;text-align:center}.rc5.w i{color:var(--teal)}.rc5.l i{color:var(--red)}
+.rc5 .g{grid-column:2/5;font-size:10.5px;color:var(--muted)}
 .recs{display:grid;gap:8px}
 
 /* ===== duel 1v1 ===== */
@@ -1521,7 +1525,7 @@ function renderTape(a,b,A,B){
    ${tape("Tours",A.to,B.to,fx1)}
    ${tape("Écart d’or final",A.gd,B.gd,v=>(v>0?"+":"")+fx1(v/1000)+" k")}
    ${tape("Durée moyenne",A.gl,B.gl,dur,false)}
-   <p class="small" style="margin-top:6px">Saison 2026, toutes compétitions : ${A.sw}-${A.sl} en séries pour ${esc(T[a].id)}, ${B.sw}-${B.sl} pour ${esc(T[b].id)}. Le chiffre en or est le meilleur des deux.</p>`;
+   <p class="small" style="margin-top:6px">Saison 2026 : ${A.sw}-${A.sl} en séries pour ${esc(T[a].id)}, ${B.sw}-${B.sl} pour ${esc(T[b].id)}. Le chiffre en or est le meilleur des deux.</p>`;
 }
 function renderForm(a,b,A,B){
   const row=(id,S)=>`<div class="formrow">${logo(id,28)}<div style="flex:1;min-width:0"><b>${esc(T[id].id)}</b> <span class="small">${S.last.slice(0,5).filter(x=>x.won).length}V-${S.last.slice(0,5).filter(x=>!x.won).length}D</span>
@@ -1545,7 +1549,7 @@ const SV2=()=>!!(SJ&&SJ.v>=2);
 // id, libellé, calcul sur la saison, format, plus haut = mieux
 const PSTAT=[["win","Victoires",S=>S.w/S.g*100,v=>Math.round(v)+" %",1],["kda","KDA",S=>kdaV(S.k,S.d,S.a),fx2,1],
   ["kpg","Kills par partie",S=>S.k/S.g,fx1,1],["dpg","Morts par partie",S=>S.d/S.g,fx1,0],["apg","Assists par partie",S=>S.a/S.g,fx1,1],
-  ["kp","Participation aux kills",S=>S.tk?(S.k+S.a)/S.tk*100:null,v=>Math.round(v)+" %",1],["dmg","Part des dégâts",S=>S.dsn?S.ds/S.dsn*100:null,v=>Math.round(v)+" %",1],
+  ["kp","Participation aux kills",S=>S.kpn?S.kps/S.kpn*100:S.tk?(S.k+S.a)/S.tk*100:null,v=>Math.round(v)+" %",1],["dmg","Part des dégâts",S=>S.dsn?S.ds/S.dsn*100:null,v=>Math.round(v)+" %",1],
   ["csm","CS par minute",S=>S.cs/Math.max(1,S.min),fx1,1],["gpm","Or par minute",S=>S.gold/Math.max(1,S.min),v=>Math.round(v),1],
   ["gd15","Écart d’or à 15 min",S=>S.n15?S.gd15/S.n15:null,v=>(v>0?"+":"")+Math.round(v),1],["csd15","Écart de CS à 15 min",S=>S.n15?S.csd15/S.n15:null,v=>(v>0?"+":"")+fx1(v),1],
   ["wpg","Balises par partie",S=>S.wn?S.wp/S.wn:null,fx1,1],["pool","Champions joués",S=>S.pool,v=>v,1]];
@@ -1560,11 +1564,21 @@ function season2Tiles(p,S){
   const t=id=>{const d=PSTAT.find(x=>x[0]===id),v=d[2](S);return v==null||!isFinite(v)?null:[d[3](v),d[1].toLowerCase()+rkBadge(p,id)]};
   return tiles([[S.g,"parties"+(S.g<MINR?` <i class="rkb lo">non classé</i>`:"")],t("win"),t("kda"),[`${fx1(S.k/S.g)} / ${fx1(S.d/S.g)} / ${fx1(S.a/S.g)}`,"K / D / A moyens"],
     t("csm"),t("gpm"),t("dmg"),t("kp"),t("gd15"),t("csd15"),t("wpg"),t("pool")].filter(Boolean))
-   +`<p class="small" style="margin-top:6px">Saison 2026, toutes compétitions. Rang parmi les titulaires des Worlds au même poste (${MINR} parties minimum). Écarts à 15 min face au joueur d’en face.</p>`;
+   +`<p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Rang parmi les titulaires des Worlds au même poste (${MINR} parties minimum). Écarts à 15 min face au joueur d’en face.</p>`;
 }
 function bestFoe(p){const nm=MATCHES.find(m=>(m.t1===p.team||m.t2===p.team)&&m.t1&&m.t2&&m.state!=="done"),opp=nm&&(nm.t1===p.team?nm.t2:nm.t1);
   return PLAYERS.find(x=>x.team===opp&&x.role===p.role)||(ranking("kda",x=>x.role===p.role&&x!==p)[0]||{}).p||PLAYERS.find(x=>x.role===p.role&&x!==p)}
 const miniChamps=cs=>(cs||[]).slice(0,5).map(c=>`<div class="mch">${champ(c.c,24)}<span>${esc(c.c)}</span><small>${c.g} p., ${pct(c.w,c.g)} %</small></div>`).join("")||`<p class="small">–</p>`;
+function recentDuels(a,b){
+  const D=SJ.dr||{},k1=norm(a.id)+"|"+norm(b.id),k2=norm(b.id)+"|"+norm(a.id),R=D[k1]||D[k2];if(!R||!R.length)return"";
+  const fl=!D[k1],kda=v=>v.join("/");
+  const rows=R.map(x=>fl?{d:x[0],n:x[1],op:x[2],ca:x[4],cb:x[3],A:x[6],B:x[5],gd:x[7]==null?null:-x[7],w:1-x[8]}:{d:x[0],n:x[1],op:x[2],ca:x[3],cb:x[4],A:x[5],B:x[6],gd:x[7],w:x[8]});
+  const won=rows.filter(r=>r.w).length;
+  return `<h3 class="h3">Leurs ${rows.length} dernières rencontres : ${won}-${rows.length-won} pour ${esc(won>=rows.length-won?a.id:b.id)}</h3><div class="rc5s">${rows.map(r=>`<div class="rc5 ${r.w?"w":"l"}">
+    <span class="d">${esc(new Date(r.d+"T12:00:00Z").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"2-digit"}))}<small>${esc(r.op)}, partie ${r.n}</small></span>
+    <span class="c">${champ(r.ca,26)}<b>${kda(r.A)}</b></span><i>${r.w?"V":"D"}</i><span class="c r"><b>${kda(r.B)}</b>${champ(r.cb,26)}</span>
+    <small class="g">${r.gd!=null?`${r.gd>0?"+":""}${r.gd} d’or à 15 min pour ${esc(a.id)}`:""}</small></div>`).join("")}</div>`;
+}
 function compareSheet(id,md){
   const [ka,kb]=String(id).split("|"),a=PLAYERS.find(x=>x.key===ka),b=PLAYERS.find(x=>x.key===kb);if(!a||!b)return;
   sheetState={k:"c",id};const ta=T[a.team],tb=T[b.team],SA=seasonOf(a),SB=seasonOf(b);
@@ -1577,10 +1591,10 @@ function compareSheet(id,md){
   else{
     h+=`<h2>Saison 2026</h2><div class="tapehd"><span>${esc(a.id)}</span><span>${esc(b.id)}</span></div><div style="--c1:${ta.color};--c2:${tb.color}">${tape("Parties",SA.g,SB.g,v=>v)}`
       +PSTAT.map(([sid,l,f,fmt,hi])=>{const va=f(SA),vb=f(SB);return va==null||vb==null||!isFinite(va)||!isFinite(vb)?"":tape(l,va,vb,fmt,!!hi,sid==="gd15"||sid==="csd15")}).join("")+`</div>
-      <p class="small" style="margin-top:6px">Toutes compétitions 2026. Le chiffre en or est le meilleur des deux.</p>
+      <p class="small" style="margin-top:6px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC). Le chiffre en or est le meilleur des deux.</p>
       <h2>Champions 2026</h2><div class="cmpc"><div>${miniChamps(SA.champs)}</div><div>${miniChamps(SB.champs)}</div></div>`;
     const x=SJ.duels&&SJ.duels[norm(a.id)+"|"+norm(b.id)];
-    h+=`<h2>Duels directs</h2>`+(!x?`<p class="small">Jamais face à face en lane depuis ${esc(String(SJ.since||"2024").slice(0,4))}.</p>`:
+    h+=`<h2>Duels directs</h2>`+recentDuels(a,b)+(!x?`<p class="small">Jamais face à face en lane depuis ${esc(String(SJ.since||"2024").slice(0,4))}.</p>`:
       `<div class="lane"><span class="rl">Depuis ${esc(String(SJ.since||"2024").slice(0,4))}</span><b class="${x.w>x.g-x.w?"lead":""}">${esc(a.id)}</b><span class="lsc"><em>${x.w}</em><i class="split mini"><i style="width:${x.w/x.g*100}%;background:${ta.color}"></i><i style="width:${(x.g-x.w)/x.g*100}%;background:${tb.color}"></i></i><em>${x.g-x.w}</em></span><b class="${x.g-x.w>x.w?"lead":""}">${esc(b.id)}</b>
        <span class="lsub">${x.g} partie${x.g>1?"s":""} face à face, KDA ${fx2(kdaV(x.ka,x.da,x.aa))} contre ${fx2(kdaV(x.kb,x.db,x.ab))}${x.n15?`, ${x.gd15/x.n15>=0?"+":""}${Math.round(x.gd15/x.n15)} d’or à 15 min pour ${esc(a.id)}`:""}.${x.last?` Dernier duel ${esc(fmtMonth(x.last.dt))} : ${champ(x.last.ca,18)} contre ${champ(x.last.cb,18)}`:""}</span></div>`);
   }
@@ -1595,7 +1609,7 @@ function rankHTML(){
   return `<div class="chips">${PSTAT.map(([k,l])=>`<button class="chip" data-pstat="${k}" aria-pressed="${d[0]===k}">${l}</button>`).join("")}</div>
    ${!role&&!leg?`<p class="small" style="margin:0 0 8px">Choisis un poste juste au-dessus pour comparer à armes égales.</p>`:""}
    <div class="lead hx">${rows.map(x=>`<button class="lrow" data-p="${x.p.key}"><span class="rk">${x.i}</span>${photo(x.p,"ava",34)}<span class="ln2"><b>${esc(x.p.id)}</b><small>${esc(T[x.p.team].id)}, ${ROLES[x.p.role]}, ${seasonOf(x.p).g} parties</small></span><em>${d[3](x.v)}</em></button>`).join("")||`<p class="small">Aucun joueur.</p>`}</div>
-   <p class="small" style="margin-top:8px">Saison 2026, toutes compétitions, ${MINR} parties minimum${out.length?`. Pas assez de parties : ${out.map(p=>esc(p.id)).join(", ")}`:""}. Touche un joueur pour sa fiche, puis « Comparer ».</p>`;
+   <p class="small" style="margin-top:8px">Saison 2026 : ligues, First Stand, MSI, EWC, KeSPA Cup et Worlds (hors qualifications EWC), ${MINR} parties minimum${out.length?`. Pas assez de parties : ${out.map(p=>esc(p.id)).join(", ")}`:""}. Touche un joueur pour sa fiche, puis « Comparer ».</p>`;
 }
 function renderPlayerStats(p){return D=>{
   const S=D.S,W=D.W;let h="";
@@ -2189,7 +2203,7 @@ function scheduleNext(){
 }
 
 /* ===================== DIAGNOSTIC : santé des sources, testable depuis chaque téléphone ===================== */
-const APP_VERSION="v9.2, 24/10/2026";
+const APP_VERSION="v9.3, 24/10/2026";
 const HEALTH={};
 const ago=ts=>{if(!ts)return"";const s=(Date.now()-ts)/1000;if(s<60)return"à l’instant";if(s<3600)return`il y a ${Math.round(s/60)} min`;if(s<86400)return`il y a ${Math.round(s/3600)} h`;return`il y a ${Math.round(s/86400)} j`};
 function mark(k,ok,ms,err){HEALTH[k]={ok,ms:Math.round(ms),at:Date.now(),err:err?String(err).slice(0,160):null}}
