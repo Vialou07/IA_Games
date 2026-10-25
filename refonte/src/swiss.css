@@ -1,0 +1,244 @@
+/* swiss.css — phase suisse, calendrier, qui va gagner, fiabilité du robot (module swiss, préfixe .swi-) */
+/* ---------- barres et cascade (moment animé 2 de v13.5 : une fois, à l'ouverture de l'onglet ou de l'accueil) ---------- */
+.swi-bar{display:block;height:5px;border-radius:9px;background:rgba(240,230,210,.07);overflow:hidden}
+.swi-bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--gold3),var(--gold2));transform-origin:0 50%}
+.cas .swi-bar i{animation:swiGrow .9s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 120ms)}
+.grid.first .w .swi-bar i{animation:swiGrow .7s var(--ease) backwards;animation-delay:calc(var(--k,0) * 60ms + 300ms)}
+@keyframes swiGrow{from{transform:scaleX(0)}}
+.swi-i{position:relative}.swi-i::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+/* ---------- widgets de l'accueil (B : .tb ; neufs : .swi-wr, .swi-wsg, .swi-wpk) ---------- */
+.tb{display:grid;grid-template-columns:20px 46px minmax(0,1fr) 52px;align-items:center;gap:8px;height:20px}
+.tb b{font-family:var(--disp);font-size:15.5px;font-weight:700;white-space:nowrap}
+.tb em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:17px;color:var(--gold2);font-variant-numeric:tabular-nums;text-align:right}
+.tb .br{height:5px}
+.swi-wl{gap:8px}
+.swi-wr{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:2px 10px}
+.swi-wr>.logo,.swi-wr>.mono{grid-row:1/3}
+.swi-wr .grow{min-width:0}
+.swi-wr b{display:block;font-family:var(--disp);font-weight:700;font-size:16px;line-height:1.05}
+.swi-wr small{display:block;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-wr em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:19px;color:var(--gold2);font-variant-numeric:tabular-nums}
+.swi-wr .swi-bar{grid-column:2/4;height:4px}
+.swi-wsg{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin-top:8px}
+.swi-wsg i{height:4px;border-radius:9px;background:rgba(240,230,210,.1)}.swi-wsg i.d{background:var(--gold)}.swi-wsg i.c{background:var(--teal)}
+.swi-wpk{display:flex;gap:5px;margin-bottom:6px;opacity:.85}
+/* ---------- tête de la phase suisse : ronde, cinq rondes, compteurs ---------- */
+.swi-hd{margin:2px 16px 0;padding:10px 14px;border-radius:var(--r3);background:var(--card);border:1px solid var(--line2);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.swi-hl{min-width:0}
+.swi-hl b{display:block;font-family:var(--disp);font-weight:800;font-size:22px;line-height:1.05;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-hl small{font-family:var(--body);font-size:12.5px;font-weight:600;color:var(--muted)}
+.swi-ct{display:flex;justify-content:flex-end;gap:12px;font-size:11px;color:var(--muted);white-space:nowrap}
+.swi-ct span{display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.swi-ct b{font-family:var(--disp);font-weight:800;font-size:20px;color:var(--gold2)}
+.swi-ct .cq b{color:var(--teal)}.swi-ct .cx b{color:#F28B9B}
+.swi-sg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:7px;max-width:150px}
+.swi-sg i{height:5px;border-radius:9px;background:rgba(240,230,210,.1)}
+.swi-sg i.d{background:var(--gold)}.swi-sg i.c{background:linear-gradient(90deg,var(--teal),rgba(10,200,185,.3))}
+/* ---------- mon équipe et son parcours ---------- */
+.swi-pick{margin-top:4px;min-height:54px;padding-top:5px;padding-bottom:5px}
+.swi-pki{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(200,170,110,.14);color:var(--gold);flex:none}
+.swi-pki svg{width:22px;height:22px}
+.swi-me .bh{margin-bottom:6px}
+.swi-chg{margin:-9px -6px -9px auto;height:40px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--gold2)}
+.swi-chg:active{background:var(--card2)}
+.swi-mt{display:flex;align-items:center;gap:10px;width:100%;min-height:48px}
+.swi-mt .grow{flex:1;min-width:0}
+.swi-mt b{display:block;font-family:var(--disp);font-weight:800;font-size:22px;line-height:1}
+.swi-mt small{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.swi-rc{display:flex;flex-direction:column;align-items:flex-end;gap:5px;font-family:var(--disp);font-weight:800;font-size:26px;color:var(--gold2);line-height:1;font-variant-numeric:tabular-nums}
+.swi-trail{display:flex;gap:6px;margin-top:10px}
+.swi-ts{width:40px;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px}
+.swi-ts i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--card2);border:2px solid var(--line2)}
+.swi-ts.vic i{border-color:var(--teal)}.swi-ts.def i{border-color:var(--red)}.swi-ts.def i .logo{opacity:.7}
+.swi-ts.nxt i{border:2px dashed var(--gold)}
+.swi-ts.fut i{border:1.5px dashed rgba(240,230,210,.16);background:transparent}
+.swi-ts small{font-size:10.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1.1}
+.swi-ts.vic small{color:var(--teal)}.swi-ts.def small{color:#F28B9B}.swi-ts.nxt small{color:var(--gold2)}
+.swi-pips{display:inline-flex;gap:4px}
+.swi-pips i{width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(232,64,87,.75)}
+.swi-pips i.on{background:var(--teal);border-color:var(--teal)}
+/* ---------- ronde : titre, groupes par bilan avec l'enjeu ---------- */
+.swi-tt{display:flex;align-items:baseline;gap:8px;margin:18px 2px 0;font-family:var(--title);font-weight:700;font-size:16px;color:var(--gold2)}
+.swi-tt small{font-family:var(--body);font-size:12px;color:var(--muted);font-weight:500}
+.swi-gh{display:flex;align-items:center;gap:8px;margin:14px 2px 8px;min-width:0}
+.swi-gh>b{flex:none;font-family:var(--disp);font-weight:800;font-size:15px;line-height:20px;color:#1A1205;background:linear-gradient(180deg,#F5E3B3,var(--gold));padding:0 9px;border-radius:8px}
+.swi-gh>span{min-width:0;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-gh>em{margin-left:auto;flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--gold);border:1px solid var(--gold3);border-radius:6px;padding:0 6px}
+.swi-gh.sq>span{color:var(--teal)}.swi-gh.sx>span{color:#F28B9B}.swi-gh.sqx>span{color:var(--gold2)}
+.swi-gh.bq>b{background:linear-gradient(180deg,#8CF2E9,var(--teal));color:#03201D}
+.swi-gh.bx>b{background:linear-gradient(180deg,#F7A3B0,var(--red));color:#fff}
+.swi-lead{margin:0 0 6px;font-size:14.5px;font-weight:600;color:var(--gold2);line-height:1.35}
+.swi-nx .small{margin:0}
+/* ---------- tableau suisse vertical ---------- */
+.swi-lgd{display:flex;align-items:center;gap:12px;margin:4px 2px;font-size:12px;color:var(--muted);min-height:40px}
+.swi-lgd span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.swi-lgd span i{width:16px;height:3px;border-radius:2px;background:var(--teal)}.swi-lgd span i.ll{background:var(--red)}.swi-lgd span i.lf{background:var(--gold);height:4px}
+.swi-lgd .i{margin-left:auto}
+.swi-lk{height:40px;color:var(--gold2);font-weight:700;font-size:12.5px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.swi-tree{display:flex;flex-direction:column;margin:0 0 6px}
+.swi-t0{position:relative;height:18px}
+.swi-tg{position:relative;height:32px}
+.swi-tg svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.swi-tg path{fill:none;stroke-width:1.6;vector-effect:non-scaling-stroke;opacity:.5}
+.swi-tg path.ew{stroke:var(--teal)}.swi-tg path.el{stroke:var(--red)}
+.swi-tg path.ef{stroke:var(--gold);stroke-width:3.2;stroke-linecap:round;opacity:1}
+.swi-rl{position:absolute;left:0;bottom:2px;z-index:1;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:16px;color:var(--dim);background:var(--bg);padding:0 8px 0 0;border-radius:0 8px 8px 0}
+.swi-rl.on{color:var(--gold)}
+.swi-trw{position:relative}
+.swi-nd{position:absolute;top:0;bottom:0;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 6px 4px;border-radius:14px;background:var(--card);border:1px solid var(--line2);overflow:hidden;transition:transform .15s var(--spring)}
+.swi-nd:active{transform:scale(.96);background:var(--card2)}
+.swi-nd>b{display:flex;align-items:center;gap:3px;font-family:var(--disp);font-weight:800;font-size:15px;line-height:16px;color:var(--gold2)}
+.swi-nd .mk{display:inline-grid;width:13px;height:13px;font-style:normal}.swi-nd .mk svg{width:13px;height:13px}
+.swi-nd .lg{display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:3px}
+.swi-nd .lg i{width:22px;height:22px;display:grid;place-items:center;border-radius:7px}
+.swi-nd .lg i.p{opacity:.26;filter:grayscale(.8)}
+.swi-nd .lg i.me{box-shadow:0 0 0 2px var(--gold);opacity:1;filter:none}
+.swi-nd.cur{border-color:rgba(240,230,210,.26);background:var(--card3)}
+.swi-nd.nq{background:linear-gradient(180deg,rgba(10,200,185,.17),var(--card) 75%);border-color:rgba(10,200,185,.5)}.swi-nd.nq>b{color:var(--teal)}
+.swi-nd.nx{background:linear-gradient(180deg,rgba(232,64,87,.15),var(--card) 75%);border-color:rgba(232,64,87,.45)}.swi-nd.nx>b{color:#F28B9B}
+.swi-nd.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 14px rgba(200,170,110,.22)}
+/* ---------- bilans, feuilles d'équipe ---------- */
+.swi-tn{font-family:var(--body);font-size:12px;font-weight:500;color:var(--muted)}
+.swi-bv{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none}
+.swi-bv b{font-family:var(--disp);font-weight:800;font-size:22px;color:var(--gold2);line-height:1;font-variant-numeric:tabular-nums}
+.swi-br.out{opacity:.55}
+.rowb.me{border-color:rgba(200,170,110,.7);box-shadow:inset 3px 0 0 var(--gold)}
+.swi-sl{min-height:54px}
+.swi-sh{margin:16px 0 8px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.swi-ql,.swi-pig{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.swi-pig{grid-template-columns:repeat(3,minmax(0,1fr))}
+.swi-ql+.swi-lead{margin-top:12px}.swi-lead+.swi-ql{margin-bottom:4px}
+.swi-qt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;min-width:0;border-radius:16px;background:var(--card2);border:1px solid var(--line2)}
+.swi-qt:active{transform:scale(.96)}
+.swi-qt b{font-family:var(--disp);font-weight:700;font-size:15px;line-height:1}
+.swi-qt small{font-size:11px;color:var(--muted);font-weight:600}
+.swi-qt.out{opacity:.55;background:var(--card)}
+.swi-qt.me{border-color:var(--gold)}
+/* ---------- phase finale ---------- */
+.swi-ko{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.swi-ko.n1{grid-template-columns:minmax(0,1fr)}
+.swi-kc{display:flex;flex-direction:column;gap:7px;width:100%;min-width:0;padding:10px 12px 12px;border-radius:18px;background:var(--card);border:1px solid var(--line2);text-align:left}
+.swi-kc:active{background:var(--card2)}
+.swi-kc.live{border-color:rgba(232,64,87,.6)}.swi-kc.tbd{border-style:dashed;border-color:rgba(200,170,110,.22);background:rgba(12,26,48,.55)}
+.swi-kc small{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.swi-kl{display:flex;align-items:center;gap:8px;min-width:0}
+.swi-kl b{flex:1;min-width:0;font-family:var(--disp);font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-kl em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:18px;color:var(--gold2);font-variant-numeric:tabular-nums}
+.swi-kl.lo{opacity:.45}.swi-kl.kw b{color:var(--gold2)}
+.swi-kq{width:22px;height:22px;border-radius:7px;border:1.5px dashed rgba(240,230,210,.2);flex:none}
+.swi-kc.tbd{gap:1px;padding:6px 12px;min-height:56px;justify-content:center}.swi-kc.tbd>b{font-family:var(--disp);font-weight:700;font-size:16px;color:#C9D2DC;line-height:1.1}
+.swi-ko.n1 .swi-kc:not(.tbd){padding:14px 16px;border-color:var(--line)}.swi-ko.n1 .swi-kl b{font-size:21px}
+.swi-champ{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:20px 14px;cursor:pointer}
+.swi-cup{width:34px;height:34px;color:var(--gold)}.swi-cup svg{width:100%;height:100%}
+.swi-champ b{font-family:var(--title);font-size:22px;color:var(--gold2)}
+.swi-champ small{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+/* ---------- qui va gagner : titre ---------- */
+.swi-ans{margin:0 0 10px;font-size:13.5px;line-height:1.4;color:#D9DEE5}
+.swi-kd{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:rgba(200,170,110,.18);color:var(--gold);font-family:var(--body);font-size:11px;font-weight:700;line-height:16px;letter-spacing:0}
+.swi-kd.o{background:rgba(10,200,185,.16);color:var(--teal)}
+.swi-now{display:inline-block;padding:1px 8px;border-radius:999px;background:rgba(200,170,110,.18);color:var(--gold);font-size:11px;font-weight:700;line-height:16px}.swi-ans b{color:var(--gold2)}
+.swi-fav{position:relative;overflow:hidden;display:grid;grid-template-columns:50px minmax(0,1fr) auto;align-items:center;gap:6px 12px;width:100%;padding:10px 12px;border-radius:18px;background:linear-gradient(140deg,rgba(200,170,110,.17),rgba(200,170,110,.04));border:1px solid var(--line)}
+.swi-fav>.logo,.swi-fav>.mono{grid-row:1/3}
+.swi-fav .grow{min-width:0}
+.swi-fav b{display:flex;align-items:center;gap:4px;font-family:var(--disp);font-weight:800;font-size:24px;line-height:1}
+.swi-fav small{display:block;font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.3}
+.swi-fav strong{font-family:var(--disp);font-weight:800;font-size:40px;line-height:.9;color:var(--gold2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.swi-fav .swi-bar{grid-column:2/4;height:6px}
+.cas .swi-fav::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(240,230,210,.2) 50%,transparent 65%);transform:translateX(-110%);animation:swiGlint 1s 1s var(--ease) forwards;pointer-events:none}
+@keyframes swiGlint{to{transform:translateX(110%)}}
+.swi-tr{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:3px 12px;width:100%;min-height:52px;padding:8px 4px 7px;border-top:1px solid var(--line2)}
+.swi-fav+.swi-tr{border-top:0;margin-top:4px}
+.swi-tr:active,.swi-fav:active{background:var(--card2)}
+.swi-tr>.logo,.swi-tr>.mono{grid-row:1/3}
+.swi-tr .grow{min-width:0}
+.swi-tr b{display:flex;align-items:center;gap:2px;font-family:var(--disp);font-weight:700;font-size:18px;line-height:1.1}
+.swi-tr small{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-tr em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:22px;color:var(--gold2);font-variant-numeric:tabular-nums}
+.swi-tr .swi-bar{grid-column:2/4;height:4px}
+.swi-spe{margin-top:10px;min-height:50px;padding-top:6px;padding-bottom:6px}
+/* ---------- qui va gagner : tableau des 16 ---------- */
+.swi-tbl{padding:8px 10px}
+.swi-th,.swi-td{display:grid;grid-template-columns:minmax(62px,1.1fr) 34px 46px 46px minmax(76px,1.3fr);align-items:center;gap:4px;width:100%}
+.swi-th{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);padding:2px 4px 6px}
+.swi-th span:not(:first-child),.swi-td>span:not(:first-child){text-align:right}
+.swi-td{min-height:42px;padding:0 4px;border-top:1px solid var(--line2);font-family:var(--disp);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;color:#D9DEE5}
+.swi-td:active{background:var(--card2)}
+.swi-td .tn{display:flex;align-items:center;gap:6px;min-width:0}.swi-td .tn b{font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-td .ti{display:flex;align-items:center;justify-content:flex-end;gap:6px}.swi-td .ti .swi-bar{flex:1;min-width:16px}
+.swi-td .ti b{color:var(--gold2);font-weight:800;min-width:38px;text-align:right}
+.swi-td.me{background:rgba(200,170,110,.1);border-radius:10px;box-shadow:inset 3px 0 0 var(--gold)}
+.swi-td.out{opacity:.45}
+/* ---------- feuille d'une équipe : étapes, bilan final, évolution ---------- */
+.swi-stp{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.swi-stp div{display:grid;grid-template-columns:60px minmax(0,1fr) 50px;align-items:center;gap:10px;font-size:13.5px;color:#D9DEE5}
+.swi-stp b{font-family:var(--disp);font-weight:800;font-size:18px;color:var(--gold2);text-align:right}
+.swi-stp .swi-bar{height:7px}
+.swi-hist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-items:end}
+.swi-hist div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:84px}
+.swi-hist i{width:100%;max-width:34px;border-radius:6px 6px 2px 2px;background:var(--teal)}.swi-hist .hx i{background:var(--red)}.swi-hist .hz i{opacity:.35}
+.swi-hist b{font-family:var(--disp);font-size:13px;color:var(--gold2)}.swi-hist span{font-size:11px;color:var(--muted);font-weight:700}
+.swi-evo{position:relative;padding:0 0 18px}
+.swi-evo svg{display:block;width:100%;height:40px}
+.swi-evo polyline{fill:none;stroke:var(--gold);stroke-width:2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.swi-evo span,.swi-evo b{position:absolute;bottom:0;font-size:12px;color:var(--muted)}.swi-evo span{left:0}.swi-evo b{right:0;color:var(--gold2)}
+.swi-sb{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.swi-sb .btn{margin-top:14px}.swi-sb .btn:only-child{grid-column:1/3}
+.swi-favg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 4px}
+.swi-fo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:62px;border-radius:14px;background:var(--card);border:1px solid var(--line2);font-family:var(--disp);font-weight:700;font-size:14px}
+.swi-fo:active{transform:scale(.95)}
+.swi-fo.on{border-color:var(--gold);background:rgba(200,170,110,.16);color:var(--gold2)}
+/* ---------- le robot a-t-il vu juste ? ---------- */
+.swi-fs{display:flex;align-items:center;gap:14px}
+.swi-fs .ring{width:64px;height:64px}.swi-fs .ring b{font-size:15px}
+.swi-fs .grow{flex:1;min-width:0}
+.swi-fs strong{display:block;font-family:var(--disp);font-weight:800;font-size:36px;line-height:1;color:var(--gold2)}
+.swi-fs span{display:block;font-size:13px;color:#D9DEE5;margin-top:2px;line-height:1.3}
+.swi-fs small{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.swi-fn{margin:10px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+.swi-bhs{margin-left:auto;font-size:11px;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:600}
+.swi-fl{display:flex;flex-direction:column}
+.swi-fr{display:grid;grid-template-columns:42px minmax(0,1fr) auto 22px;align-items:center;gap:8px;width:100%;min-height:44px;border-top:1px solid var(--line2);font-size:12.5px}
+.swi-fr:first-child{border-top:0}
+.swi-fr:active{background:var(--card2)}
+.swi-fr .d{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.swi-fr .tn{display:flex;align-items:center;gap:5px;min-width:0;font-family:var(--disp);font-size:15px;white-space:nowrap;overflow:hidden}
+.swi-fr .tn b{font-weight:600;color:var(--muted)}.swi-fr .tn b.fw{color:var(--gold2);font-weight:800}
+.swi-fr .tn i{font-style:normal;color:var(--dim)}
+.swi-fr .fv{color:var(--muted);font-size:12px;white-space:nowrap;text-align:right}
+.swi-fr .mk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal}
+.swi-fr.ok .mk{background:rgba(10,200,185,.16);color:var(--teal)}.swi-fr.ko .mk{background:rgba(232,64,87,.16);color:var(--red)}
+.swi-fr .mk svg{width:13px;height:13px}
+.swi-cal>div{display:grid;grid-template-columns:84px minmax(0,1fr) 44px;gap:2px 10px;align-items:center;margin-bottom:8px;font-size:12.5px;color:#D9DEE5}
+.swi-cal small{grid-column:2/4;font-size:11px;color:var(--muted)}
+.swi-cb{position:relative;display:block;height:12px}
+.swi-cb i{position:absolute;left:0;top:0;height:5px;border-radius:9px;background:rgba(240,230,210,.35)}.swi-cb i.r{top:7px;background:var(--teal)}
+.swi-cal b{font-family:var(--disp);font-size:15px;color:var(--teal);text-align:right}
+/* ---------- calendrier ---------- */
+.swi-chips{display:flex;gap:6px;padding:4px 16px 0}
+.swi-chip{flex:1 1 auto;min-width:0;justify-content:center;height:40px;padding:0 8px;font-size:13px}
+.swi-chip[aria-pressed="true"]{background:linear-gradient(180deg,rgba(200,170,110,.32),rgba(200,170,110,.14));border-color:var(--gold);color:var(--gold2)}
+.swi-day{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin:20px 2px 8px}
+.tabc>.swi-day:first-child{margin-top:6px}
+.swi-day>b{font-family:var(--title);font-weight:700;font-size:15px;color:var(--gold2)}
+.swi-day.now>b{color:var(--gold)}
+.swi-day .swi-dx{margin-left:auto;font-size:12px;color:var(--muted)}.swi-dx b{font-family:var(--disp);font-size:15px;color:var(--gold2)}
+.swi-day>small{flex-basis:100%;font-size:12px;color:var(--muted)}
+.swi-tbd{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 12px;border-radius:16px;border:1px dashed rgba(200,170,110,.22);background:rgba(12,26,48,.5)}
+.swi-tbd time{font-family:var(--disp);font-weight:700;font-size:17px;color:var(--muted);font-variant-numeric:tabular-nums}
+.swi-tbd .grow{flex:1;min-width:0}
+.swi-tbd b{display:block;font-family:var(--disp);font-weight:700;font-size:16px;color:#D9DEE5}
+.swi-tbd small{display:block;font-size:12px;color:var(--muted)}
+/* ---------- cadrage : .snug est posé par le socle (fitScr) quand l'écran dépasse de moins de 120 px ; ici les classes du module ---------- */
+.snug .swi-hd{padding-top:7px;padding-bottom:7px}
+.snug .swi-pick{min-height:48px}
+.snug .tabc .blk.swi-me{padding-top:9px;padding-bottom:9px}.snug .swi-me .bh{margin-bottom:2px}
+.snug .swi-trail{margin-top:4px}
+.snug .swi-tg{height:16px}
+.snug .swi-qt{min-height:48px}
+.snug .swi-kc.tbd{min-height:44px}
+.snug .swi-gh{margin-top:8px;margin-bottom:5px}
+.snug .swi-tt{margin-top:8px}
+.snug .swi-day{margin-top:10px}
+.snug .swi-lgd{margin-top:2px;margin-bottom:2px}
+.snug .swi-td{min-height:40px}
+.snug .swi-tr{min-height:46px}
+.snug .swi-ko{gap:6px}
+.snug .swi-ql+.swi-lead{margin-top:6px}

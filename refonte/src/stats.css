@@ -1,0 +1,160 @@
+/* stats.css — stats du tournoi, faits (module stats). Composants du socle (.blk .bh .i .keys .key .rowb .list .chip .split .btn) composés, classes propres en .sta-* */
+/* ---------- tuiles et côtés (Tournoi) ---------- */
+.sta-tl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.sta-t{display:flex;flex-direction:column;justify-content:center;gap:3px;min-height:54px;padding:7px 12px;border-radius:var(--r3);background:var(--card2);min-width:0;text-align:left;border:1px solid transparent}
+.sta-t b{display:flex;align-items:center;gap:7px;min-width:0;font-family:var(--disp);font-weight:800;font-size:26px;line-height:1;color:var(--gold2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sta-t b>span{overflow:hidden;text-overflow:ellipsis;font-size:21px}
+.sta-t>span{font-size:12px;color:var(--muted);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+button.sta-t{border-color:var(--line);transition:transform .15s var(--spring)}
+button.sta-t:active{transform:scale(.97)}
+.sta-sd{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin-top:12px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.sta-sd b{font-family:var(--disp);font-size:17px;font-weight:800;color:var(--gold2)}
+.sta-sd .split{height:8px}
+/* records : lignes .key du socle */
+.sta-rk{min-height:50px;padding:5px 0}
+.sta-rk[disabled]{cursor:default}
+.sta-rk .kt small{display:flex;align-items:center;flex-wrap:wrap;gap:3px 5px}
+.sta-rk .kt small span{display:inline-flex;align-items:center;gap:4px}
+.sta-rk .kt small span.sta-win{color:var(--gold2);font-weight:700}
+/* entrée « Le saviez-vous ? » */
+.sta-fe{margin-top:14px;align-items:center;border-color:var(--line);min-height:64px}
+.sta-fk{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.sta-fk em{margin-left:auto;font-style:normal;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:600}
+.sta-ft{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13.5px;line-height:1.35;margin-top:3px}
+
+/* ---------- onglets : 5 libellés (« Champions ») lisibles à 360 px ---------- */
+.scr:has(.sta) .seg button{font-size:12.5px;padding:0 1px}
+/* ---------- en-tête de section hors bloc, contrôle segmenté interne, puces ---------- */
+.sta-sg{display:grid;grid-template-columns:minmax(0,1fr) 26px;gap:10px;align-items:center;margin:2px 0 10px}
+.sta-sg .sta-seg{margin:0}
+.sta-sg .sta-hd{margin:0}
+.sta-hd{display:flex;align-items:center;gap:8px;margin:4px 2px 10px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.sta-hd .i{margin-left:auto}
+.sta-seg{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:3px;padding:3px;border-radius:14px;background:#081329;border:1px solid var(--line);margin-bottom:10px}
+.sta-seg button{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--muted);text-align:center;line-height:1.15;padding:3px 4px;transition:background .2s,color .2s}
+.sta-seg button small{font-size:11px;font-weight:500;color:var(--dim)}
+.sta-seg button[aria-pressed="true"]{color:var(--gold2);background:linear-gradient(180deg,rgba(200,170,110,.32),rgba(200,170,110,.14));box-shadow:inset 0 0 0 1px rgba(240,230,210,.32)}
+.sta-seg button[aria-pressed="true"] small{color:var(--muted)}
+.sta .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.sta .chip,.sta-ch .chip,.fxc .chip{height:40px;padding:0 13px}
+.sta .chip[aria-pressed="true"]{border-color:var(--gold);color:#1A1205;background:linear-gradient(180deg,#E3CB91,var(--gold))}
+.sta-ch .chip small{font-size:11px;font-weight:700;color:var(--gold);margin-left:-2px}
+
+/* ---------- Leaders ---------- */
+.sta-lt{display:flex;align-items:baseline;gap:8px;margin:2px 2px 6px;font-family:var(--disp);font-weight:700;font-size:16px;color:var(--gold2)}
+.sta-lt em{margin-left:auto;font-style:normal;font-family:var(--body);font-size:12px;font-weight:500;color:var(--muted)}
+.sta .list{gap:6px}
+.sta .note{margin-top:10px}
+.sta-lr{min-height:48px;padding:4px 12px 4px 8px;gap:10px}
+.sta-lr[disabled]{cursor:default}
+.sta-lr .n{width:18px;flex:none;text-align:center;font-family:var(--disp);font-weight:800;font-size:18px;color:var(--muted)}
+.sta-lr:first-child .n{color:var(--gold2)}
+.sta-lr .ava,.sta-lr .mono{border-radius:12px}
+.sta-lr small{display:flex!important;align-items:center;gap:4px}
+.sta-lr .num{font-size:21px}
+
+/* ---------- Champions ---------- */
+.sta-ph{margin:0 0 10px;font-size:13.5px;line-height:1.4;color:#D9DEE5}
+.sta-ph b{color:var(--gold2)}
+.sta-cl{display:flex;flex-direction:column}
+.sta-cr{display:grid;grid-template-columns:34px minmax(0,1fr) 56px 42px;align-items:center;gap:9px;width:100%;min-height:48px;padding:6px 0;border-top:1px solid var(--line2);text-align:left}
+.sta-cr:first-child{border-top:0}
+button.sta-cr:active{background:rgba(240,230,210,.04)}
+.sta-cr .g{min-width:0}
+.sta-cr .g b{display:block;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sta-cr .g small{display:block;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sta-cr .cw{height:6px;border-radius:9px;background:rgba(240,230,210,.07);overflow:hidden}
+.sta-cr .cw i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--gold3),var(--gold2))}
+.sta-cr em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:17px;text-align:right;color:var(--gold2);white-space:nowrap}
+.sta-more{margin-top:8px;height:44px}
+/* feuille d'un champion */
+.sta-shd{display:flex;align-items:center;gap:12px;margin:2px 0 12px}
+.sta-shd .chi{border-radius:14px}
+.sta-shd p{margin:0!important}
+#shB .sta-tl{margin-bottom:12px}
+#shB .sta-t b{font-size:24px}
+#shB .sta-t>span{white-space:normal}
+.sta-h4{margin:4px 0 6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.sta-who{display:flex;flex-direction:column}
+.sta-wp{display:grid;grid-template-columns:30px minmax(0,1fr) auto 12px;align-items:center;gap:10px;width:100%;min-height:46px;padding:6px 0;border-top:1px solid var(--line2);text-align:left}
+.sta-wp:first-child{border-top:0}
+div.sta-wp{grid-template-columns:minmax(0,1fr) auto}
+.sta-wp .g b{display:block;font-family:var(--disp);font-weight:700;font-size:16px}
+.sta-wp .g small{display:block;font-size:11.5px;color:var(--muted)}
+.sta-wp em{font-style:normal;font-size:12.5px;color:var(--muted);text-align:right}
+
+/* ---------- Ligues ---------- */
+.sta-lgh,.sta-lgr summary,.sta-lgr .sm{display:grid;grid-template-columns:minmax(64px,92px) minmax(0,1fr) 46px 42px 12px;align-items:center;gap:8px}
+.sta-lgh{font-size:11px;color:var(--muted);margin:-2px 0 2px}
+.sta-lgh span:nth-child(2){grid-column:2/4}
+.sta-lgh span:nth-child(3){grid-column:4/6;text-align:right;white-space:nowrap}
+.sta-lgr{border-top:1px solid var(--line2)}
+.sta-lgh+.sta-lgr{border-top:0}
+.sta-lgr summary,.sta-lgr .sm{min-height:42px;padding:3px 0}
+.sta-lgr summary{list-style:none;cursor:pointer}
+.sta-lgr summary::-webkit-details-marker{display:none}
+.sta-lgr .lc{min-width:0;line-height:1.1}
+.sta-lgr .lc b{display:block;font-family:var(--disp);font-weight:800;font-size:17px}
+.sta-lgr .lc small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sta-lgr .br{height:7px;border-radius:9px;background:rgba(240,230,210,.06);overflow:hidden}
+.sta-lgr .br i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#08877D,var(--teal))}
+.sta-lgr em{font-style:normal;font-family:var(--disp);font-weight:800;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sta-lgr .fv{font-size:15px;color:var(--gold2)}
+.sta-lgr .wl{font-size:16px;color:var(--muted)}
+.sta-lgr .wl.up{color:var(--teal)}.sta-lgr .wl.dn{color:var(--red)}
+.sta-lgr .chev{transition:transform .2s;text-align:center}
+.sta-lgr[open] .chev{transform:rotate(90deg)}
+.sta-ls{padding:2px 0 10px}
+.sta-ans{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line2);font-size:13px;line-height:1.4;color:var(--muted)}
+.sta-ans b{color:var(--gold2)}
+.sta-lgv{margin-top:10px}
+.sta-vv{display:grid;grid-template-columns:52px 70px 52px minmax(0,1fr);align-items:center;gap:6px;min-height:30px;font-size:13px}
+.sta-vv b{font-family:var(--disp);font-weight:800;font-size:15px}
+.sta-vv b:nth-child(3){color:var(--muted)}
+.sta-vv span{font-family:var(--disp);font-weight:700;font-size:15px;text-align:center;font-variant-numeric:tabular-nums}
+.sta-vv small{text-align:right;color:var(--muted);font-size:12px}
+
+/* ---------- Chiffres : une ligne par chiffre, qui se déplie ---------- */
+.sta-nr{border-top:1px solid var(--line2)}
+.sta-nr:nth-child(2){border-top:0}
+.sta-nr>summary{display:grid;grid-template-columns:62px minmax(0,1fr) 12px;gap:10px;align-items:center;min-height:58px;padding:7px 0;list-style:none;cursor:pointer}
+.sta-nr>summary::-webkit-details-marker{display:none}
+.sta-nr .chev{transition:transform .2s;text-align:center}
+.sta-nr[open] .chev{transform:rotate(90deg)}
+.sta-nn{display:flex;align-items:center;gap:5px;justify-content:center;font-family:var(--disp);font-weight:800;font-size:34px;line-height:1;color:var(--gold2);font-variant-numeric:tabular-nums}
+.sta-nn .flag{width:20px;height:14px}
+.sta-nt{min-width:0}
+.sta-nt>span:first-child{display:block;font-size:13.5px;line-height:1.3}
+.sta-pv{display:flex;align-items:center;gap:5px;margin-top:5px;min-width:0;overflow:hidden;white-space:nowrap}
+.sta-pv em,.sta-fc em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted);margin-left:2px}
+.sta-fc{display:flex;align-items:center;margin-top:5px}
+.sta-fc>span{display:inline-flex}
+.sta-fc .ava,.sta-fc .mono{border:2px solid var(--card);border-radius:50%!important;margin-left:-7px}
+.sta-fc>span:first-child .ava,.sta-fc>span:first-child .mono{margin-left:0}
+.sta-ch{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 12px}
+.sta-fl{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.sta-fl span{display:inline-flex;align-items:center;gap:5px;min-height:24px}
+.sta-fl small{font-family:var(--disp);font-size:15px;font-weight:800;color:var(--gold2);font-variant-numeric:tabular-nums}
+
+/* ---------- faits ---------- */
+.fx3{font-size:14px;line-height:1.38;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:8px}
+.fxc{position:relative;border-radius:var(--r1);padding:20px 18px;min-height:300px;display:flex;flex-direction:column;border:1px solid transparent;cursor:pointer;touch-action:pan-y;
+  background:linear-gradient(160deg,#10223F,var(--card) 60%) padding-box,linear-gradient(140deg,rgba(200,170,110,.6),rgba(200,170,110,.08) 40%,rgba(200,170,110,.08) 60%,rgba(200,170,110,.5)) border-box}
+.fxc p{font-size:21px;line-height:1.35;margin:14px 0 0;font-weight:500}
+.fxc .ft{margin-top:auto;padding-top:16px;display:flex;flex-wrap:wrap;gap:6px}
+.fxc .chip .chi{width:20px!important;height:20px!important;border-radius:6px}
+.fxn{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px}
+.fxn button{flex:1;height:48px;border-radius:16px;background:var(--card2);border:1px solid var(--line);font-weight:700;text-align:center}
+.fxn button:active{transform:scale(.97)}
+.fxn span{font-family:var(--disp);font-weight:700;color:var(--muted);min-width:60px;text-align:center}
+.sta-all{margin-top:10px;height:46px;color:var(--muted)}
+.sta-all small{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--gold2)}
+.nw{font-size:10.5px;font-weight:800;color:#04211F;background:var(--teal);border-radius:6px;padding:1px 6px;letter-spacing:0;text-transform:none}
+.sta-fxl .rowb{align-items:center;min-height:64px}
+.sta-fxl .rowb small{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
+.sta-fxl .sta-ft{-webkit-line-clamp:3}
+/* faits d'une fiche (staFactsBlk) */
+.sta-fm{display:grid;grid-template-columns:minmax(0,1fr) 26px;gap:10px;align-items:start;padding:8px 0;border-top:1px solid var(--line2)}
+.sta-fm:nth-child(2){border-top:0;padding-top:0}
+.sta-fmt{min-height:40px;font-size:14px;line-height:1.4;text-align:left}
+.sta-fmt:active{opacity:.7}
