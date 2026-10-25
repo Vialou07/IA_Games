@@ -15,6 +15,7 @@ REPL = [
     ('localStorage.getItem("w26_"+k)', 'localStorage.getItem("w26pp_"+k)'),
     ('localStorage.setItem("w26_"+k,', 'localStorage.setItem("w26pp_"+k,'),
     ('topicOf=c=>"iagames-worlds26-ligue-"+c', 'topicOf=c=>"iagames-worlds26pp-ligue-"+c'),
+    ('const key="w26_mv_lb_"', 'const key="w26pp_mv_lb_"'),
     ('href="index.html"', 'href="../index.html"'),
 ]
 out = src
