@@ -139,10 +139,23 @@ function leaNoLeague(){const S=leaStand(),me=S.find(u=>u.me),bot=S.find(u=>u.bot
     <div class="lea-two"><button class="btn lea-gold" data-go="lgf/create">Créer une ligue</button><button class="btn" data-go="lgf/join">J’ai un code</button></div></div>
   ${bot?`<div class="blk lea-lbk"><div class="bh">Toi contre le robot<button class="i" data-info="leaRules" aria-label="Règles">i</button></div><div class="lea-lb sm">${S.map(u=>leaRow(u,null,true)).join("")}</div><p class="lea-foot">${me.pts>bot.pts?"Tu mènes":me.pts<bot.pts?"Le robot mène":"Égalité"}, sur les matchs que tu as pariés.</p></div>`:""}
   <button class="rowb lea-mv" data-lea="move"><span class="grow"><b class="nm">Emporter mon profil</b><small>Tu changes de navigateur ou de téléphone ?</small></span><span class="chev">›</span></button>`}
+/* rattrapage des retardataires : les matchs joués avant ton premier pari te rapportent les points du dernier de ceux qui
+   pariaient déjà (ses points sur ces matchs, rattrapage compris). Calculé avec les paris partagés : même classement sur tous les
+   téléphones. Le robot n'en reçoit pas et ne sert pas de repère. */
+function leaCatchUp(all,done){
+  const t=m=>Date.parse(m.start)||0,H=all.filter(u=>!u.bot);
+  H.forEach(u=>{u.bonus=0;u.f0=Infinity;MATCHES.forEach(m=>{if(u.p[m.key])u.f0=Math.min(u.f0,t(m))})});
+  H.slice().sort((a,b)=>a.f0-b.f0).forEach(u=>{
+    const S=done.filter(m=>t(m)<u.f0);if(!S.length)return;
+    const R=H.filter(r=>r!==u&&r.f0<u.f0&&S.some(m=>r.p[m.key]));if(!R.length)return;
+    u.bonus=Math.min(...R.map(r=>r.bonus+S.reduce((n,m)=>n+(r.p[m.key]?pts(r.p[m.key].w,r.p[m.key].sc,m):0),0)));
+  });
+  H.forEach(u=>{u.pts+=u.bonus});
+}
 /* une ligne du classement : rang, avatar, nom, bons paris et badges, 5 derniers résultats, points ; toucher = le membre */
 function leaRow(u,bg,small){
   const pills=bg&&bg.length?leaPills(bg):"";
-  return `<button class="lea-r${u.me?" me":""}${u.bot?" bot":""}" data-go="lgu/${esc(u.id)}" data-nm="${esc(u.name)}"><span class="k">${u.rank}</span>${avatar(u,small?30:34)}<span class="nm"><b>${esc(u.name)}${u.me&&u.name!=="Toi"?` <small>toi</small>`:""}</b><small>${u.n?`${u.ok}/${u.n} bons`:"pas encore de résultat"}${pills}</small></span>${small?"":leaDots(u.form)}<em>${u.pts}</em></button>`}
+  return `<button class="lea-r${u.me?" me":""}${u.bot?" bot":""}" data-go="lgu/${esc(u.id)}" data-nm="${esc(u.name)}"><span class="k">${u.rank}</span>${avatar(u,small?30:34)}<span class="nm"><b>${esc(u.name)}${u.me&&u.name!=="Toi"?` <small>toi</small>`:""}</b><small>${u.n?`${u.ok}/${u.n} bons`:u.bonus?"":"pas encore de résultat"}${u.bonus?`${u.n?" · ":""}+${u.bonus} de rattrapage`:""}${pills}</small></span>${small?"":leaDots(u.form)}<em>${u.pts}</em></button>`}
 function leaPodium(S){if(S.length<2)return"";const P=[S[1],S[0],S[2]],h=[38,52,28];
   return `<div class="lea-pod">${P.map((u,i)=>u?`<button class="pod p${[2,1,3][i]}${u.me?" me":""}" data-go="lgu/${esc(u.id)}">${avatar(u,[40,50,36][i])}<b>${esc(u.me?"Toi":u.name)}</b><small class="pt">${plur(u.pts,"pt")}</small><i style="height:${h[i]}px">${u.rank}</i></button>`:`<span class="pod none"><i style="height:${h[i]}px"></i></span>`).join("")}</div>`}
 function leaRank(){const S=standings(),B=safe(funBadges)||{},solo=!leaOthers();let h="";
@@ -267,6 +280,7 @@ INFO.paris=()=>["Mes paris",`<p>Touche l’équipe que tu vois gagner : c’est
   <p>Dans une ligue, tes potes voient ton choix au coup d’envoi, pas avant.</p>`,true];
 INFO.leaRules=()=>["La ligue de paris",`<p>Un code de 4 caractères, autant de joueurs que vous voulez. Chacun publie ses paris sur un relais (ntfy.sh) : ça marche en 4G comme en Wi-Fi, sans compte. Chaque téléphone garde les derniers paris connus de chacun.</p>
   <p><b>Points</b> : 1 par bon vainqueur, +1 pour le score exact d’un Bo3 ou d’un Bo5. Égalité : les scores exacts, puis les bons paris départagent. Un résultat saisi à la main ne compte pas.</p>
+  <p><b>Rattrapage</b> : tu arrives en cours de route ? Les matchs joués avant ton premier pari te rapportent les points du dernier de la ligue sur ces matchs. Ensuite, tes paris comptent comme pour tout le monde.</p>
   <p><b>Paris cachés</b> jusqu’au coup d’envoi : avant, tu vois seulement qui a parié.</p>
   <p><b>Le robot</b> joue sur ce téléphone seulement : son prono figé avant chaque match joué, son prono du moment sinon. Il ne compte que les matchs pariés par quelqu’un.</p>
   <p><b>Gage du dernier</b> : choisi par le créateur de la ligue.</p>`,true];
