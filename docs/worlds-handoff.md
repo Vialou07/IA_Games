@@ -128,7 +128,8 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 - Reste à faire : réorganiser le reste du direct sous le HUD et fusionner le « Tableau du match » avec la liste des joueurs (la boîte du direct fait encore ~2 écrans à 25 min).
 
 **25/10 : v14.0, refonte B en prod** (design arrondi, widgets à l'accueil, fiches à onglets, navigation en profondeur) :
-- `worlds.html` est désormais **généré** : sources dans `refonte/` (`src/` par écran, `build.js`, plan dans `ARCHI.md`, inventaire de la v13.5 dans `INVENTAIRE.md`). `cd refonte && node build.js` → `refonte/dist/worlds-b.html`, puis copier vers `worlds.html` en remplaçant `APP_VERSION` (la source dit encore « v14.0-b … (préprod) »). Le rebuild redonne la prod à l'octet près.
+- `worlds.html` est désormais **généré** : sources dans `refonte/` (`src/` par écran, `build.js`, plan dans `ARCHI.md`, inventaire de la v13.5 dans `INVENTAIRE.md`). `cd refonte && node build.js` → `refonte/dist/worlds-b.html`, puis copier tel quel vers `worlds.html` (`APP_VERSION` est dans `src/shell.js`). Le rebuild redonne la prod à l'octet près.
+- v14.1 : rattrapage des retardataires (`leaCatchUp` dans `src/league.js`, branché dans `standings` par `src/legacy/league.list.js`) : les matchs joués avant ton premier pari valent les points du dernier de ceux qui pariaient déjà.
 - `src/legacy.js` est réécrit à chaque build à partir de `refonte/ref/worlds_v13_5.html` (figée) : ne pas le modifier à la main.
 - Mêmes clés `w26_` et même canal ntfy que la v13.5 : profils, paris et ligues repris tels quels (vérifié : reprise identique, ligue mixte v13.5 + v14 identique).
 - `tools/preprod.py` marche toujours (remplace aussi `w26_mv_lb_`). Tests de la refonte : `refonte/test/` (smoke.js, qa_reprise.js, qa_ligue.js, qa_live.js, qa_tour.js).

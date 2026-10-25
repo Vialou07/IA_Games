@@ -1196,6 +1196,7 @@ function standings(L){
     done.forEach(m=>{const b=u.p[m.key];if(!b)return;u.n++;const s=pts(b.w,b.sc,m);u.pts+=s;if(s)u.ok++;if(s>1)u.ex++;u.form.push(s>0)});
     for(let k=u.form.length-1;k>=0&&u.form[k];k--)u.streak++});
   done.forEach(m=>{const bt=all.filter(u=>u.p[m.key]);if(bt.length<3)return;const good=bt.filter(u=>u.p[m.key].w===m.winner);if(good.length&&good.length<=bt.length/3)good.forEach(u=>u.bold++)});
+  leaCatchUp(all,done);
   all.sort((a,b)=>b.pts-a.pts||b.ex-a.ex||b.ok-a.ok||a.name.localeCompare(b.name));
   let r=0;all.forEach((u,i)=>{if(i===0||u.pts!==all[i-1].pts||u.ex!==all[i-1].ex)r=i+1;u.rank=r});
   return all;
