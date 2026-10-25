@@ -271,7 +271,8 @@ async function liveTick(m){
   let w=null,ws=0,err=null;for(const back of [50000,90000,180000]){ws=Date.now()-back;try{w=await feedWin(gid,ws);err=null}catch(e){w=null;err=e}if(w&&w.frames&&w.frames.length)break}
   if(w&&w.frames&&w.frames.length){L.meta=L.meta||w.gameMetadata;L.frame=w.frames[w.frames.length-1];pushSample(L,L.frame);L.status=L.frame.gameState==="finished"?"ended":"live";kfFeed(L,w.frames,ws);
     const id=m.id;kfFill(L,gid,()=>paintLive(mOf(id)||m))}
-  else{if(err&&!L.frame)throw err;L.status=L.frame?"live":"starting"}
+  else{// 404 avant la première image : la partie n'est pas encore lancée (draft), comme en v13.5 ; autre erreur : on la montre
+    if(err&&!L.frame&&String(err&&err.message||err)!=="404")throw err;L.status=L.frame?"live":"starting"}
   if(L.meta&&!L.draftP){const id=m.id;L.draftP=amLiveDraftData(L).then(d=>{L.amd=d||{err:1};paintLive(mOf(id)||m)}).catch(e=>{console.warn(e);L.amd={err:1};paintLive(mOf(id)||m)})}
 }
 /* une seule partie suivie ; à chaque passage le match est relu (la synchro remplace les objets de MATCHES) ; arrêt quand il est fini */
@@ -317,6 +318,7 @@ function matLiveMsg(m,L){const s=matSeries(m,L);
   if(L.status==="nolive")return "Flux en direct introuvable pour ce match";
   if(LV.err&&!L.frame&&LV.watch===m.id)return `Flux LoL Esports injoignable (${esc(LV.err.slice(0,60))}). Nouvel essai dans 10 s`;
   if(L.status==="between")return `Pause entre deux parties · série ${esc(tid(m.t1))} ${s[0]} - ${s[1]} ${esc(tid(m.t2))}`;
+  if(L.status==="starting"&&!matN(m))return "Draft en cours : le direct démarre au lancement de la partie";
   if(L.status==="waiting"||L.status==="starting")return matN(m)?`Partie ${matN(m)+1} : draft en cours, le direct démarre au lancement`:"La partie n’a pas encore commencé : le direct démarre au lancement";
   return "Connexion au direct…"}
 function hudHTML(m){
