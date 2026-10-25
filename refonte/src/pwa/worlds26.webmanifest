@@ -1,0 +1,19 @@
+{
+ "id": "worlds26",
+ "name": "Worlds 2026 entre potes",
+ "short_name": "Worlds 26",
+ "description": "Matchs, direct, pronos du robot et ligue de paris des Worlds 2026.",
+ "lang": "fr",
+ "dir": "ltr",
+ "start_url": "worlds.html",
+ "scope": "worlds.html",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#050B18",
+ "theme_color": "#050B18",
+ "icons": [
+  {"src": "icons/w26-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+  {"src": "icons/w26-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+  {"src": "icons/w26-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ]
+}

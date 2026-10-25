@@ -127,6 +127,13 @@ Ne casse pas ces clés : les potes ont déjà des paris dedans.
 - Passe du gardien UX (`ux*`, grille de règles dans le dossier de travail) : écrans 12 à 15 % plus courts, pas de défilement horizontal, zones tactiles ≥ 40 px.
 - Reste à faire : réorganiser le reste du direct sous le HUD et fusionner le « Tableau du match » avec la liste des joueurs (la boîte du direct fait encore ~2 écrans à 25 min).
 
+**25/10 : v14.0, refonte B en prod** (design arrondi, widgets à l'accueil, fiches à onglets, navigation en profondeur) :
+- `worlds.html` est désormais **généré** : sources dans `refonte/` (`src/` par écran, `build.js`, plan dans `ARCHI.md`, inventaire de la v13.5 dans `INVENTAIRE.md`). `cd refonte && node build.js` → `refonte/dist/worlds-b.html`, puis copier vers `worlds.html` en remplaçant `APP_VERSION` (la source dit encore « v14.0-b … (préprod) »). Le rebuild redonne la prod à l'octet près.
+- `src/legacy.js` est réécrit à chaque build à partir de `refonte/ref/worlds_v13_5.html` (figée) : ne pas le modifier à la main.
+- Mêmes clés `w26_` et même canal ntfy que la v13.5 : profils, paris et ligues repris tels quels (vérifié : reprise identique, ligue mixte v13.5 + v14 identique).
+- `tools/preprod.py` marche toujours (remplace aussi `w26_mv_lb_`). Tests de la refonte : `refonte/test/` (smoke.js, qa_reprise.js, qa_ligue.js, qa_live.js, qa_tour.js).
+- Reste à faire : appli installable (PWA : le manifeste est prêt mais pas activé, car sur iPhone l'appli installée ne voit pas les données de Safari ; prévoir la reprise du profil au premier lancement), notifications Web Push, fights des parties terminées côté robot, pastille « Mes paris » (« 4 ce soir ») à clarifier (`refonte/DEMANDES.md`).
+
 **Tests** (dossier de travail, Playwright en émulation Pixel 7) : parcours complet avec ligue à 3 téléphones, écrans clés avec données locales interceptées, direct rejoué sur de vraies parties. Toujours : préprod, tests, puis prod ; `node --check` sur le script extrait ; monter `APP_VERSION`.
 
 ## 3. Sources externes et ce qui est vérifié

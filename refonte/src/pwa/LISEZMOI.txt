@@ -1,0 +1,16 @@
+Préparation PWA (agent socle, 25/10/2026) — pas de service worker à ce stade.
+
+Contenu (recopié à côté de la page par build.js) :
+  worlds26.webmanifest   manifeste (nom, couleurs, start_url/scope = worlds.html, icônes)
+  icons/w26-192.png, icons/w26-512.png, icons/w26-maskable-512.png (zone sûre 80 %), icons/w26-180.png (apple-touch-icon)
+  w26-icon.svg.src       dessin source (non publié) ; tools/socle/icons.js régénère les PNG
+
+Par défaut la page n'a QUE l'apple-touch-icon (icône du raccourci, sans effet sur le comportement).
+« node build.js --pwa » ajoute <link rel="manifest" href="worlds26.webmanifest">.
+
+ATTENTION avant d'activer le manifeste en prod : sur iPhone, une appli ouverte depuis l'écran d'accueil en mode « standalone »
+a son PROPRE stockage, séparé de Safari (iOS 16.4+ applique le manifeste même sans meta apple-mobile-web-app-capable).
+Un pote qui l'installe retrouverait l'appli vide (paris, ligue, équipe) : il faudra d'abord prévoir la reprise du profil
+au premier lancement (lien #moi= existant, ou invitation à « Emporter mon profil » depuis Safari). Sur Android, l'appli
+installée partage le stockage de Chrome : pas de perte.
+Au déploiement : publier worlds26.webmanifest et icons/ à côté de worlds.html (même dossier).
