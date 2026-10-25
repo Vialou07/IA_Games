@@ -100,7 +100,7 @@ function matOpened(el){
   if(window.ResizeObserver&&el.firstElementChild){const ro=new ResizeObserver(()=>{if(!el.isConnected){ro.disconnect();return}matFitSoon(el)});ro.observe(el.firstElementChild)}
   if(window.MutationObserver){const mo=new MutationObserver(()=>{if(!el.isConnected){mo.disconnect();return}matFitSoon(el)});mo.observe(el,{childList:true,subtree:true})}
   const d=el._d,m=d&&mOf(d.id);if(!m)return;
-  if(d.v==="m"&&d._k==="live"&&!d._t0){const L=LV.games[m.key];el._lst=L&&L.status;if(L&&L.status==="between"&&d.tab==="di"&&!matOver(m,L))setTab(el,"dr")}
+  if(d.v==="m"&&d._k==="live"&&!d._t0){const L=LV.games[m.key];el._lst=L&&L.status;if(L&&matPre(L.status)&&d.tab==="di"&&!matOver(m,L)){setTab(el,"dr");el._adr=1}}
   if(!RM&&d.v==="m"&&d._k==="soon"&&d.tab==="ov")matAnimRobot(el);
   if(!RM)matMotion(el);
 }
@@ -271,9 +271,13 @@ async function liveTick(m){
   let w=null,ws=0,err=null;for(const back of [50000,90000,180000]){ws=Date.now()-back;try{w=await feedWin(gid,ws);err=null}catch(e){w=null;err=e}if(w&&w.frames&&w.frames.length)break}
   if(w&&w.frames&&w.frames.length){L.meta=L.meta||w.gameMetadata;L.frame=w.frames[w.frames.length-1];pushSample(L,L.frame);L.status=L.frame.gameState==="finished"?"ended":"live";kfFeed(L,w.frames,ws);
     const id=m.id;kfFill(L,gid,()=>paintLive(mOf(id)||m))}
-  else{if(err&&!L.frame)throw err;L.status=L.frame?"live":"starting"}
+  else{// 404 avant la première image : la partie n'est pas encore lancée (draft), comme en v13.5 ; autre erreur : on la montre
+    if(err&&!L.frame&&String(err&&err.message||err)!=="404")throw err;L.status=L.frame?"live":"starting"}
   if(L.meta&&!L.draftP){const id=m.id;L.draftP=amLiveDraftData(L).then(d=>{L.amd=d||{err:1};paintLive(mOf(id)||m)}).catch(e=>{console.warn(e);L.amd={err:1};paintLive(mOf(id)||m)})}
 }
+/* avant une partie (draft, pause entre deux parties) : la fiche du direct s'ouvre sur l'onglet Draft (draft probable, fearless),
+   et revient sur Direct au lancement de la partie si c'est elle qui y était passée */
+const matPre=st=>st==="between"||st==="starting"||st==="waiting";
 /* une seule partie suivie ; à chaque passage le match est relu (la synchro remplace les objets de MATCHES) ; arrêt quand il est fini */
 function watchLive(m){if(!m||LV.watch===m.id)return;clearTimeout(LV.timer);LV.watch=m.id;const id=m.id;
   const run=async()=>{if(LV.watch!==id)return;const x=mOf(id)||m;if(x.state!=="live"&&x.state!=="wait"){LV.watch=null;return}
@@ -284,7 +288,8 @@ function watchLive(m){if(!m||LV.watch===m.id)return;clearTimeout(LV.timer);LV.wa
 function paintLive(m){if(!m)return;
   NAV.forEach(x=>{if(x.d.v!=="m"||x.d.id!==m.id||!x.el.isConnected||x.d._k!=="live")return;const el=x.el,o=el._o;if(!o)return;
     const L=LV.games[m.key],st=L&&L.status;
-    if(st==="between"&&el._lst!=="between"&&!x.d._t0&&x.d.tab==="di"&&!matOver(m,L)&&o.tabs&&o.tabs.some(t=>t[0]==="dr"))setTab(el,"dr");el._lst=st;
+    if(matPre(st)&&!matPre(el._lst)&&!x.d._t0&&x.d.tab==="di"&&!matOver(m,L)&&o.tabs&&o.tabs.some(t=>t[0]==="dr")){setTab(el,"dr");el._adr=1}
+    else if(st==="live"&&el._adr&&x.d.tab==="dr"){setTab(el,"di");el._adr=0}el._lst=st;
     const hs=el.querySelector(".headslot");if(hs)matPatchHud(hs,hudHTML(m));
     const c=el.querySelector(".tabc");if(c&&o.render){matPatch(c,safe(o.render,x.d.tab)||"");tickCd(c)}
     matBar(el)});
@@ -317,6 +322,7 @@ function matLiveMsg(m,L){const s=matSeries(m,L);
   if(L.status==="nolive")return "Flux en direct introuvable pour ce match";
   if(LV.err&&!L.frame&&LV.watch===m.id)return `Flux LoL Esports injoignable (${esc(LV.err.slice(0,60))}). Nouvel essai dans 10 s`;
   if(L.status==="between")return `Pause entre deux parties · série ${esc(tid(m.t1))} ${s[0]} - ${s[1]} ${esc(tid(m.t2))}`;
+  if(L.status==="starting"&&!matN(m))return "Draft en cours : le direct démarre au lancement de la partie";
   if(L.status==="waiting"||L.status==="starting")return matN(m)?`Partie ${matN(m)+1} : draft en cours, le direct démarre au lancement`:"La partie n’a pas encore commencé : le direct démarre au lancement";
   return "Connexion au direct…"}
 function hudHTML(m){
