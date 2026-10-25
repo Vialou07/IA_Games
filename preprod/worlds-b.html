@@ -84,12 +84,14 @@ a{color:var(--teal)}
 @keyframes tabIn{from{opacity:0;transform:translateX(18px)}}@keyframes tabInL{from{opacity:0;transform:translateX(-18px)}}
 /* ---------- widgets ---------- */
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:6px 16px 8px}
-.w{position:relative;overflow:hidden;min-width:0;border-radius:var(--r2);padding:13px 14px;cursor:pointer;border:1px solid transparent;
+/* widget = enfant direct de la grille de l'accueil (:where garde la spécificité d'une classe) : la classe « w » des étiquettes
+   reprises de v13.5 (.tag.w, .kt.w) n'en hérite pas */
+:where(.grid)>.w{position:relative;overflow:hidden;min-width:0;border-radius:var(--r2);padding:13px 14px;cursor:pointer;border:1px solid transparent;
   background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(140deg,rgba(200,170,110,.5),rgba(200,170,110,.07) 38%,rgba(200,170,110,.07) 62%,rgba(200,170,110,.4)) border-box;
   transition:transform .22s var(--spring);display:flex;flex-direction:column}
-.grid.first .w{animation:wIn .5s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms)}
+.grid.first>.w{animation:wIn .5s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms)}
 @keyframes wIn{from{opacity:0;transform:translateY(12px) scale(.98)}}
-.w:active{transform:scale(.965)}
+:where(.grid)>.w:active{transform:scale(.965)}
 .w11{height:136px}.w21{grid-column:span 2;height:112px}.w22{grid-column:span 2;height:284px;border-radius:var(--r1);padding:0}
 .w11 .fx3{-webkit-line-clamp:4;font-size:13px;line-height:1.32;margin-top:6px}
 .wh{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);white-space:nowrap;overflow:hidden}
@@ -274,7 +276,8 @@ a{color:var(--teal)}
 #sheet h3{margin:0 0 8px;font-family:var(--title);font-size:17px;color:var(--gold2)}
 #sheet p{margin:0 0 10px;font-size:14.5px;line-height:1.5;color:#D9DEE5}
 #sheet p b{color:var(--gold2)}
-#sheet .x{position:absolute;right:14px;top:12px;width:34px;height:34px;border-radius:50%;background:var(--card2);border:1px solid var(--line);font-size:18px;display:grid;place-items:center}
+#shX{position:absolute;right:14px;top:12px;width:34px;height:34px;border-radius:50%;background:var(--card2);border:1px solid var(--line);font-size:18px;display:grid;place-items:center}
+#shX::after{content:"";position:absolute;inset:-4px}   /* zone de toucher de 42 px */
 #toast{position:fixed;left:50%;top:calc(64px + var(--sat));transform:translate(-50%,-20px);opacity:0;z-index:950;padding:10px 16px;border-radius:14px;background:linear-gradient(180deg,#E3CB91,var(--gold));color:#1A1205;font-weight:800;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:all .3s var(--spring);pointer-events:none;white-space:nowrap}
 #toast.on{transform:translate(-50%,0);opacity:1}
 .empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:14px}
@@ -349,25 +352,28 @@ a.lnk{display:flex;align-items:center;justify-content:center;gap:6px;min-height:
 .cdl{display:flex;align-items:baseline;justify-content:center;gap:10px;min-width:0}
 .cdl .cdn{font-size:28px}.cdl .cdd{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hpk{margin-top:8px}.hpk .pkb{height:40px;font-size:17px}
-.hk{margin-top:8px;font-size:12.5px;line-height:1.3;color:rgba(255,255,255,.82);text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 6px rgba(0,0,0,.6)}
-.hk b{color:var(--gold2);font-weight:700}
+.hom-key{margin-top:8px;font-size:12.5px;line-height:1.3;color:rgba(255,255,255,.82);text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.hom-key b{color:var(--gold2);font-weight:700}
 /* mini direct du héros */
-.lm{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;margin:2px 0 8px;color:#fff}
-.lm .t{font-family:var(--disp);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.85);line-height:1.05}
-.lm .t small{display:block;font-family:var(--body);font-size:10.5px;font-weight:600;color:rgba(255,255,255,.6)}
-.lm .hudk{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
-.lm .hudk i{font-style:normal;color:rgba(255,255,255,.5);margin:0 4px}
-.lm .g{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13px;font-weight:700;white-space:nowrap}
-.lm .spk svg{display:block;width:44px;height:14px}
-.lm.wait{display:block;text-align:center;font-size:13px;color:rgba(255,255,255,.85);margin:4px 0 10px}
-.hobj{display:flex;justify-content:space-between;gap:8px;margin-top:7px}
-.ob{display:flex;align-items:center;gap:7px;font-family:var(--disp);font-weight:700;font-size:13px;color:rgba(255,255,255,.88);font-variant-numeric:tabular-nums}
-.ob.r{flex-direction:row-reverse}
-.ob>span{display:inline-flex;align-items:center;gap:2px}
-.ob svg{width:11px;height:11px;opacity:.8}
-.dgs{gap:2px!important}.dg{display:inline-block;width:7px;height:7px;border-radius:2px;transform:rotate(45deg)}.dg.no{background:rgba(255,255,255,.15)}
-.lastev{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.82);margin-top:7px;white-space:nowrap;overflow:hidden}
-.lastev .chi{flex:none}
+.hom-lm{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;margin:2px 0 8px;color:#fff}
+.hom-t{font-family:var(--disp);font-weight:700;font-size:17px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.85);line-height:1.05}
+.hom-t small{display:block;font-family:var(--body);font-size:10.5px;font-weight:600;color:rgba(255,255,255,.6)}
+.hom-k{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
+.hom-k i{font-style:normal;color:rgba(255,255,255,.5);margin:0 4px}
+.hom-g{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13px;font-weight:700;white-space:nowrap}
+.hom-spk svg{display:block;width:44px;height:14px}
+.hom-lm.wait{display:block;text-align:center;font-size:13px;color:rgba(255,255,255,.85);margin:4px 0 10px}
+.hom-obj{display:flex;justify-content:space-between;gap:8px;margin-top:7px}
+.hom-ob{display:flex;align-items:center;gap:7px;font-family:var(--disp);font-weight:700;font-size:13px;color:rgba(255,255,255,.88);font-variant-numeric:tabular-nums}
+.hom-ob.r{flex-direction:row-reverse}
+.hom-ob>span{display:inline-flex;align-items:center;gap:2px}
+.hom-ob svg{width:11px;height:11px;opacity:.8}
+.hom-dgs{gap:2px!important}.hom-dg{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none}.hom-dg.no{border:1px dashed rgba(240,230,210,.35)}   /* comme le HUD du match */
+.hom-ev{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.82);margin-top:7px;white-space:nowrap;overflow:hidden}
+.hom-ev .chi{flex:none}
+.hom-rec{justify-content:center}.hom-rec .mat-hrec{margin:0;min-width:0;font-size:12px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hom-rec b{color:var(--gold2)}
+/* héros en direct : logos et codes un peu plus petits, pour garder une ligne au dernier événement (ou au record battu) */
+.hero.hlive .vs{margin:6px 0 4px}.hero.hlive .side{gap:4px}.hero.hlive .code{font-size:clamp(30px,8.6vw,38px)}.hero.hlive .hom-lm{margin-bottom:6px}
 /* listes compactes dans les widgets */
 .wrow{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:8px;height:26px;font-size:13px;border-radius:8px}
 .wrow.fav{box-shadow:inset 3px 0 0 var(--gold);padding-left:5px;margin-left:-5px}
@@ -380,7 +386,7 @@ a.lnk{display:flex;align-items:center;justify-content:center;gap:6px;min-height:
 .wh em [data-cd] small{font-size:.8em;margin:0 1px}
 .wnx{flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px}
 .wnt{display:flex;align-items:center;gap:8px;min-width:0;font-family:var(--disp);font-weight:800;font-size:26px;white-space:nowrap}
-.vsx{color:var(--dim);font-size:13px;font-family:var(--title)}
+.hom-vsx{color:var(--dim);font-size:13px;font-family:var(--title)}
 .wnr{text-align:right;flex:none}.wnr .ws{display:block;margin:0}
 /* bilan de la soirée */
 .weve{padding:16px}
@@ -420,6 +426,7 @@ a.lnk{display:flex;align-items:center;justify-content:center;gap:6px;min-height:
 .evw{flex:none;max-width:38%;text-align:right;font-family:var(--disp);font-weight:700;font-size:15px;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* match.css — fiche de match, direct, duel de deux joueurs (module match). Style de B : blocs arrondis, or, sarcelle. */
 /* étiquette « à surveiller » / « en cours » (la classe .w est celle des widgets de l'accueil : pas de collision) */
+.mat-tgo{position:relative;font:inherit;font-size:10.5px;font-weight:700;text-transform:none;letter-spacing:0;border:0;cursor:pointer}.mat-tgo::after{content:"";position:absolute;inset:-12px -6px}.mat-tgo:active{transform:scale(.95)}
 .tag.mat-tw{background:rgba(200,170,110,.18);color:var(--gold)}
 /* ---------- tête ---------- */
 .mat-hero{margin:4px 16px 0;height:auto;min-height:228px}.mat-hero.done{min-height:206px}
@@ -810,6 +817,12 @@ button.ply-wr:active{background:var(--card2)}
 .prk .rs{font-size:12.5px;color:var(--muted)}.prk .rs b{color:var(--gold)}.prk .rs .ply-nw{white-space:nowrap}
 .prk .act{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}.prk .act .chip{height:36px;padding:0 10px;font-size:12.5px}
 @media (max-width:374px){.phead{grid-template-columns:118px minmax(0,1fr);gap:12px}.prk .act{gap:5px}.prk .act .chip{padding:0 9px;font-size:12px}}
+.ply-idb{display:flex;align-items:center;min-height:40px;margin:2px 0 -4px;padding:0;text-align:left;font-size:12.5px;line-height:1.3;color:var(--muted)}
+.ply-idb b{color:var(--gold)}.ply-idb:active{opacity:.7}
+/* lien « Un autre fait › » dans l'en-tête d'un bloc : cible de 40 px sans grandir l'en-tête */
+.bh .ply-bhl{display:flex;align-items:center;gap:6px;margin:-12px -4px -12px auto;min-height:40px;padding:0 4px 0 10px;font-size:12.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--gold2)}
+.bh .ply-bhl .chev{color:var(--gold);font-style:normal}.bh .ply-bhl:active{opacity:.7}
+.ply-nd small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ply-nd{gap:8px;margin:2px 0 0}.ply-nd .ava{border-radius:50%!important}.ply-nd .ply-vs{font-size:12px;margin:0 -2px}
 .ply-nd b.nm{font-size:17px}
 .dtiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
@@ -828,7 +841,9 @@ button.dtile:active{transform:scale(.97)}
 #sheet .gz i{box-shadow:0 0 0 3px #0E1D38,0 0 10px rgba(240,230,210,.6)}
 .ply-axs{grid-column:1/3;font-size:11.5px;color:var(--muted);margin-top:4px}
 .form{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
-.form button{display:grid;place-items:center;padding:3px;border-radius:10px;aspect-ratio:1}
+.form button{display:grid;place-items:center;padding:3px;border-radius:10px;aspect-ratio:1;position:relative}
+/* intégrateur : zone de toucher élargie en hauteur (41 px), dessin inchangé ; 10 icônes par ligne ne laissent que 33 px de large */
+.form button::after{content:"";position:absolute;inset:-7px -2px}
 .form button .chi{width:100%!important;height:auto!important;aspect-ratio:1}
 .form button.ply-w{background:rgba(10,200,185,.25);box-shadow:inset 0 0 0 1.5px var(--teal)}.form button.ply-l{background:rgba(232,64,87,.2);box-shadow:inset 0 0 0 1.5px var(--red)}
 .form button.ply-l .chi{filter:grayscale(.6) brightness(.8)}
@@ -884,7 +899,9 @@ dl.ply-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.ply-kv3 dd{
 .tea-lgs{margin:2px 0 12px}
 .tea-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .tea-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;padding:13px 12px 12px;border-radius:var(--r2);text-align:left;border:1px solid var(--line2);
-  background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--tc) 42%,transparent),transparent 60%),var(--card);transition:transform .2s var(--spring)}
+  background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--tc) 42%,transparent),transparent 60%),var(--card);transition:transform .2s var(--spring);
+  /* intégrateur : les cartes hors de l'écran ne sont ni mises en page ni peintes à l'ouverture (CPU ×4 : 400 → ? ms) */
+  content-visibility:auto;contain-intrinsic-size:auto 168px}
 .tea-card:active{transform:scale(.97)}
 .tea-card .wm{position:absolute;right:-24px;top:-16px;opacity:.13;transform:rotate(-12deg);pointer-events:none}
 .tea-card .hd{position:relative;display:flex;align-items:center;gap:8px;min-width:0;width:100%}
@@ -911,6 +928,12 @@ dl.ply-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.ply-kv3 dd{
 .tea-note{margin:10px 0 0;font-size:13px;line-height:1.4;color:#D9DEE5}
 .tea-hst{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px}
 .tea-lv{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+/* parcours aux Worlds dans le héros (swiTrail) et prochain match en clair à côté */
+.tea-htr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(240,230,210,.1)}
+.tea-htr .swi-trail{margin-top:0;flex:none}
+.tea-hnx{flex:1 1 76px;min-width:0;font-size:12px;line-height:1.35;color:var(--muted)}.tea-hnx b{color:var(--text)}.tea-hnx .logo{vertical-align:-2px;margin:0 3px}
+.tea-hnx .lv{font-style:normal;font-weight:800;color:var(--red)}
+.scr.ply-fit1 .tea-htr{margin-top:8px;padding-top:8px}
 .tea-fav{display:inline-flex;align-items:center;gap:6px;height:36px;margin-left:auto;padding:0 12px;border-radius:999px;background:rgba(5,11,24,.55);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--gold2)}
 .tea-fav svg{width:16px;height:16px;color:var(--dim)}
 .tea-fav[aria-pressed="true"]{background:linear-gradient(180deg,#E3CB91,var(--gold) 55%,#A8874E);color:#1A1205;border-color:var(--gold2)}.tea-fav[aria-pressed="true"] svg{color:#1A1205}
@@ -937,7 +960,7 @@ dl.ply-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.ply-kv3 dd{
 .tea-dist span{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;height:100%}
 .tea-dist i{display:block;width:70%;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--gold2),var(--gold3))}
 .tea-dist b{font-family:var(--disp);font-size:13px}.tea-dist small{font-size:11px;color:var(--muted)}
-.tea-ls{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+.tea-ls{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;width:100%;padding:0;position:relative}.tea-ls::after{content:"";position:absolute;inset:-6px 0}.tea-ls:active{opacity:.75}
 .tea-ls i{display:grid;place-items:center;aspect-ratio:1;border-radius:9px;font-style:normal}
 .tea-ls i.ply-w{background:rgba(10,200,185,.2);box-shadow:inset 0 0 0 1.5px var(--teal)}.tea-ls i.ply-l{background:rgba(232,64,87,.16);box-shadow:inset 0 0 0 1.5px var(--red)}
 .tea-ls i .logo,.tea-ls i .mono{width:72%!important;height:72%!important}.tea-ls i b{font-size:9px;color:var(--muted)}
@@ -1390,7 +1413,6 @@ div.sta-wp{grid-template-columns:minmax(0,1fr) auto}
 .dav.dbot svg{width:58%;height:58%}
 /* pastilles et petits signes */
 .lea-n{font-style:normal;display:inline-block;min-width:18px;font-size:11px;font-weight:800;line-height:16px;background:rgba(200,170,110,.24);color:var(--gold2);border-radius:999px;padding:0 5px;margin-left:3px;vertical-align:1px}
-.w .wh em.lea-due{flex:none;min-width:20px;height:20px;display:grid;place-items:center;border-radius:999px;background:var(--gold);color:#1A1205;font-weight:800;font-size:11.5px;padding:0 6px}
 .lea-sync{display:inline-flex;align-items:center;gap:5px}
 .lea-sync i{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none}
 .lea-sync.on i{background:var(--teal);box-shadow:0 0 8px var(--teal)}.lea-sync.ko i{background:var(--red)}
@@ -1593,8 +1615,7 @@ div.sta-wp{grid-template-columns:minmax(0,1fr) auto}
 @media (prefers-reduced-motion:reduce){.lea-r,.lea-mc,.qb{animation:none!important}}
 </style>
 </head>
-<body>
-<div style="position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:999;background:#E84057;color:#fff;font:800 10px/1 sans-serif;letter-spacing:.08em;padding:3px 8px;border-radius:0 0 8px 8px;pointer-events:none">PRÉPROD · REFONTE EN COURS</div>
+<body><div style="position:fixed;top:0;right:6px;z-index:999;background:#E84057;color:#fff;font:800 8px/1 sans-serif;letter-spacing:.06em;padding:2px 5px;border-radius:0 0 5px 5px;pointer-events:none;opacity:.85">PRÉPROD</div>
 <div id="intro" aria-hidden="true"><div class="burst"></div><div class="stage">
   <svg class="rings" viewBox="0 0 200 200"><circle class="r1" cx="100" cy="100" r="94" pathLength="1"/><circle class="r2" cx="100" cy="100" r="80" pathLength="1"/><circle class="r3" cx="100" cy="100" r="66" pathLength="1"/><path d="M100 20 169 60v80l-69 40-69-40V60z" pathLength="1"/></svg>
   <svg class="cup" viewBox="0 0 120 160"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#785A28"/><stop offset=".5" stop-color="#F0E6D2"/><stop offset="1" stop-color="#785A28"/></linearGradient></defs>
@@ -3452,7 +3473,8 @@ function stakeTxt(m,R){if(!m.t1||!m.t2||m.winner)return"";const a=lives(m.t1,R),
 const mOf=id=>MATCHES.find(x=>x.id===id)||null;
 /* ligne de match (calendrier, paris, fiches) : toucher = la fiche du match */
 function mrow(x){const w=x.winner,st=new Date(x.start),pk=picks[x.key],f=!w?seriesFav(x):null,fv=!!fav&&(x.t1===fav||x.t2===fav);
-  const sub=[f&&x.bo>1?"Bo"+x.bo:"",x.state!=="live"&&!w&&st.getHours()<6?"nuit":""].filter(Boolean).join(" ");
+  // comme v13.5 (matchRow) : « nuit » aussi sur les résultats (un match de 01:00 est rangé dans la soirée de la veille), Bo des séries jouées
+  const sub=[(f||w)&&x.bo>1?"Bo"+x.bo:"",x.state!=="live"&&st.getHours()<6?"nuit":""].filter(Boolean).join(" ");
   const t=(id,rev)=>`<span class="t${rev?" r":""}${w&&w!==id?" lo":""}${pk&&id&&pk===id?" pk":""}">${rev||!id?"":logo(id,24)}${esc(tid(id)||"À venir")}${rev&&id?logo(id,24):""}</span>`;
   return `<button class="mrow${x.state==="live"?" live":""}${fv?" fav":""}" ${x.t1&&x.t2?`data-go="m/${esc(x.id)}"`:"disabled"}><time>${x.state==="live"?`<span class="lv">LIVE</span>`:fmtTime(st)}${sub?`<small>${sub}</small>`:""}</time>${t(x.t1)}<span class="sc">${w?`${x.s1}-${x.s2}`:"VS"}<small>${w?"":f?`${esc(tid(f.t))} ${Math.round(f.p*100)}${NB}%`:"Bo"+x.bo}</small></span>${t(x.t2,1)}<span class="dotp${pk?(w?(pk===w?" ok":" ko"):" on"):x.state==="soon"&&x.t1&&x.t2?"":" none"}"></span></button>`}
 
@@ -3493,7 +3515,7 @@ function renderScreen(el,d){const f=ROUTES[d.v]&&ROUTES[d.v].screen;el._d=d;if(!
   el.classList.remove("snug");el.innerHTML=shell(o);watchFit(el);const hs=el.querySelector(".headslot");if(hs){hs._h=o.head;hs._k=o.headKey}const c=el.querySelector(".tabc");if(c)c._h=o.body;
   if(o.mount)safe(o.mount,el);tickCd(el)}
 function refreshTab(el,dir){const o=el._o,d=el._d;if(!o||!o.render)return;const c=el.querySelector(".tabc");if(!c)return;const h=safe(o.render,d.tab)||"";
-  if(c._h===h&&!dir)return;c._h=h;el.classList.remove("snug");c.innerHTML=h;if(dir&&!RM){c.classList.remove("in","inl");void c.offsetWidth;c.classList.add(dir>0?"in":"inl")}tickCd(c)}
+  if(c._h===h&&!dir)return;c._h=h;el.classList.remove("snug");c.innerHTML=h;fitSoon(el);if(dir&&!RM){c.classList.remove("in","inl");void c.offsetWidth;c.classList.add(dir>0?"in":"inl")}tickCd(c)}
 function setTab(el,k){const o=el._o,d=el._d;if(!o||!o.tabs)return;const i0=o.tabs.findIndex(t=>t[0]===d.tab),i=o.tabs.findIndex(t=>t[0]===k);if(i<0||i===i0)return;
   d.tab=k;if(d.v==="rk")d.id=k;const s=el.querySelector(".seg");s.style.setProperty("--i",i);s.querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===k)));
   try{history.replaceState({...(history.state||{}),r:routeOf(d)},"","#"+routeOf(d))}catch(e){}
@@ -3520,8 +3542,16 @@ function fitScr(s){if(!s||!s.isConnected)return;const pb=parseFloat(getComputedS
      qui suffit souvent à faire tenir l'écran ; remise à zéro à chaque nouveau contenu (renderScreen, refreshTab) */
   if(!f&&over<120&&s!==HOME&&!s.classList.contains("snug")){s.classList.add("snug");return fitScr(s)}
   if(f!==s.classList.contains("fit")){s.classList.toggle("fit",f);if(f)s.scrollTop=0}}
-const FITRO=window.ResizeObserver?new ResizeObserver(es=>{for(const e of es){const x=e.target;if(!x.isConnected){FITRO.unobserve(x);continue}const sc=x.closest(".scr");if(sc)fitScr(sc)}}):null;
-function watchFit(el){const c=el&&el.firstElementChild;if(!c)return;if(FITRO){if(el._fitc&&el._fitc!==c)FITRO.unobserve(el._fitc);el._fitc=c;FITRO.observe(c);FITRO.observe(el)}else requestAnimationFrame(()=>fitScr(el))}
+/* un nouveau contenu est cadré avant d'être peint (pas de saut) ; ce qui change ensuite (images, blocs
+   asynchrones, rotation) est recadré à l'image suivante : changer la taille d'un élément observé pendant le rappel du
+   ResizeObserver provoque « ResizeObserver loop completed with undelivered notifications » (erreur affichée par Safari) */
+const FITQ=new Set();let FITR=0;
+/* microtâche : après les MutationObserver des modules (qui retirent leurs propres classes de resserrement), avant la peinture */
+const fitSoon=s=>queueMicrotask(()=>fitScr(s));
+function fitLater(s){FITQ.add(s);if(!FITR)FITR=requestAnimationFrame(()=>{FITR=0;const L=[...FITQ];FITQ.clear();L.forEach(fitScr)})}
+const FITRO=window.ResizeObserver?new ResizeObserver(es=>{for(const e of es){const x=e.target;if(!x.isConnected){FITRO.unobserve(x);continue}const sc=x.closest(".scr");if(sc)fitLater(sc)}}):null;
+function watchFit(el){const c=el&&el.firstElementChild;if(!c)return;if(FITRO){if(el._fitc&&el._fitc!==c)FITRO.unobserve(el._fitc);el._fitc=c;FITRO.observe(c);FITRO.observe(el)}
+  if(el.isConnected)fitSoon(el);else fitLater(el)}
 
 /* ===================== feuilles « i » =====================
    INFO.clé = () => [titre, texte, html?] ; INFOP.préfixe = (a, b, c) => […] pour data-info="préfixe:a:b:c" ;
@@ -3556,7 +3586,7 @@ function openScr(d,origin,instant){
   const t0=window.__t0||performance.now();window.__t0=0;
   const from=!instant&&!RM&&origin&&origin.isConnected?{r:origin.getBoundingClientRect(),rad:parseFloat(getComputedStyle(origin).borderTopLeftRadius)||22}:null;
   const el=document.createElement("section");el.className="scr";el.style.zIndex=String(10+(NAV.length+1)*2);
-  renderScreen(el,d);$("#app").appendChild(el);
+  renderScreen(el,d);$("#app").appendChild(el);fitSoon(el);
   NAV.push({d,el,origin});
   try{history.pushState({n:NAV.length,r:routeOf(d)},"","#"+routeOf(d))}catch(e){}
   setDim();tickCd(el);
@@ -3615,7 +3645,7 @@ function onScroll(e){const el=e.currentTarget,b=el.querySelector(".bar");if(b)b.
    (onAct) → navigation (data-go, puis attributs hérités de v13.5 : data-p, data-t, data-m, data-cmp, data-vs). */
 const ACTS=[];
 function onAct(sel,fn){ACTS.push([sel,fn])}
-const GROW=".w,.wn-i,.role,.mrow,.rowb,.rkr,.pl,.simr";   // éléments d'où l'écran ouvert « grandit »
+const GROW=".grid>.w,.wn-i,.role,.mrow,.rowb,.rkr,.pl,.simr";   // éléments d'où l'écran ouvert « grandit »
 const GO_ATTR={go:v=>v,p:v=>"p/"+v,t:v=>"t/"+v,m:v=>"m/"+v,cmp:v=>"cmp/"+String(v).replace("|","~"),vs:v=>"d/"+String(v).replace("|","~")};
 function go(route,origin){const d=parseRoute(route);if(!d){toast("Bientôt dans l’appli");return false}
   window.__t0=performance.now();vib(8);openScr(d,origin&&origin.matches&&origin.matches(GROW)?origin:null);return true}
@@ -3740,6 +3770,10 @@ function boot(){
   /* iPhone : le clavier (recherche) peut décaler la page fixe ; à sa fermeture, on la remet à sa place */
   const unshift=()=>setTimeout(()=>{const se=document.scrollingElement;if(scrollY||(se&&se.scrollTop)){window.scrollTo(0,0);if(se)se.scrollTop=0}},80);
   document.addEventListener("focusout",unshift);if(window.visualViewport)visualViewport.addEventListener("resize",unshift);
+  /* iPhone sous iOS 15 ou avant (pas d'overscroll-behavior) : la page ne « rebondit » pas ; seul un écran qui défile vraiment bouge */
+  if(!(window.CSS&&CSS.supports&&CSS.supports("overscroll-behavior","none")))document.addEventListener("touchmove",e=>{
+    if(e.touches.length>1||!e.target.closest||e.target.closest("input,textarea,select"))return;const s=e.target.closest(".scr,#sheet");
+    if(!s||s.classList.contains("fit")||s.scrollHeight<=s.clientHeight+1)e.preventDefault()},{passive:false});
 }
 /* =====================================================================================
    app.js — SYNCHRO, SOURCES, DIAGNOSTIC, RÉGLAGES (propriétaire : agent socle)
@@ -3747,7 +3781,8 @@ function boot(){
    (Data Dragon, cache w26_champs2 7 jours).
    Planning (sync) : LoL Esports (getSchedule paginé, ordre des équipes figé par keepSides), sinon le planning publié par le
    robot (SJ.sched), sinon les matchs embarqués ; après un échec de LoL Esports, nouveaux essais à 3 s, 10 s puis 30 s, ensuite
-   60 s si un match est « chaud » (en cours, en attente, coup d'envoi dans moins de 20 min), 5 min sinon ; synchro au retour
+   toutes les minutes tant que LoL Esports ne répond pas ; sinon 60 s si un match est « chaud » (en cours, en attente, coup
+   d'envoi dans moins de 20 min), 5 min sinon ; synchro au retour
    dans l'appli après plus d'une minute (règles de v13.5, 5332-5338).
    Santé des sources : HEALTH et mark (extraits de v13.5), mesurés sur les vrais appels (leFetch, feedWin enrobés au démarrage,
    loadSJ, champMap) ; diagnostic chronométré, rapport à copier.
@@ -3795,8 +3830,9 @@ function sync(){
 function scheduleNext(){
   clearTimeout(sync.t);const now=Date.now();
   const hot=MATCHES.some(m=>m.state==="live"||m.state==="wait"||(m.state==="soon"&&new Date(m.start)-now<20*60e3));
-  // LoL Esports injoignable : nouveaux essais rapprochés (3 s, 10 s, 30 s) avant le rythme normal
-  const ms=SOURCE!=="LoL Esports"&&SYNC.fails>=1&&SYNC.fails<=3?[3,10,30][SYNC.fails-1]*1e3:hot?60e3:5*60e3;
+  // LoL Esports injoignable : nouveaux essais rapprochés (3 s, 10 s, 30 s), puis toutes les minutes tant qu'on vit sur le planning
+  // du robot ou hors ligne (retour à LoL Esports dans la minute où il répond à nouveau) ; sinon 60 s si un match est chaud, 5 min
+  const deg=SOURCE!=="LoL Esports"&&SYNC.fails>=1,ms=deg&&SYNC.fails<=3?[3,10,30][SYNC.fails-1]*1e3:hot||deg?60e3:5*60e3;
   sync.t=setTimeout(sync,ms);SYNC.next=now+ms;
 }
 /* le robot publie aussi le planning : premier affichage sans attendre l'API */
@@ -3914,7 +3950,7 @@ function paintSet(){NAV.forEach(x=>{if(x.d.v==="set"&&x.el.isConnected)rerender(
 INFO.set=()=>["Réglages et état",`Réglages : ton équipe et ton profil. État : d’où viennent les données (LoL Esports, sinon le planning du robot, sinon les matchs embarqués) et si chaque source répond. Diagnostic : à lancer si quelque chose cloche, puis « Copier le rapport ».`];
 INFO.fav=()=>["Mon équipe","Ses matchs sont surlignés partout d’un liseré or, elle a son widget sur l’accueil et son parcours est tracé dans la phase suisse. Elle reste sur ce téléphone (et voyage avec « Emporter mon profil »)."];
 INFO.move=()=>["Emporter mon profil","Chaque navigateur a sa propre mémoire (Messenger, Chrome, Safari, icône sur l’écran d’accueil…). Ce lien transporte ta ligue, tes paris, tes scores exacts, tes résultats saisis, ton équipe et ton prénom : ouvre-le dans l’autre navigateur. Si un autre profil s’y trouve, l’appli te demande avant de le remplacer."];
-INFO.sources=()=>["Les sources",`<p><b>Stats précalculées</b> : le robot GitHub recalcule tout toutes les 30 min (classements, pronos, faits, planning de secours).</p><p><b>LoL Esports</b> : planning et résultats officiels, relus toutes les minutes quand un match approche. S’il ne répond pas, nouvel essai à 3 s, 10 s puis 30 s, et en attendant le planning du robot.</p><p><b>Flux direct</b> : kills, or et draft de la partie en cours (environ 30 s de décalage).</p><p><b>Relais de la ligue</b> : ntfy.sh, qui échange les paris entre potes.</p><p><b>Data Dragon</b> : les icônes des champions.</p>`,true];
+INFO.sources=()=>["Les sources",`<p><b>Stats précalculées</b> : le robot GitHub recalcule tout toutes les 30 min (classements, pronos, faits, planning de secours).</p><p><b>LoL Esports</b> : planning et résultats officiels, relus toutes les minutes quand un match approche. S’il ne répond pas, nouvel essai à 3 s, 10 s, 30 s puis chaque minute, et en attendant le planning du robot.</p><p><b>Flux direct</b> : kills, or et draft de la partie en cours (environ 30 s de décalage).</p><p><b>Relais de la ligue</b> : ntfy.sh, qui échange les paris entre potes.</p><p><b>Data Dragon</b> : les icônes des champions.</p>`,true];
 
 /* ---------- branchements ---------- */
 defScreen("set",{arg:"tab",screen:scrSet});
@@ -3943,7 +3979,9 @@ onAct("[data-move]",()=>{vib(8);moveProfile()});
 let HM=null;   // dernier moment calculé (compatibilité : les rendus de ligue de v13.5 lisent HM.k)
 function homeMoment(){
   const now=Date.now(),dk=dayKeyL(new Date()),dayOf=x=>dayKeyL(new Date(x.start)),ok=x=>x.t1&&x.t2;
-  const live=MATCHES.find(x=>x.state==="live")||MATCHES.find(x=>x.state==="wait"),next=MATCHES.find(x=>x.state==="soon"&&ok(x))||null;
+  /* un résultat en attente depuis plus de 8 h (sources coupées, données embarquées d'un autre jour) ne fait plus de l'accueil
+     un « direct » : il reste dans le calendrier et sa fiche, où l'on peut saisir le vainqueur */
+  const live=MATCHES.find(x=>x.state==="live")||MATCHES.find(x=>x.state==="wait"&&now-new Date(x.start)<8*3600e3),next=MATCHES.find(x=>x.state==="soon"&&ok(x))||null;
   let last=null;for(let i=MATCHES.length-1;i>=0;i--)if(MATCHES[i].winner&&ok(MATCHES[i])){last=MATCHES[i];break}
   const ldk=last&&dayOf(last);
   // soirée récente (aujourd'hui ou hier) dont tous les matchs sont joués : son bilan (v13.5, 1641)
@@ -3962,14 +4000,14 @@ function homeMoment(){
 function wHeroMatch(m,k){
   const live=m.state==="live",wait=m.state==="wait",on=live||wait,st=new Date(m.start),f=seriesFav(m),me=picks[m.key];
   const pr=t=>!on&&f?`<span class="rp${f.t===t?" f":""}">${P(t===m.t1?f.p1:1-f.p1)}${f.t===t?"<small>robot</small>":""}</span>`:"";
-  const side=t=>`<div class="side">${logo(t,on?54:46)}<span class="code">${esc(tid(t))}</span>${pr(t)}</div>`;
+  const side=t=>`<div class="side">${logo(t,on?48:46)}<span class="code">${esc(tid(t))}</span>${pr(t)}</div>`;
   const stk=!on?stakeTxt(m,records()):"";let foot,cls="w22 hero";
-  if(live)foot=`<div id="wlive" data-k="${esc(m.key)}"></div>`;
+  if(live){foot=`<div id="wlive" data-k="${esc(m.key)}"></div>`;cls+=" hlive"}
   else if(wait)foot=homWait(m);
   else{const key=homKey(m),lgl=homLgLine(m);cls+=" tall";
     foot=`<div class="cdl"><span class="cdn" data-cd="${st.getTime()}"></span><span class="cdd">${esc(whenTxt(st))}</span></div>
     <div class="pk2 hpk">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${t}" data-mk="${esc(m.key)}" aria-pressed="${me===t}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,20)}${esc(tid(t))}</button>`).join("")}</div>
-    ${key||lgl?`<div class="hk">${key}${key&&lgl?" · ":""}${lgl}</div>`:""}`}
+    ${key||lgl?`<div class="hom-key">${key}${key&&lgl?" · ":""}${lgl}</div>`:""}`}
   return W(cls,`m/${m.id}`,`${heroBg(m)}<div class="hin"><div class="hmeta"><span>${esc(stageLab(m))}${stk?` · <b class="stk">${esc(stk)}</b>`:""}</span><span class="badge${live?" live":wait?" wait":""}">${live?"En direct":wait?"Résultat en attente":"Bo"+m.bo}</span></div>
     <div class="vs">${side(m.t1)}<div class="mid">${on&&m.bo>1&&m.s1!=null?`<span class="sc">${m.s1}-${m.s2}</span>`:`<span class="v">VS</span>`}</div>${side(m.t2)}</div>
     <div class="hfoot">${foot}</div></div>`,k,`--c1:${cA(m)};--c2:${cB(m)}`,`${tid(m.t1)} contre ${tid(m.t2)}${live?", en direct":wait?", résultat en attente":", "+whenTxt(st)}`);
@@ -3984,20 +4022,22 @@ function homKey(m){try{const p=robotProb(m);if(p==null)return"";const f=p>=.5?m.
 function homLgLine(m){if(typeof leaHeroLine==="function")return esc(safe(leaHeroLine,m)||"");try{if(!lg||!lg.players||!Object.keys(lg.players).length)return"";const O=members().filter(u=>!u.me),n=O.filter(u=>u.p[m.key]).length;
   return n===O.length?(O.length>1?"tes potes ont tous parié":"ton pote a parié"):`${n} sur ${O.length} ${n>1?"ont":"a"} parié`}catch(e){return""}}
 function homWait(m){const f=seriesFav(m);
-  return `<div class="lm wait">En attente du résultat officiel</div>${f?`${splitBar(f.p1,cA(m),cB(m))}<div class="wpl"><b>${P(f.p1)}</b><span>prono du robot</span><b>${P(1-f.p1)}</b></div>`:""}<div class="hk" style="text-align:center">Le résultat tarde ? Touche pour l’indiquer dans la fiche</div>`}
+  return `<div class="hom-lm wait">En attente du résultat officiel</div>${f?`${splitBar(f.p1,cA(m),cB(m))}<div class="wpl"><b>${P(f.p1)}</b><span>prono du robot</span><b>${P(1-f.p1)}</b></div>`:""}<div class="hom-key">Le résultat tarde ? Touche pour l’indiquer dans la fiche</div>`}
 /* mini direct (repeint à chaque image du flux : BUS "live") : temps, kills, or + tendance, chances, objectifs, dernier événement */
 function liveMini(m){
   const L=typeof LV!=="undefined"&&LV.games?LV.games[m.key]:null;
-  if(!L||!L.frame||L.status==="between"||L.status==="waiting"){const f=seriesFav(m);return `<div class="lm wait">${L&&L.status==="between"?`Pause entre deux parties · série ${m.s1??0}-${m.s2??0}`:L&&L.status==="nolive"?"Flux direct introuvable : suis le match sur LoL Esports":"Draft en cours : le direct démarre au lancement"}</div>${f?`${splitBar(f.p1,cA(m),cB(m))}<div class="wpl"><b>${P(f.p1)}</b><span>prono du robot</span><b>${P(1-f.p1)}</b></div>`:""}`}
+  if(!L||!L.frame||L.status==="between"||L.status==="waiting"){const f=seriesFav(m);return `<div class="hom-lm wait">${L&&L.status==="between"?`Pause entre deux parties · série ${m.s1??0}-${m.s2??0}`:L&&L.status==="nolive"?"Flux direct introuvable : suis le match sur LoL Esports":"Draft en cours : le direct démarre au lancement"}</div>${f?`${splitBar(f.p1,cA(m),cB(m))}<div class="wpl"><b>${P(f.p1)}</b><span>prono du robot</span><b>${P(1-f.p1)}</b></div>`:""}`}
   const S=sideFrame(L,m),p=liveP(L,m),gd=S.A.totalGold-S.B.totalGold,ld=gd>=0?m.t1:m.t2,e=L.kf&&L.kf.ev?L.kf.ev.filter(x=>x.k!=="gap").slice(-1)[0]:null;
-  const tr=safe(()=>typeof trend==="function"&&typeof spark==="function"?trend(L,m):null),sp=tr?safe(spark,tr,44,14,m):"";
-  return `<div class="lm"><span class="t">${gtime(L)}${L.num?`<small>partie ${L.num}</small>`:""}</span><span class="hudk">${S.A.totalKills}<i>–</i>${S.B.totalKills}</span><span class="g">${Math.abs(gd)<100?"Or à égalité":`${esc(tid(ld))} +${kf1(gd)}`}${sp?`<span class="spk">${sp}</span>`:""}</span></div>
-    ${splitBar(p,cA(m),cB(m))}<div class="wpl"><b>${P(p)}</b><span>chances (estimation)</span><b>${P(1-p)}</b></div>${homObj(S)}${e?`<div class="lastev">${safe(evLine,L,e,true)}</div>`:""}`;
+  const tr=safe(()=>typeof trend==="function"&&typeof spark==="function"?trend(L,m):null),sp=tr?safe(spark,tr,44,14):"";
+  /* record de ces Worlds ou de l'année battu ou égalé (match.js, A-05) : il prend la place du dernier événement */
+  const rec=typeof matHeroRec==="function"?String(safe(matHeroRec,m)||"").replace(/\s*\([^()<>]*\)/g,""):"";   // une ligne : sans la parenthèse (détail dans le match)
+  return `<div class="hom-lm"><span class="hom-t">${gtime(L)}${L.num?`<small>partie ${L.num}</small>`:""}</span><span class="hom-k">${S.A.totalKills}<i>–</i>${S.B.totalKills}</span><span class="hom-g"${tr&&tr.txt?` title="${esc(String(tr.txt).replace(/<[^>]*>/g,""))}"`:""}>${Math.abs(gd)<100?"Or à égalité":`${esc(tid(ld))} +${kf1(gd)}`}${sp?`<span class="hom-spk">${sp}</span>`:""}</span></div>
+    ${splitBar(p,cA(m),cB(m))}<div class="wpl"><b>${P(p)}</b><span>chances (estimation)</span><b>${P(1-p)}</b></div>${homObj(S)}${rec?`<div class="hom-ev hom-rec">${rec}</div>`:e?`<div class="hom-ev">${safe(evLine,L,e,true)}</div>`:""}`;
 }
 /* rangée d'objectifs : tours, dragons (couleur du type), Barons, inhibiteurs, des deux côtés */
-function homObj(S){const dr=x=>(x.dragons||[]).slice(0,5).map(t=>`<i class="dg" style="background:${typeof DRAG!=="undefined"&&DRAG[t]||"var(--gold)"}" title="${esc(t)}"></i>`).join("")||`<i class="dg no"></i>`;
-  const sd=(x,r)=>`<span class="ob${r?" r":""}"><span>${ITOW}${x.towers||0}</span><span class="dgs">${dr(x)}</span><span>${IBAR}${x.barons||0}</span><span>${IINH}${x.inhibitors||0}</span></span>`;
-  return `<div class="hobj">${sd(S.A)}${sd(S.B,1)}</div>`}
+function homObj(S){const dr=x=>(x.dragons||[]).slice(0,5).map(t=>`<i class="hom-dg" style="background:${typeof DRAG!=="undefined"&&DRAG[t]||"var(--gold)"}" title="${esc(t)}"></i>`).join("")||`<i class="hom-dg no"></i>`;
+  const sd=(x,r)=>`<span class="hom-ob${r?" r":""}"><span>${ITOW}${x.towers||0}</span><span class="hom-dgs">${dr(x)}</span><span>${IBAR}${x.barons||0}</span><span>${IINH}${x.inhibitors||0}</span></span>`;
+  return `<div class="hom-obj">${sd(S.A)}${sd(S.B,1)}</div>`}
 
 /* ===================== listes et prochain match ===================== */
 function wTonight(list,k,title="Ce soir"){
@@ -4013,7 +4053,7 @@ function wNextWide(m,k){
     return W("w21","cal",`<div class="wh">Prochain match<em>${esc(fmtDay(evDate(d.dt)))}</em></div><div class="wb"><div class="wn" style="font-size:24px;line-height:1.1">${esc(d.d.what)}</div><div class="ws">Premier match à ${esc(fmtTime(d.dt))} · affiches au tirage</div></div>`,k,"","Prochain match")}
   const st=new Date(m.start),f=seriesFav(m);
   return W("w21",`m/${m.id}`,`<div class="wh">Prochain match<em>${esc(whenTxt(st))}</em></div><div class="wb wnx">
-    <span class="wnt">${logo(m.t1,34)}${esc(tid(m.t1))}<span class="vsx">VS</span>${esc(tid(m.t2))}${logo(m.t2,34)}</span>
+    <span class="wnt">${logo(m.t1,34)}${esc(tid(m.t1))}<span class="hom-vsx">VS</span>${esc(tid(m.t2))}${logo(m.t2,34)}</span>
     ${f?`<span class="wnr"><span class="wn" style="font-size:28px">${P(f.p)}</span><span class="ws">${esc(tid(f.t))} selon le robot</span></span>`:""}</div>`,k,"",`Prochain match ${tid(m.t1)} contre ${tid(m.t2)}`);}
 /* prochain jour sans affiche connue (DAYS de v13.5 : tirage au fil de l'eau) */
 function homNextDay(){const known=new Set(MATCHES.filter(m=>m.t1||m.t2).map(m=>dayKeyL(new Date(m.start))));
@@ -4093,13 +4133,16 @@ function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES
     next:k=>M.k==="after"||M.k==="rest"?wNextWide(M.next,k):rest.length?wTonight(rest,k,M.k==="day"?"Ce soir":"Ensuite"):wNextWide(other,k),
     eve:k=>M.recent||M.last?wEve(M.recent||M.last,k):"",evemini:k=>(M.k==="rest"?M.recent:yday)?wEveMini(M.k==="rest"?M.recent:yday,k):"",champ:k=>M.champ?wChampion(M.champ,k):""};
   const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return {n,f:F[n],pr:+p}});
+  /* équipe suivie (w26_fav) : son widget passe juste après « Mes paris » et n'est retiré qu'en dernier recours */
+  if(fav&&T[fav]){const i=I.findIndex(x=>x.n==="myteam");if(i>=0){const it=I.splice(i,1)[0];it.pr=Math.min(it.pr,2);const j=I.findIndex(x=>x.n==="bets");I.splice(j>=0?j+1:I.length,0,it)}}
   return {I,spares:HOM_SPARE.split(" ").map(n=>[n,F[n]])};
 }
 /* rangées : un widget large, ou deux carrés côte à côte (un carré seul est complété par un widget de réserve, sinon élargi) */
 function homRows(M){const {I,spares}=homItems(M),used=new Set(),rows=[];let k=0,pend=null;
   const take=(n,f)=>{const h=safe(f,k)||"";if(!h)return null;used.add(n);return {n,h,sz:homSz(h),k:k++}};
   for(const it of I){const x=take(it.n,it.f);if(!x)continue;x.pr=it.pr;
-    if(x.sz==="w11"){if(pend){rows.push({h:HOM_H.w11,html:pend.h+x.h,pr:Math.max(pend.pr,x.pr),n:pend.n+"+"+x.n});pend=null}else pend=x;continue}
+    /* une paire reste tant que l'un des deux compte (priorité la plus forte des deux) */
+    if(x.sz==="w11"){if(pend){rows.push({h:HOM_H.w11,html:pend.h+x.h,pr:Math.min(pend.pr,x.pr),n:pend.n+"+"+x.n});pend=null}else pend=x;continue}
     rows.push({h:HOM_H[x.sz],html:x.h,pr:x.pr,n:x.n,fixed:x.pr===0})}
   if(pend){let sp=null;for(const [n,f] of spares){if(used.has(n))continue;const x=take(n,f);if(x&&x.sz==="w11"){sp=x;break}}
     rows.push(sp?{h:HOM_H.w11,html:pend.h+sp.h,pr:pend.pr,n:pend.n+"+"+sp.n}:{h:HOM_H.w11,html:pend.h.replace('class="w w11','class="w w11 solo'),pr:pend.pr,n:pend.n})}
@@ -4257,16 +4300,21 @@ function matOpened(el){
 const matFitSoon=el=>{if(!el._mf)el._mf=requestAnimationFrame(()=>{el._mf=0;matFit(el)})};
 function matFit(el){const d=el._d;if(!d||!el.isConnected)return;
   const T4=["mat-tight","mat-tight2","mat-tight3","mat-tight4"],cl=el.classList,on=T4.filter(c=>cl.contains(c)).length;
-  if(el._ftab!==d.tab){el._ftab=d.tab;el._fno=0;if(on){cl.remove(...T4);matFitSoon(el);return}}
+  if(el._ftab!==d.tab){el._ftab=d.tab;el._fno=0;el._f15=0;if(on){cl.remove(...T4);matFitSoon(el);return}}
   const pb=parseFloat(getComputedStyle(el).paddingBottom)||0,o=el.scrollHeight-el.clientHeight-Math.max(0,pb-12);
+  /* intégrateur : le premier onglet (Aperçu, Direct, Résumé) reste sous 1,5 écran quand il le dépasse de peu (direct à 25 min : ×1,58
+     sur iPhone 12) : mêmes crans ; si le contenu grandit franchement ensuite, marges normales et vrai défilement */
+  const first=d.tab==="ov"||d.tab==="di",ex=el.scrollHeight-Math.max(0,pb-12)-Math.round(innerHeight*1.5);
+  if(el._f15){if(on&&ex>=160){cl.remove(...T4);el._f15=0;el._fno=1}else if(ex>0&&on<4)cl.add(T4[on]);return}
   if(on&&(o>=200||(on===4&&o>=40))){cl.remove(...T4);el._fno=1;return}   // trop de contenu pour tenir (données arrivées, direct) : vrai défilement, marges normales
-  if(!el._fno&&o>0&&o<120&&on<4)cl.add(T4[on])}
+  if(!el._fno&&o>0&&o<120&&on<4){cl.add(T4[on]);return}
+  if(first&&!on&&o>=120&&ex>0&&ex<110){el._f15=1;cl.add(T4[0])}}
 
 /* ===================== 2. avant le match : Aperçu ===================== */
 function matRobotBlk(m,past){const F=fiabW26();let f,c,lab="Le robot",tg="";
   if(m.winner){const r=robotPast(m);if(!r)return"";f={p1:r.fav===m.t1?r.p:1-r.p};c="avant le match";lab="Le robot avait dit";tg=` <span class="tag ${r.ok?"on":""}">${r.ok?"vu juste":"surprise"}</span>`}
   else{f=seriesFav(m);if(!f)return"";c=past&&matN(m)?`série, ${m.s1}-${m.s2} compris`:f.p<.56?"match très serré":m.bo>1?"sur la série":"sur la partie"}
-  return `<div class="blk mat-robot" data-pk="robot"><div class="bh">${lab}${tg||(F?` <span class="tag">${F.ok}/${F.n} aux Worlds</span>`:"")}<button class="i" data-info="robot" aria-label="Comment calcule le robot">i</button></div>
+  return `<div class="blk mat-robot" data-pk="robot"><div class="bh">${lab}${tg||(F?` <button class="tag mat-tgo" data-go="sim/rob" aria-label="Le robot aux Worlds : ${F.ok} bons favoris sur ${F.n}">${F.ok}/${F.n} aux Worlds ›</button>`:"")}<button class="i" data-info="robot" aria-label="Comment calcule le robot">i</button></div>
     <div class="bigvs"><div class="a"><span class="n ${f.p1>=.5?"lead":"trail"}">${P(f.p1)}</span><span class="t">${logo(m.t1,18)}${esc(tid(m.t1))}</span></div><div class="c">${c}</div><div class="b"><span class="n ${f.p1<.5?"lead":"trail"}">${P(1-f.p1)}</span><span class="t">${esc(tid(m.t2))}${logo(m.t2,18)}</span></div></div>
     <div style="margin-top:10px">${splitBar(f.p1,cA(m),cB(m))}</div></div>`}
 function matPronoBlk(m){const me=picks[m.key];
@@ -4756,18 +4804,20 @@ function scrDuel(d){
 const matDuelCol=(a,b)=>cpair(a.team,b.team);
 function matDuelMain(a,b){const D=matVsData(a,b),[ca,cb]=matDuelCol(a,b),A=esc(a.id),Bn=esc(b.id);let h="";
   const one=a.role===b.role&&typeof rkDuel1==="function"?safe(rkDuel1,a.key,b.key):"";
-  h+=`<div class="blk mat-verdict" data-pk="v">${one?`<p class="mat-why">${one}</p>`:""}${D===undefined?skel(60):D?amVsVerdict(a,b,D):matErr("amv_"+a.key+"_"+b.key)}</div>`;
   const B=SJ&&SJ.m?amFn(pBetter,a.key,b.key,a.role):null,ld=SJ&&SJ.lane?amFn(laneDuel,a.key,b.key,a.role,false):null,xa=rkOf(a),xb=rkOf(b);
   const vl=(lab,va,vb,pa,fa=v=>v,fb=fa)=>`<div class="vl"><b class="${pa>.5?"lead":""}">${fa(va)}</b><span>${lab}</span><b class="${pa<.5?"lead":""}">${fb(vb)}</b><span class="vb"><i style="width:calc(${(pa*100).toFixed(1)}% - 1px);background:${ca}"></i><i style="background:${cb}"></i></span></div>`;
   const P99=x=>x>.99?">99"+NB+"%":x<.01?"<1"+NB+"%":P(x);let v="";if(B)v+=vl("Mieux noté",B.p,1-B.p,B.p,P99);if(ld)v+=vl("Devant à 15 min (lane attendue)",ld.p,1-ld.p,ld.p,P);
   const X=D&&D.pair&&D.pair.a;if(X&&X.g)v+=vl(`Face-à-face depuis ${esc(D.since)}`,X.w,X.g-X.w,X.w/X.g);
   if(xa&&xb){const sa=xa.s,sb=xb.s;if(sa&&sb&&sa[2]!=null&&sb[2]!=null)v+=vl("Or à 15 min (saison)",sa[2],sb[2],sa[2]>sb[2]?.6:sa[2]<sb[2]?.4:.5,sgn)}
-  if(v)h+=`<div class="blk" data-pk="n"><div class="vhd"><span>${logo(a.team,18)}${A}</span><span>${Bn}${logo(b.team,18)}</span></div>${v}</div>`;
+  /* le verdict : la phrase des duels directs (rkDuel1) puis les barres ; les phrases détaillées de v13.5 (amVsVerdict : points de chances, or attendu,
+     dernières rencontres) derrière « i », pour ne pas répéter les barres en toutes lettres */
+  const det=D?matSheet("vd|"+a.key+"|"+b.key,"Le verdict en détail",()=>amVsVerdict(a,b,D)+`<p class="mat-mu">Barres : note d’impact (chances d’être le meilleur des deux), lane attendue à 15 min (modèle de lane), face-à-face en lane depuis ${esc(D.since)}, or à 15 min de la saison.</p>`):"";
+  h+=`<div class="blk mat-verdict" data-pk="v"><div class="bh">Le verdict${det?`<button class="i" data-info="${det}" aria-label="Le verdict en détail">i</button>`:""}</div>${one?`<p class="mat-why">${one}</p>`:""}${v?`<div class="vhd"><span>${logo(a.team,18)}${A}</span><span>${Bn}${logo(b.team,18)}</span></div>${v}`:""}${D===undefined&&!v?skel(60):D===null?matErr("amv_"+a.key+"_"+b.key):""}</div>`;
   if(D){const E=D.enc||[];
     let r=`<div class="bh">Rencontres en lane<span class="mat-bhr">touche une partie</span></div>`;
-    if(X&&X.g)r+=`<p class="mat-sub">Depuis ${esc(D.since)} : ${amPl(X.g,"partie")}, <b>${A} ${X.w} – ${X.g-X.w} ${Bn}</b>${X.exp!=null?` (d’après la force des équipes, ${A} en aurait gagné ${fx1(X.exp)})`:""}.${X.n15>=3?` Or à 15 min : ${amSg(X.gd/X.n15)} en moyenne pour ${A}.`:""}${D.pair.y&&D.pair.y.g?` En ${esc(D.y)} : ${D.pair.y.w}-${D.pair.y.g-D.pair.y.w}.`:""}</p>`;
-    r+=E.length?E.slice(0,5).map((x,i)=>matEncRow(a,b,x,i)).join(""):`<p class="mat-sub" style="margin:0">Aucune rencontre en lane depuis ${esc(D.since)}.</p>`;
-    if(E.length>5)r+=`<button class="btn mt0 mat-more" data-info="${matSheet("enc|"+a.key+"|"+b.key,"Toutes leurs rencontres",()=>E.map((x,i)=>matEncRow(a,b,x,i)).join(""))}">${amPl(E.length-5,"rencontre plus ancienne","rencontres plus anciennes")}</button>`;
+    if(X&&X.g&&!one)r+=`<p class="mat-sub">Depuis ${esc(D.since)} : ${amPl(X.g,"partie")}, <b>${A} ${X.w} – ${X.g-X.w} ${Bn}</b>${X.exp!=null?` (d’après la force des équipes, ${A} en aurait gagné ${fx1(X.exp)})`:""}.${X.n15>=3?` Or à 15 min : ${amSg(X.gd/X.n15)} en moyenne pour ${A}.`:""}${D.pair.y&&D.pair.y.g?` En ${esc(D.y)} : ${D.pair.y.w}-${D.pair.y.g-D.pair.y.w}.`:""}</p>`;
+    r+=E.length?E.slice(0,3).map((x,i)=>matEncRow(a,b,x,i)).join(""):`<p class="mat-sub" style="margin:0">Aucune rencontre en lane depuis ${esc(D.since)}.</p>`;
+    if(E.length>3)r+=`<button class="btn mt0 mat-more" data-info="${matSheet("enc|"+a.key+"|"+b.key,"Toutes leurs rencontres",()=>E.map((x,i)=>matEncRow(a,b,x,i)).join(""))}">${amPl(E.length-3,"rencontre plus ancienne","rencontres plus anciennes")}</button>`;
     h+=`<div class="blk" data-pk="e">${r}</div>`;
     const CO=D.common||[];
     if(CO.length){const better=CO.filter(o=>o.A[1]/o.A[0]>o.B[1]/o.B[0]).length,worse=CO.filter(o=>o.A[1]/o.A[0]<o.B[1]/o.B[0]).length;
@@ -4777,7 +4827,7 @@ function matDuelMain(a,b){const D=matVsData(a,b),[ca,cb]=matDuelCol(a,b),A=esc(a
 function matEncRow(a,b,x,i){const ds=v=>v==null?"–":fx1(v*100)+NB+"%",sc=x.sc&&x.bo>1;
   const det=()=>`<p class="mat-mu">${amWhen(x)}</p><dl class="kv mat-kv3"><dt></dt><dd>${esc(a.id)}</dd><dd>${esc(b.id)}</dd>${x.chA?`<dt>Champion</dt><dd>${esc(x.chA)}</dd><dd>${esc(x.chB)}</dd>`:""}${x.kA?`<dt>K/D/A</dt><dd>${x.kA.join("/")}</dd><dd>${x.kB.join("/")}</dd>`:""}${x.csA!=null?`<dt>CS</dt><dd>${x.csA}</dd><dd>${x.csB}</dd>`:""}${x.dsA!=null||x.dsB!=null?`<dt>Part des dégâts</dt><dd>${ds(x.dsA)}</dd><dd>${ds(x.dsB)}</dd>`:""}</dl>
     <dl class="kv">${x.gd!=null?`<dt>Or à 15 min</dt><dd>${x.gd===0?"égalité":`≈ ${amSg(Math.abs(amR(x.gd,100)))} pour ${esc((x.gd>0?a:b).id)}`}</dd>`:""}${x.csd!=null?`<dt>CS à 15 min</dt><dd>${x.csd===0?"égalité":`+${Math.abs(x.csd)} pour ${esc((x.csd>0?a:b).id)}`}</dd>`:""}${x.min?`<dt>Durée</dt><dd>${Math.round(x.min)} min</dd>`:""}${sc?`<dt>Série (Bo${x.bo})</dt><dd>${esc(x.ca)} ${esc(x.sc)} ${esc(x.cb)}</dd>`:x.bo===1?`<dt>Format</dt><dd>Bo1</dd>`:""}<dt>Vainqueur</dt><dd>${esc((x.w?a:b).id)}</dd></dl>`;
-  return `<button class="lp mat-enc" data-info="${matSheet("e|"+a.key+"|"+b.key+"|"+i,`${x.chA?x.chA+" – "+x.chB:"Rencontre"}`,det)}"><span class="lps">${x.chA?champ(x.chA,32):""}<span class="txt"><b class="${x.w?"lead":"trail"}">${x.kA?x.kA.join("/"):x.w?"V":"D"}</b><small>${amDay(x.date,x.h)}</small></span></span><span class="lgd"><small>${esc(amComp(x.comp))}</small>${x.w?"V":"D"}</span><span class="lps r">${x.chB?champ(x.chB,32):""}<span class="txt"><b class="${x.w?"trail":"lead"}">${x.kB?x.kB.join("/"):""}</b><small>${x.gd!=null?sgn(Math.round(x.gd/100)*100)+" or à 15′":""}</small></span></span></button>`}
+  return `<button class="lp mat-enc" data-info="${matSheet("e|"+a.key+"|"+b.key+"|"+i,`${x.chA?x.chA+" – "+x.chB:"Rencontre"}`,det)}"><span class="lps">${x.chA?champ(x.chA,32):""}<span class="txt"><b class="${x.w?"lead":"trail"}">${x.kA?x.kA.join("/"):x.w?"V":"D"}</b><small>${amDay(x.date,x.h)}</small></span></span><span class="lgd"><small>${esc(amComp(x.comp))}</small>${x.w?"V":"D"}</span><span class="lps r">${x.chB?champ(x.chB,32):""}<span class="txt"><b class="${x.w?"trail":"lead"}">${x.kB?x.kB.join("/"):""}</b><small>${x.gd!=null?sgn(-Math.round(x.gd/100)*100||0)+" or à 15′":""}</small></span></span></button>`}
 function matCommonHTML(a,b,CO,since){const cell=(s,me)=>`<em class="${me?"lead":""}">${s[1]}-${s[0]-s[1]}<small>${s[3]>=3?amSg(s[2]/s[3])+" à 15′":amPl(s[0],"partie")}</small></em>`;
   return `<div class="mat-co hd"><span></span><em>${esc(a.id)}</em><em>${esc(b.id)}</em></div>${CO.map(o=>{const ra=o.A[1]/o.A[0],rb=o.B[1]/o.B[0],pl=o.key&&pkey(o.key);
     return `<div class="mat-co"><span>${pl?`<button data-matgo="p/${esc(pl.key)}">${logo(pl.team,14)} <b>${esc(o.nm)}</b></button>`:`<b>${esc(o.nm)}</b> <small>${esc(o.tm)}</small>`}</span>${cell(o.A,ra>rb)}${cell(o.B,rb>ra)}</div>`}).join("")}
@@ -4810,7 +4860,7 @@ function matMotion(el){const done=el._mp||(el._mp=new Set());
 
 /* ===================== 16. feuilles « i » ===================== */
 INFO.prono=()=>["Ce match","Aperçu : le prono du robot, ton prono, les clés du match et où le regarder. Joueurs : un duel par poste (touche-le pour le détail). Draft : bans attendus, picks probables et champions déjà joués dans la série. Équipes : face-à-face, forme, saison 2026. Reviens d’un glissement depuis le bord gauche."];
-INFO.robot=()=>{const F=SJ&&SJ.fiab,E=F&&F.t&&F.t.E,w=fiabW26();return ["Comment calcule le robot",`<p>Il additionne la note d’impact des 5 joueurs de chaque équipe (corrigée de la force des ligues), puis simule la suite du tournoi ${(SJ&&SJ.sim&&SJ.sim.n||20000).toLocaleString("fr-FR")} fois. Sur une série en cours, le score déjà joué est compris.</p>`+(E?`<p>Testé à l’aveugle sur <b>${E.g[0]}</b> parties internationales : bon favori <b>${Math.round(E.g[3]*100)} %</b> du temps, et quand il annonce 75 %, l’équipe gagne environ 72 % du temps.</p>`:"")+(w?`<p>À ces Worlds : <b>${w.ok}/${w.n}</b> bons favoris.</p>`:"")+`<p>Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p><button class="btn" data-matgo="sim">Le robot a-t-il vu juste ? ›</button>`,true]};
+INFO.robot=()=>{const F=SJ&&SJ.fiab,E=F&&F.t&&F.t.E,w=fiabW26();return ["Comment calcule le robot",`<p>Il additionne la note d’impact des 5 joueurs de chaque équipe (corrigée de la force des ligues), puis simule la suite du tournoi ${(SJ&&SJ.sim&&SJ.sim.n||20000).toLocaleString("fr-FR")} fois. Sur une série en cours, le score déjà joué est compris.</p>`+(E?`<p>Testé à l’aveugle sur <b>${E.g[0]}</b> parties internationales : bon favori <b>${Math.round(E.g[3]*100)} %</b> du temps, et quand il annonce 75 %, l’équipe gagne environ 72 % du temps.</p>`:"")+(w?`<p>À ces Worlds : <b>${w.ok}/${w.n}</b> bons favoris.</p>`:"")+`<p>Les surprises restent fréquentes, c’est ce qui rend les Worlds beaux.</p><button class="btn" data-matgo="sim/rob">Le robot a-t-il vu juste ? ›</button>`,true]};
 INFOP.cles=id=>{const m=mOf(id),row=m&&SJ&&SJ.pm?safe(pmRow,m):null,C=SJ&&SJ.pm&&SJ.pm.ref&&SJ.pm.ref.cal,cal=row?safe(calTxt,row[6]):"";
   return ["Les clés du match",`<p>Chaque fait a été rejoué sur les ${amNf(C&&C.tout?C.tout.n:5810)} parties pro de 2025-2026 (dont ${amNf(C&&C.intl?C.intl.n:396)} internationales), avec seulement ce qui était connu avant le match.</p><p><b>Pèse</b> : change vraiment les chances (note d’impact des joueurs, côté). <b>Pour info</b> : va dans le même sens que la note, sans rien ajouter. <b>À surveiller</b> : piste vue aux internationales sur trop peu de séries pour conclure.</p><p>Testés et sans effet : forme des joueurs, picks préférés, expérience des Worlds, joueurs qui « se transforment » aux internationales.</p>${cal?`<p>${cal}</p>`:""}${SJ&&SJ.pm?safe(refTable):""}`,true]};
 INFOP.keys=(a,b)=>matKeyInfo("keys",a,b);INFOP.key=(a,b)=>matKeyInfo("key",a,b);
@@ -4885,7 +4935,12 @@ const plyWaitSJ=(h,n=1)=>PLY.sjDone?`<p class="empty">Les stats du robot ne sont
 function plyFit(el){if(!el||!el.isConnected||!el.classList)return;el.classList.remove("ply-fit1","ply-fit2","ply-fit3");
   /* « tient » : même règle que fitScr du socle (marge du bas rognable jusqu'à 12 px au-dessus de la barre d'accueil) */
   const sab=typeof SAB==="number"?SAB:0,ov=()=>el.scrollHeight-el.clientHeight,ok=()=>ov()<=1||el.scrollHeight-(parseFloat(getComputedStyle(el).paddingBottom)||0)+12+sab<=el.clientHeight+1;
-  if(ok()||ov()>=120)return;
+  if(ok())return;
+  /* intégrateur : une fiche (joueur, équipe, comparaison, spécial) qui dépasse 1,5 écran de moins de 90 px se resserre aussi
+     (fiche de Faker › Aperçu avec le planning réel : ×1,53 sur iPhone 12) ; une liste défile telle quelle */
+  if(ov()>=120){const d=el._d,lim=Math.round(innerHeight*1.5),tall=()=>el.scrollHeight-lim;
+    if(!d||!/^(p|t|cmp|spe)$/.test(d.v)||(d.v==="t"&&d.tab==="ma")||tall()<=0||tall()>=90)return;
+    for(const k of ["ply-fit1","ply-fit2","ply-fit3"]){el.classList.add(k);if(tall()<=0)return}return}
   for(const k of ["ply-fit1","ply-fit2","ply-fit3"]){el.classList.add(k);if(ok())return}}
 function plyFitOn(el){if(!window.ResizeObserver||!el)return;if(!el._plyRo)el._plyRo=new ResizeObserver(()=>plyFit(el));const ro=el._plyRo;ro.disconnect();ro.observe(el);const c=el.querySelector(".scrin");if(c)ro.observe(c);
   /* nouveau contenu (onglet, rerendu) : on retire le resserrement AVANT que le socle ne mesure (microtâche, avant le ResizeObserver),
@@ -4911,8 +4966,9 @@ function plyFactsBlk(keys,max=2){
   const F=SJ&&Array.isArray(SJ.fx)?SJ.fx.filter(f=>Array.isArray(f)&&f.length>=8&&f[2]):[],K=new Set(keys),k0=keys[0],has=(f,k)=>Array.isArray(f[6])&&f[6].includes(k);
   const L=[...F.filter(f=>has(f,k0)),...F.filter(f=>!has(f,k0)&&Array.isArray(f[6])&&f[6].some(k=>K.has(k)))].slice(0,2);
   if(L.length<=max)return h;
-  const lk=`<button class="ply-lk" data-info="${xi("fxm|"+keys.join(","),()=>["Le saviez-vous ?",L.map(f=>`<p>${f[7]?"<b>Nouveau.</b> ":""}${esc(f[2])}</p><p class="small">${esc(f[3])}</p>`).join(""),true])}">Un autre fait<i class="chev">›</i></button>`;
-  return h.replace(/<\/div>\s*$/,lk+"</div>")}
+  /* « Un autre fait › » dans l'en-tête du bloc (place libre à droite du titre) : pas de ligne de plus à l'écran */
+  const lk=`<button class="ply-bhl" data-info="${xi("fxm|"+keys.join(","),()=>["Le saviez-vous ?",L.map(f=>`<p>${f[7]?"<b>Nouveau.</b> ":""}${esc(f[2])}</p><p class="small">${esc(f[3])}</p>`).join(""),true])}">Un autre fait<i class="chev" aria-hidden="true">›</i></button>`;
+  return h.includes('<div class="bh">Le saviez-vous ?</div>')?h.replace('<div class="bh">Le saviez-vous ?</div>',`<div class="bh">Le saviez-vous ?${lk}</div>`):h.replace(/<\/div>\s*$/,lk.replace("ply-bhl","ply-lk")+"</div>")}
 /* ---------- widget de l'accueil : le n°1 de chaque poste ---------- */
 function wRank(k){const R=RKX();if(!R)return"";const top=ROLE_ORDER.map(r=>R.P[r]&&R.P[r].r[0]&&pkey(R.P[r].r[0][0])).filter(Boolean);
   return W("w11","rk/TOP",`<div class="wh">Classement</div><div class="wb"><div class="ws" style="margin:0 0 6px">N°1 à chaque poste</div><div class="faces">${top.map(p=>`<span>${photo(p,"ava",40)}</span>`).join("")}</div><div class="ws"><b>${esc(top[0]?top[0].id:"")}</b> meilleur top</div></div>`,k,"","Classement par poste");}
@@ -4927,8 +4983,14 @@ function plyList(){const q=norm(PLY.q),R=PLY.live?records():null;
 function plyResults(){
   const L=plyList(),f=[PLY.role!=="all"?ROLE_S[PLY.role]:null,PLY.live?"en lice":null,PLY.leg?"champions du monde":null,PLY.nat?cname(PLY.nat):null,PLY.q?"« "+PLY.q.trim()+" »":null].filter(Boolean);
   return `<div class="ply-n"><span><b>${L.length}</b> joueur${L.length>1?"s":""}${f.length?" · "+esc(f.join(", ")):""}</span>${f.length?`<button class="chip" data-plyclear>Tout effacer</button>`:""}</div>`
-    +(L.length?`<div class="ply-grid">${L.map(p=>`<button class="pl ply-card" data-go="p/${esc(p.key)}" aria-label="${esc(p.id)}, ${esc(T[p.team].name)}">${hcard(p,"mini")}</button>`).join("")}</div>`
+    +(L.length?`<div class="ply-grid">${L.slice(0,PLY_FIRST).map(plyCardHTML).join("")}${L.length>PLY_FIRST?plyLater(L.slice(PLY_FIRST)):""}</div>`
       :`<p class="empty">Aucun joueur ne correspond.</p>`)}
+/* intégrateur (performance, CPU ×4 : ouverture de 330 → ~150 ms) : les 24 premières cartes tout de suite, les autres juste après la
+   première image (elles sont sous le pli) ; un jeton évite d'insérer des cartes d'un filtre déjà remplacé */
+const PLY_FIRST=24,plyCardHTML=p=>`<button class="pl ply-card" data-go="p/${esc(p.key)}" aria-label="${esc(p.id)}, ${esc(T[p.team].name)}">${hcard(p,"mini")}</button>`;
+function plyLater(rest){const tk=PLY.tk=(PLY.tk||0)+1;
+  requestAnimationFrame(()=>setTimeout(()=>{const s=document.querySelector(`.ply-later[data-tk="${tk}"]`);if(s&&s.isConnected)s.outerHTML=rest.map(plyCardHTML).join("")},0));
+  return `<i class="ply-later" data-tk="${tk}" hidden></i>`}
 function plyMapHTML(){
   if(!PLY.map)return"";if(!PLY.svg)return `<div class="sk" style="height:168px;margin-top:6px"></div>`;
   let s=PLY.svg;if(PLY.nat)s=s.split(`data-plynat="${PLY.nat}" class="`).join(`data-plynat="${PLY.nat}" class="sel `);return s}
@@ -5050,7 +5112,7 @@ function plySpePl(focus){
   if(fp){const a=rkWorldsP1(focus);h+=`<div class="blk"><div class="bh">${photo(fp,"ava",24)} ${esc(fp.id)}</div><p class="ply-p"><b>${a[0]}</b>${a[1]?` (${a[1]})`:""}.</p><div class="ply-p">${rkWorldsP2(focus,true)}</div></div>`}
   const all=xi("speP",()=>["Les "+pl.length+" joueurs",`<p>Stats aux Worlds en plus ou en moins de leur note, en points de chances de victoire, avec la marge d’erreur à 90${NB}%.</p><div class="ply-wl">${th}${pl.map(row).join("")}</div>`,true]);
   h+=`<div class="blk"><div class="bh">Les joueurs, aux Worlds<span class="tag">écart à leur note</span><button class="i" data-info="spe" aria-label="Méthode">i</button></div>
-    <div class="ply-wl">${th}${pl.slice(0,5).map(row).join("")}</div><p class="ply-sub">En vert : au-delà de la marge, ${nup} sur ${pl.length} (le hasard en donnerait ${fx1(.05*pl.length)}).</p>
+    <div class="ply-wl">${th}${pl.slice(0,fp?3:5).map(row).join("")}</div><p class="ply-sub">En vert : au-delà de la marge, ${nup} sur ${pl.length} (le hasard en donnerait ${fx1(.05*pl.length)}).</p>
     <button class="ply-lk" data-info="${all}">Les ${pl.length} joueurs<i class="chev">›</i></button></div>`;
   return h}
 INFO.spe=()=>["Spécial Worlds",`<p>Équipes : victoires en plus ou en moins de ce que prévoyait la note de leurs joueurs, aux internationaux depuis 2024 (au moins 8 parties) ; « net » : au-delà du hasard. Joueurs : stats aux Worlds seuls en plus ou en moins de leur note, en points de chances de victoire, avec la marge d’erreur à 90${NB}% (au moins 20 parties depuis 2024), du résultat le plus sûr au moins sûr. Une tendance, pas une preuve.</p>${rkWorldsMethod()}`,true];
@@ -5063,9 +5125,10 @@ onAct("[data-rkw]",b=>{const k=b.dataset.rkw;plyAfter(()=>go("spe"+(k?(pkey(k)?"
 function scrPlayer(d){
   const p=pkey(d.id);if(!p)return {title:"Joueur",body:`<p class="empty">Joueur introuvable.</p>`};
   const x=rkOf(p),t=T[p.team],a=age(p.birth),wy=(p.worlds||[]).length,foe=SJ?safe(bestFoe,p):null,im=SJ&&SJ.m?IMP(p):null;
-  const id=[a!=null?a+" ans":null,wy?(wy===1?"1ers Worlds":wy+"e Worlds"):null].filter(Boolean).join(" · ");
+  /* profil en une ligne (P-03) : âge, ligue, n-ièmes Worlds, titres ; l'identité complète au toucher */
+  const id=[a!=null?a+" ans":null,t.league,wy?(wy===1?"premiers Worlds":wy+"e Worlds"):null,p.titles.length?plur(p.titles.length,"titre"):null].filter(Boolean).join(" · ");
   const head=`<div class="phead"><span data-tilt style="display:block">${hcard(p)}</span><div class="prk">${x?`<button class="ply-rkb" data-info="why:${esc(p.key)}:1" aria-label="Pourquoi ce rang"><span class="rn">${ordS(x.i)}</span><span class="rl">des ${x.n} ${ROLE_PL[x.role]} des Worlds</span><span class="rs">${x.lo!==x.hi?`entre ${ordi(x.lo)} et ${ordi(x.hi)} · `:""}<span class="ply-nw">note ${fxs(x.note)}${im&&im[1]?` ±${fx2(im[1])}`:""}&nbsp;<b>›</b></span></span></button>`:`<span class="rl">${ROLES[p.role]}</span>`}
-    <span class="rs" style="margin-top:6px">${esc(id)}</span>
+    <button class="ply-idb" data-info="${xi("pid|"+p.key,()=>[p.id+(p.realName?" ("+p.realName+")":""),plyIdHTML(p),true])}" aria-label="Profil de ${esc(p.id)}"><span>${esc(id)}&nbsp;<b>›</b></span></button>
     <div class="act">${x?`<button class="chip gold" data-go="rk/${p.role}">Classement ›</button>`:""}${foe?`<button class="chip" data-cmp="${esc(p.key)}|${esc(foe.key)}">Comparer ›</button>`:""}</div></div></div>`;
   return {title:`${esc(p.id)}<small>${esc(t.name)} · ${ROLES[p.role]}</small>`,info:"joueur",head,tabs:[["ap","Aperçu"],["sa","Saison"],["du","Duels"],["ch","Champions"]],
     render:tb=>tb==="sa"?plyPSa(p):tb==="du"?plyPDu(p):tb==="ch"?plyPCh(p):plyPAp(p),mount:el=>{tiltOn(el);plyFitOn(el)},needs:[plyNeedFJ(),plyNeedSJ()]};
@@ -5076,16 +5139,14 @@ function plyIdHTML(p){const t=T[p.team],b=p.birth?new Date(p.birth+"T12:00:00Z")
     <div class="ply-btns"><button class="btn" data-go="t/${esc(t.id)}">${logo(t.id,20)} Fiche ${esc(t.id)} ›</button><a class="btn" href="${lp}" target="_blank" rel="noopener">Fiche Leaguepedia ↗</a></div>
     <p class="small" style="margin-top:10px">Identité Leaguepedia et Liquipedia croisées le 24/10/2026 ; date de naissance seulement si les deux concordent.</p>`}
 function plyPAp(p){
-  let h="";const x=rkOf(p),R=RKX(),t=T[p.team],a=age(p.birth),wy=p.worlds||[];
+  let h="";const x=rkOf(p),R=RKX();
   /* prochain duel (P-08) → duel de deux joueurs (d/, module match) */
   const nm=nextOf(p.team),o=nm?oppOf(p,nm):null;
   if(o){const pr=FJ?safe(fcPair,p,o):null,rp=safe(rkPair,p.key,o.key),dl=SJ&&SJ.duels&&SJ.duels[norm(p.id)+"|"+norm(o.id)];
-    const bil=pr&&pr.a.g?`${pr.a.w}–${pr.a.g-pr.a.w} en lane depuis ${FJ.per.duo}${rp?`, ${Math.round(rp.e)} victoires attendues`:""}`:dl&&dl.g?`${dl.w}–${dl.g-dl.w} en lane depuis ${String(SJ.since||"2024").slice(0,4)}`:"jamais face à face en lane";
+    const bil=pr&&pr.a.g?`${pr.a.w}–${pr.a.g-pr.a.w} en lane depuis ${FJ.per.duo}${rp?`, ${Math.round(rp.e)} victoires attendues`:""}`:dl&&dl.g?`${dl.w}–${dl.g-dl.w} en lane depuis ${String(SJ.since||"2024").slice(0,4)}`:"jamais affrontés en lane";
     h+=`<button class="rowb ply-nd" data-go="d/${esc(p.key)}~${esc(o.key)}">${photo(p,"ava",40)}<span class="ply-vs">VS</span>${photo(o,"ava",40)}<span class="grow"><b class="nm">${nm.state==="live"?"En direct contre ":"Prochain duel : "}${esc(o.id)}</b><small>${nm.state==="live"?esc(tid(o.team)):esc(whenTxt(new Date(nm.start)))} · ${esc(bil)}</small></span><i class="chev" aria-hidden="true">›</i></button>`}
-  /* En bref (P-03 à P-07) : une ligne chacun, le détail au toucher */
+  /* En bref (P-04 à P-07) : une ligne chacun, le détail au toucher ; le profil (P-03) est dans la tête, sous le rang */
   const rows=[];
-  const idl=[a!=null?a+" ans":null,t.league,wy.length?(wy.length===1?"premiers Worlds":wy.length+"e Worlds"):null,p.titles.length?plur(p.titles.length,"titre"):null].filter(Boolean).join(" · ");
-  rows.push(plyLn("Profil",esc(idl),`data-info="${xi("pid|"+p.key,()=>[p.id+(p.realName?" ("+p.realName+")":""),plyIdHTML(p),true])}"`));
   if(x){const fs=x.fs.map(i=>rkTag(x,i,true,true)).filter(Boolean),wk=x.wk>=0?rkTag(x,x.wk,false,true):"";
     rows.push(plyLn("Rang",`${ordi(x.i)} des ${x.n} ${RK_ROLEN[x.role]}${x.lo!==x.hi?` <em>(${ordi(x.lo)} à ${ordi(x.hi)})</em>`:""}<small>${esc([fs.length?"Atout"+(fs.length>1?"s":"")+" : "+fs.join(", "):"",wk?"Faible : "+wk:""].filter(Boolean).join(". "))}</small>`,`data-info="why:${esc(p.key)}:1"`))}
   if(FJ){const F=safe(fcForm,p);if(F&&F.last.length){const w=F.last.filter(z=>z.w).length,s=F.streak;
@@ -5178,8 +5239,8 @@ function plyPCh(p){
       ${Wd.champs&&Wd.champs.length?`<button class="ply-lk" data-info="${xi("wch|"+p.key,()=>[`${p.id} aux Worlds`,`<p>Depuis ${esc(String(SJ.since||"2024").slice(0,4))} : ${Wd.g} parties, ${pct(Wd.w,Wd.g)}${NB}% de victoires, KDA ${fx2(kdaV(Wd.k,Wd.d,Wd.a))}.${now.g?` À ces Worlds 2026 : ${plur(now.g,"partie")}, ${pct(now.w,now.g)}${NB}% de victoires, KDA ${fx2(kdaV(now.k,now.d,now.a))}.`:""}</p>${champList(Wd.champs)}`,true])}">Ses champions aux Worlds : ${esc(Wd.champs.slice(0,3).map(c=>c.c).join(", "))}<i class="chev">›</i></button>`:""}</div>`}
   else if(yrs.length)h+=`<div class="blk"><div class="bh">Aux Worlds<span class="tag">${plur(yrs.length,"édition")}</span></div>${chips}<p class="ply-sub">${yrs.length===1?"Premiers Worlds en carrière.":"Aucune partie aux Worlds recensée depuis 2024."}</p></div>`;
   return h}
-INFO.joueur=()=>{const R=RKX();return ["Fiche joueur",`Rang : note d’impact du robot parmi les 19 titulaires du poste, niveau des adversaires et des ligues compris ; touche-le pour le pourquoi. Aperçu : son prochain duel et l’essentiel en une ligne chacun. Saison : stats 2026 avec le rang brut au poste, forme, style de jeu. Duels : bilans en lane depuis 2024. Champions : l’année et les Worlds.${R&&R.asof?` Classement du ${esc(String(R.asof).slice(0,10).split("-").reverse().join("/"))}.`:""}${FJ&&FJ.asof?` Rencontres et forme : parties officielles LoL Esports depuis ${esc(FJ.per.duo)}, mises à jour le ${esc(fjDate(FJ.asof.slice(0,10)))} (qualifications EWC absentes).`:""}`]};
-INFO.enbref=()=>{const R=RKX();return ["En bref",`<p>Profil : identité Leaguepedia et Liquipedia croisées. Rang : note d’impact du robot parmi les 19 titulaires du poste${R?` (stats du ${esc(String(R.asof||"").slice(0,10).split("-").reverse().join("/"))})`:""} ; entre parenthèses, la fourchette plausible ; atouts et point faible avec leur rang brut.</p><p>Forme : ses 10 dernières parties. Signature : son champion le plus joué de l’année. Némésis : au moins 8 duels en lane, au plus 40${NB}% de victoires et 5 défaites ; victoires attendues d’après la force des deux équipes partie par partie (parties officielles LoL Esports depuis 2024).</p><p>Worlds : ses stats aux internationaux comparées à sa note d’avant chaque tournoi, depuis 2024 ; « nettement » au-delà de 2 erreurs types et dans le même sens deux années de suite.</p>`,true]};
+INFO.joueur=()=>{const R=RKX();return ["Fiche joueur",`Rang : note d’impact du robot parmi les 19 titulaires du poste, niveau des adversaires et des ligues compris ; touche-le pour le pourquoi. Dessous : âge, ligue, Worlds et titres ; touche la ligne pour son identité (Leaguepedia et Liquipedia croisées). Aperçu : son prochain duel et l’essentiel en une ligne chacun. Saison : stats 2026 avec le rang brut au poste, forme, style de jeu. Duels : bilans en lane depuis 2024. Champions : l’année et les Worlds.${R&&R.asof?` Classement du ${esc(String(R.asof).slice(0,10).split("-").reverse().join("/"))}.`:""}${FJ&&FJ.asof?` Rencontres et forme : parties officielles LoL Esports depuis ${esc(FJ.per.duo)}, mises à jour le ${esc(fjDate(FJ.asof.slice(0,10)))} (qualifications EWC absentes).`:""}`]};
+INFO.enbref=()=>{const R=RKX();return ["En bref",`<p>Rang : note d’impact du robot parmi les 19 titulaires du poste${R?` (stats du ${esc(String(R.asof||"").slice(0,10).split("-").reverse().join("/"))})`:""} ; entre parenthèses, la fourchette plausible ; atouts et point faible avec leur rang brut.</p><p>Forme : ses 10 dernières parties. Signature : son champion le plus joué de l’année. Némésis : au moins 8 duels en lane, au plus 40${NB}% de victoires et 5 défaites ; victoires attendues d’après la force des deux équipes partie par partie (parties officielles LoL Esports depuis 2024).</p><p>Worlds : ses stats aux internationaux comparées à sa note d’avant chaque tournoi, depuis 2024 ; « nettement » au-delà de 2 erreurs types et dans le même sens deux années de suite.</p>`,true]};
 INFO.saison=()=>["Lire la saison","Chaque ligne : la stat 2026 et son rang brut parmi les 19 titulaires du poste, ligues mélangées. La jauge place le joueur : à droite, les meilleurs. Seule la note d’impact corrige le niveau des adversaires et des ligues : elle ne mesure ni le shotcalling ni la vision."];
 INFO.plyform=()=>{const c=FJ&&FJ.cfg&&FJ.cfg.form;return ["Forme",`« En hausse » ou « en baisse » seulement si les 10 dernières parties s’écartent de la saison d’au moins ${c?Math.round(c[1]*100):20} points de victoires ET d’une erreur type d’or à 15 min, dans le même sens. Testé sur 2025-2026 : 10 parties ne prédisent presque pas les 10 suivantes (corrélation 0,05 pour les victoires, 0,12 pour l’or), d’où cette règle stricte. Or d’une partie arrondi à 100 : le flux officiel s’écarte de gol.gg de 35 d’or en médiane.`]};
 INFO.desig=()=>{const c=FJ&&FJ.cfg;return ["Vis-à-vis marquants",`Némésis : au moins ${c?c.nem[0]:8} duels, au plus ${c?Math.round(c.nem[1]*100):40}${NB}% de victoires et ${c?c.nem[2]:5} défaites. Victime : au moins ${c?c.vic[0]:8} duels, ${c?Math.round(c.vic[1]*100):75}${NB}% de victoires et ${c?c.vic[2]:6} victoires. Plus dur ou plus facile en lane : au moins ${c?c.lane[0]:8} parties mesurées, écart d’or à 15 min d’au moins ${c?c.lane[2]:300}. Un bilan face à un adversaire reflète surtout la force des équipes, d’où les victoires attendues (« att. »).`]};
@@ -5241,8 +5302,8 @@ function plyCmpDu(a,b){
   if(X)h+=`<div class="blk"><div class="bh">En lane depuis ${esc(FJ.per.duo)}<button class="i" data-info="plyvs" aria-label="Victoires attendues">i</button></div><div class="bigvs"><div class="a"><span class="n ${X.a.w>X.a.g-X.a.w?"lead":"trail"}">${X.a.w}</span><span class="t">${esc(a.id)}</span></div><div class="c">${plur(X.a.g,"partie")}${X.y?`<br>${X.y.w}–${X.y.g-X.y.w} en ${esc(FJ.y)}`:""}</div><div class="b"><span class="n ${X.a.g-X.a.w>X.a.w?"lead":"trail"}">${X.a.g-X.a.w}</span><span class="t">${esc(b.id)}</span></div></div>${splitBar(X.a.w/X.a.g,c[0],c[1])}
     <p class="ply-sub">D’après la force des équipes, ${esc(a.id)} en aurait gagné ${fx1(X.a.exp)}.${X.a.n15>=3?` Or à 15 min : ${fjAvg(X.a.gd,X.a.n15)} en moyenne pour ${esc(a.id)}.`:""}</p></div>`;
   if(R.length){const won=R.filter(z=>z.w).length;
-    h+=`<div class="blk"><div class="bh">${R.length>1?`Leurs ${R.length} rencontres`:"Leur seule rencontre"}<span class="tag">${won}–${R.length-won}</span></div><div class="ply-encs">${R.slice(0,6).map((z,i)=>plyEncRow(a,b,z,i)).join("")}</div>
-      ${R.length>6?`<button class="ply-lk" data-info="${xi("enc|"+a.key+"|"+b.key,()=>[`${a.id} – ${b.id} : toutes leurs rencontres`,`<div class="ply-encs">${R.map((z,i)=>plyEncRow(a,b,z,i)).join("")}</div>`,true])}">Les ${R.length} rencontres<i class="chev">›</i></button>`:""}
+    h+=`<div class="blk"><div class="bh">${R.length>1?`Leurs ${R.length} rencontres`:"Leur seule rencontre"}<span class="tag">${won}–${R.length-won}</span></div><div class="ply-encs">${R.slice(0,5).map((z,i)=>plyEncRow(a,b,z,i)).join("")}</div>
+      ${R.length>5?`<button class="ply-lk" data-info="${xi("enc|"+a.key+"|"+b.key,()=>[`${a.id} – ${b.id} : toutes leurs rencontres`,`<div class="ply-encs">${R.map((z,i)=>plyEncRow(a,b,z,i)).join("")}</div>`,true])}">Les ${R.length} rencontres<i class="chev">›</i></button>`:""}
       <p class="note">Touche une partie pour le détail. Heures de Paris.</p></div>`}
   return h}
 /* repli sans fiche.json : dernières rencontres de stats.json (SJ.dr), vues de a (recentDuels de v13.5) */
@@ -5260,9 +5321,9 @@ function plyEncHTML(a,b,x){return `<p>${esc(fjWhen(x.date,x.h))}, ${esc(x.comp)}
 INFO.cmp=()=>["Comparaison","Saison : le plus fort ligues comprises (note d’impact du robot), puis les stats brutes de la saison face à face, le meilleur en or. Champions : les 5 plus joués de chacun en 2026. Duels : leurs rencontres en lane, partie par partie. « Changer d’adversaire » : un autre joueur du même poste."];
 INFO.cmpimp=()=>["Le plus fort, ligues comprises","La note d’impact du robot corrige la force des adversaires et de la ligue, contrairement aux stats brutes. Probabilité d’être meilleur : d’après les rééchantillonnages du robot. Points de chances : écart de note converti en chances de victoire dans une partie équilibrée (écart × "+fx2(SJ&&SJ.m&&SJ.m.logit?SJ.m.logit[1]:.64)+" × 25). Lane : modèle de lane du robot, testé à l’aveugle."];
 
-/* ---------- liens généraux ---------- */
-/* un lien touché dans une feuille : la feuille se ferme (avec son entrée d'historique), puis l'écran s'ouvre */
-onAct("#shB [data-go],#shB [data-p],#shB [data-t],#shB [data-m],#shB [data-cmp],#shB [data-vs]",g=>{for(const a in GO_ATTR){const v=g.dataset[a];if(v){vib(8);plyAfter(()=>go(GO_ATTR[a](v)));return}}});
+/* ---------- liens généraux ----------
+   un lien de navigation touché dans une feuille (data-go, data-p, data-t, data-cmp…) : géré par le socle (SHEET.after,
+   une seule entrée d'historique). plyAfter ne sert plus qu'aux actions propres au module (pays, tri, changer d'adversaire, data-rkw). */
 
 /* ---------- branchements ---------- */
 defScreen("pl",{arg:"none",screen:scrPlayers});
@@ -5297,12 +5358,12 @@ function scrTeams(){return {title:`Les ${TEAMS.length} équipes<small>Worlds 202
 function teaListBody(){
   const R=records(),f=TEA.lg,list=TEAMS.filter(t=>f==="all"||t.league===f).sort((a,b)=>(status(a.id,R).k==="out")-(status(b.id,R).k==="out"));
   const seg=`<div class="ply-seg tea-lgs" role="group" aria-label="Ligue">${[["all","Toutes"],...Object.keys(LEAGUES).map(k=>[k,k])].map(([k,l])=>`<button data-tealg="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>`;
-  return seg+`<div class="tea-grid">${list.map(t=>{const st=status(t.id,R),P=teamPlayers(t.id),nats=[...new Set(P.map(p=>p.cc))],L=lives(t.id,R),nx=teaNext(t.id);
+  return seg+`<div class="tea-grid">${list.map(t=>{const st=status(t.id,R),P=teamPlayers(t.id),nats=[...new Set(P.map(p=>p.cc))],L=lives(t.id,R),nx=teaNext(t.id),fm=teaFormHTML(t.id);
     return `<button class="pl tea-card${st.k==="out"?" out":""}" style="--tc:${t.color}" data-go="t/${t.id}" aria-label="${esc(t.name)}, ${esc(st.txt)}">
       <span class="wm">${logo(t.id,110)}</span><span class="hd">${logo(t.id,36)}<b>${esc(t.name)}</b>${fav===t.id?`<i class="tea-star" title="Mon équipe">${TEA_ISTAR}</i>`:""}</span>
       <span class="ln">${flag(t.cc)}${esc(t.seed)}${P.some(p=>p.titles.length)?`<i class="ply-cup" title="Un champion du monde dans l’effectif">${ICUP}</i>`:""}</span>
       ${nats.length>1?`<span class="ln fls">${P.map(p=>flag(p.cc)).join("")}</span>`:""}
-      ${teaFormHTML(t.id)?`<span class="ln">${teaFormHTML(t.id)}</span>`:""}${L?`<span class="ln">${teaPips(L)}${esc(L.txt)}</span>`:""}${nx?`<span class="ln nx">${teaNextTxt(nx,t.id)}</span>`:""}
+      ${fm?`<span class="ln">${fm}</span>`:""}${L?`<span class="ln">${teaPips(L)}${esc(L.txt)}</span>`:""}${nx?`<span class="ln nx">${teaNextTxt(nx,t.id)}</span>`:""}
       <span class="tea-st ${st.k}">${esc(st.txt)}</span></button>`}).join("")}</div>`}
 onAct("[data-tealg]",b=>{TEA.lg=b.dataset.tealg;vib(6);const el=plyTop("teams");if(el)refreshTab(el,0)});
 INFO.teams=()=>["Les équipes","Les 19 équipes des Worlds, les éliminées en dernier. Sur chaque carte : tête de série, nationalités de l’effectif, forme aux Worlds (5 dernières séries), défaites encore permises, prochain match et statut. Touche une carte pour la fiche."];
@@ -5316,16 +5377,19 @@ function scrTeam(d){
   const head=`<div class="tea-hero" style="--tc:${t.color}"><span class="wm">${logo(t.id,190)}</span>
     <div class="tea-hin">${logo(t.id,60)}<div class="tea-hid"><h2>${esc(t.name)}</h2><p>${flag(t.cc)} ${esc(t.seed)} · ${t.entry==="pi"?"entrée au Play-In":"entrée en phase suisse"}</p></div></div>
     ${t.note?`<p class="tea-note">${esc(t.note)}</p>`:""}
-    <div class="tea-hst"><span class="tea-st ${st.k}">${esc(st.txt)}</span>${L?`<span class="tea-lv">${teaPips(L)}${esc(L.txt)}</span>`:""}<button class="tea-fav" data-fav="${t.id}" aria-pressed="${fav===t.id}">${TEA_ISTAR}${fav===t.id?"Mon équipe":"Suivre"}</button></div></div>`;
+    <div class="tea-hst"><span class="tea-st ${st.k}">${esc(st.txt)}</span>${L?`<span class="tea-lv">${teaPips(L)}${esc(L.txt)}</span>`:""}<button class="tea-fav" data-fav="${t.id}" aria-pressed="${fav===t.id}">${TEA_ISTAR}${fav===t.id?"Mon équipe":"Suivre"}</button></div>${teaTrail(t.id)}</div>`;
   return {title:`${esc(t.name)}<small>${esc(t.league)} · ${esc(LEAGUES[t.league]||"")}</small>`,info:"equipe",head,tabs:[["ap","Aperçu"],["sa","Saison"],["ma","Matchs"]],
     render:tb=>tb==="sa"?teaSa(t):tb==="ma"?teaMa(t):teaAp(t),mount:plyFitOn,needs:[plyNeedSJ()]};
 }
+/* parcours aux Worlds dans le héros (swiTrail du module suisse : une case par série, le prochain match en pointillés, les places
+   suisses restantes) + le prochain match en clair (tnext de v13.5) ; "" si le module suisse manque (repli : bloc « À ces Worlds » de l'Aperçu) */
+function teaTrail(id){if(typeof swiTrail!=="function"||typeof swiState!=="function")return"";const tr=safe(swiTrail,id,swiState());if(!tr)return"";const nx=teaNext(id);
+  return `<div class="tea-htr">${tr}${nx?`<span class="tea-hnx">${teaNextTxt(nx,id)}</span>`:""}</div>`}
 function teaAp(t){
   const id=t.id,R=records(),st=status(id,R),nx=teaNext(id),D=teaDone(id);let h="";
-  /* à ces Worlds : forme (séries), prochain match */
-  h+=`<div class="blk"><div class="bh">À ces Worlds${D.length?`<span class="tag">${D.filter(m=>m.winner===id).length}–${D.filter(m=>m.winner!==id).length} en séries</span>`:""}</div>
-    ${typeof swiTrail==="function"&&typeof swiState==="function"?(safe(swiTrail,id,swiState())||(nx?mrow(nx):`<p class="ply-sub" style="margin-top:0">${st.k==="out"?esc(st.txt)+".":"Pas de match connu pour l’instant."}</p>`))
-      :`${D.length?`<div class="tea-fps">${D.slice(-5).map(m=>{const o=teaOpp(m,id),w=m.winner===id;return `<button class="tea-fp ${w?"ply-w":"ply-l"}" data-go="m/${esc(m.id)}" aria-label="${w?"Victoire":"Défaite"} contre ${esc(tid(o))}">${logo(o,20)}<b>${w?"V":"D"}</b><small>${m.s1!=null?(m.t1===id?`${m.s1}-${m.s2}`:`${m.s2}-${m.s1}`):""}</small></button>`}).join("")}</div>`:""}
+  /* à ces Worlds : dans le héros (teaTrail) ; ici seulement sans parcours (module suisse absent) : forme (séries), prochain match */
+  if(!teaTrail(id))h+=`<div class="blk"><div class="bh">À ces Worlds${D.length?`<span class="tag">${D.filter(m=>m.winner===id).length}–${D.filter(m=>m.winner!==id).length} en séries</span>`:""}</div>
+    ${`${D.length?`<div class="tea-fps">${D.slice(-5).map(m=>{const o=teaOpp(m,id),w=m.winner===id;return `<button class="tea-fp ${w?"ply-w":"ply-l"}" data-go="m/${esc(m.id)}" aria-label="${w?"Victoire":"Défaite"} contre ${esc(tid(o))}">${logo(o,20)}<b>${w?"V":"D"}</b><small>${m.s1!=null?(m.t1===id?`${m.s1}-${m.s2}`:`${m.s2}-${m.s1}`):""}</small></button>`}).join("")}</div>`:""}
     ${nx?`<div style="margin-top:${D.length?"8px":"0"}">${mrow(nx)}</div>`:`<p class="ply-sub" style="margin-top:${D.length?"10px":"0"}">${st.k==="out"?esc(st.txt)+".":/Champion/.test(st.txt)?"Champion du monde 2026.":"Prochain adversaire pas encore tiré."}</p>`}`}</div>`;
   /* les cinq : portraits sans défilement horizontal */
   h+=`<div class="blk"><div class="bh">Les cinq<span class="tag">${[...new Set(teamPlayers(id).map(p=>p.cc))].map(c=>flag(c)).join("")}</span></div><div class="tea-five">${teamPlayers(id).map(p=>{const x=rkOf(p);
@@ -5338,29 +5402,36 @@ function teaBrief(t){
   const id=t.id,R=RKX(),S=SJ&&SJ.sim,M=SJ&&SJ.m,rows=[];
   const inS=!!(S&&S.S&&S.S[id]!=null),src=inS?S.S:M&&M.t;
   if(src&&src[id]!=null){const L=Object.entries(src).sort((a,b)=>b[1]-a[1]),i=L.findIndex(z=>z[0]===id)+1;
-    rows.push(plyLn("Force",`${rkFem(i)} force sur ${L.length}<small>notes de ses 5 titulaires : ${fx2(src[id])}</small>`,`data-info="${xi("tf|"+id,()=>["La force des équipes",`<p>${inS?"Équipes de la phase suisse":"Équipes des Worlds"} : somme des notes d’impact des 5 titulaires (niveau des adversaires et des ligues compris).</p><div class="tea-fl">${L.map(([x,v],j)=>`<button class="tea-fr${x===id?" me":""}" data-go="t/${esc(x)}"><span>${j+1}</span>${logo(x,20)}<b>${esc(tid(x))}</b><i><i style="width:${Math.max(2,v/L[0][1]*100).toFixed(1)}%"></i></i><em>${fx2(v)}</em></button>`).join("")}</div>`,true])}"`))}
+    rows.push(plyLn("Force",`${rkFem(i)} force sur ${L.length} <em>(${fx2(src[id])})</em>`,`data-info="${xi("tf|"+id,()=>["La force des équipes",`<p>${inS?"Équipes de la phase suisse":"Équipes des Worlds"} : somme des notes d’impact des 5 titulaires (niveau des adversaires et des ligues compris).</p><div class="tea-fl">${L.map(([x,v],j)=>`<button class="tea-fr${x===id?" me":""}" data-go="t/${esc(x)}"><span>${j+1}</span>${logo(x,20)}<b>${esc(tid(x))}</b><i><i style="width:${Math.max(2,v/L[0][1]*100).toFixed(1)}%"></i></i><em>${fx2(v)}</em></button>`).join("")}</div>`,true])}"`))}
   const e=S&&S.eq&&S.eq[id],st=status(id,records());
   if(e&&st.k!=="out"){const nx=(S.mt||[]).find(r=>r[1]===id||r[2]===id),lab=["3-0","3-1","3-2","2-3","1-3","0-3"];
     rows.push(plyLn("Chances",`Titre ${rkPct(e[10])}${NB}%, finale ${rkPct(e[9])}${NB}%<small>demies ${rkPct(e[8])}${NB}%, quarts ${rkPct(e[7])}${NB}%</small>`,`data-info="${INFOP.swt?"swt:"+esc(id):xi("tc|"+id,()=>["Ses chances selon le robot",`<p>Titre <b>${rkPct(e[10])}${NB}%</b>, finale ${rkPct(e[9])}${NB}%, demies ${rkPct(e[8])}${NB}%, quarts ${rkPct(e[7])}${NB}%.</p><p>Bilan final probable en phase suisse (actuel : ${esc(e[0])}) :</p><div class="tea-dist">${lab.map((l,j)=>`<span><i style="height:${Math.max(2,e[1+j]*100).toFixed(0)}%"></i><b>${rkPct(e[1+j])}${NB}%</b><small>${l}</small></span>`).join("")}</div>${nx?`<p>Prochain match contre ${esc(tid(nx[1]===id?nx[2]:nx[1]))} (Bo${nx[3]}) : <b>${rkPct(nx[1]===id?nx[4]:1-nx[4])}${NB}%</b> de chances.</p>`:""}<p class="small">${((S.n)||20000).toLocaleString("fr-FR")} tournois simulés avec les résultats déjà acquis. Probabilités du robot, pas des certitudes.</p><button class="btn" data-go="sim">Qui va gagner ces Worlds ? ›</button>`,true])}"`))}
   const P=teamPlayers(id).map(p=>rkFind(p.key)).filter(Boolean);
   if(P.length){const S2=[...P].sort((a,b)=>a.i-b.i),top=S2.filter(x=>x.i<=5),sh=(top.length?top:S2.slice(0,1)).slice(0,3);
-    rows.push(plyLn("Joueurs",`${esc(sh.map(x=>`${rkNm(x.key)} ${rkOrd(x.i)}`).join(", "))}<small>rang à leur poste (note d’impact)</small>`,`data-info="${xi("tj|"+id,()=>["Ses joueurs au classement",`<p>Rang de la note d’impact parmi les titulaires du poste, ligues comprises. Touche un joueur pour sa fiche.</p><div class="list">${P.map(x=>{const p=pkey(x.key);return p?`<button class="ply-rkr" data-go="p/${esc(p.key)}"><span class="n">${x.i}${x.lo!==x.hi?`<small>${x.lo}–${x.hi}e</small>`:""}</span>${photo(p,"ava",38)}<span class="tx"><b>${esc(p.id)}</b><small>${ROLE_S[p.role]} · ${rkLine(x)}</small></span><em class="${x.note<0?"neg":""}">${fxs(x.note)}</em></button>`:""}).join("")}</div>`,true])}"`))}
-  const wt=R&&R.T?rkWorldsT1(id):null;
+    rows.push(plyLn("Joueurs",`${esc(sh.map(x=>`${rkNm(x.key)} ${rkOrd(x.i)}`).join(", "))}`,`data-info="${xi("tj|"+id,()=>["Ses joueurs au classement",`<p>Rang de la note d’impact parmi les titulaires du poste, ligues comprises. Touche un joueur pour sa fiche.</p><div class="list">${P.map(x=>{const p=pkey(x.key);return p?`<button class="ply-rkr" data-go="p/${esc(p.key)}"><span class="n">${x.i}${x.lo!==x.hi?`<small>${x.lo}–${x.hi}e</small>`:""}</span>${photo(p,"ava",38)}<span class="tx"><b>${esc(p.id)}</b><small>${ROLE_S[p.role]} · ${rkLine(x)}</small></span><em class="${x.note<0?"neg":""}">${fxs(x.note)}</em></button>`:""}).join("")}</div>`,true])}"`))}
+  const wt=R&&R.T?teaWT1(id):null;
   if(wt)rows.push(plyLn("Grands tournois",`${wt[0]}<small>${wt[1]}</small>`,`data-info="${xi("tw|"+id,()=>["Aux grands tournois",rkWorldsT2(id),true])}"`));
   return rows.length?`<div class="blk tea-brief"><div class="bh">Le robot en bref<button class="i" data-info="teabrief" aria-label="D’où viennent ces lignes">i</button></div><div class="ply-lns">${rows.join("")}</div></div>`:(SJ||PLY.sjDone?"":skel(120))}
+/* grands tournois en une ligne : victoires réelles − attendues et le verdict de rkWorldsT1 (v13.5) : « net » au-delà du hasard (v[7]),
+   comme prévu si l'écart est sous une erreur type (|v[3]| < 1), sinon dans la marge d'erreur ; le détail (rkWorldsT2) au toucher */
+function teaWT1(id){const R=RKX(),v=R&&R.T&&R.T[id];if(!v||!v[0])return null;const x=v[1]-v[2];
+  const lab=v[7]>0?"au-delà du hasard":v[7]<0?"en dessous, au-delà du hasard":Math.abs(v[3])<1?"comme prévu":"dans la marge d’erreur";
+  return [`${rkSg(x,fx1)} victoire${Math.abs(x)>=1.95?"s":""} <em>(${lab})</em>`,`${rkWE(v[1],v[2],v[0])} aux internationaux depuis 2024`]}
 /* saison 2026 (renderTeamSeason de v13.5) et début de partie (flTeamHTML) */
 function teaSa(t){
   const id=t.id,S=SJ&&SJ.teams&&SJ.teams[id];if(!SJ)return plyWaitSJ(200);
   if(!S||!S.g)return `<p class="empty">Pas de parties 2026 recensées.</p>`;
   const dur=v=>Math.floor(v)+" min "+String(Math.round(v%1*60)).padStart(2,"0");let h="";
-  h+=`<div class="blk"><div class="bh">Saison 2026<span class="tag">${S.g} parties</span><button class="i" data-info="teasaison" aria-label="Sources">i</button></div>${tiles([[`${S.sw}-${S.sl}`,"séries"],[pct(S.gw,S.g)+NB+"%",`des ${S.g} parties`],[pct(S.bw,S.bn)+NB+"%",`côté bleu (${S.bn} parties)`],[pct(S.rw,S.rn)+NB+"%",`côté rouge (${S.rn} parties)`],[fx1(S.k),"kills par partie"],[fx1(S.dr),"dragons par partie"],[(S.gd>0?"+":"")+fx1(S.gd/1000)+NB+"k","écart d’or final"],[dur(S.gl),"durée moyenne"]])}</div>`;
+  /* début de partie 2026 (flTeamHTML de v13.5, SJ.fl.t) : une ligne sous les tuiles, le détail au toucher */
+  const f=SJ.fl&&SJ.fl.t&&SJ.fl.t[id];let fl="";
+  if(f&&f[0]>=10){const pc=(a,b)=>b?Math.round(a/b*100)+NB+"%":"–",[n,,fb,fbw,ft,ftw,fd,fdw,nb,fn,fnw,,,so,sow,soa]=f;
+    fl=`<div class="ply-lns ply-sty">${plyLn("Début de partie",`1er sang ${pc(fb,n)} · 1re tour ${pc(ft,n)} · 1er dragon ${pc(fd,n)}${so?`<small>âme du dragon ${so} fois en ${n} parties</small>`:""}`,`data-info="${xi("tfl|"+id,()=>["Début de partie",`<p>Saison 2026, ${n} parties au flux complet.</p><p>Quand ${esc(tid(id))} fait le premier sang, elle gagne <b>${pc(fbw,fb)}</b> de ces parties ; la première tour, <b>${pc(ftw,ft)}</b> ; le premier dragon, <b>${pc(fdw,fd)}</b>.</p><p>Premier Baron dans ${pc(fn,nb)} des parties avec un Baron (${pc(fnw,fn)} gagnées). Âme du dragon : ${so} fois, ${sow} gagnées ; âme adverse : ${soa} fois.</p>`,true])}"`)}</div>`}
+  h+=`<div class="blk"><div class="bh">Saison 2026<span class="tag">${S.g} parties</span><button class="i" data-info="teasaison" aria-label="Sources">i</button></div>${tiles([[`${S.sw}-${S.sl}`,"séries"],[pct(S.gw,S.g)+NB+"%",`des ${S.g} parties`],[pct(S.bw,S.bn)+NB+"%",`côté bleu (${S.bn} parties)`],[pct(S.rw,S.rn)+NB+"%",`côté rouge (${S.rn} parties)`],[fx1(S.k),"kills par partie"],[fx1(S.dr),"dragons par partie"],[(S.gd>0?"+":"")+fx1(S.gd/1000)+NB+"k","écart d’or final"],[dur(S.gl),"durée moyenne"]])}${fl}</div>`;
   if(S.last&&S.last.length){const L=S.last,w=L.filter(x=>x.won).length;
     const row=x=>`<${x.oid?`button data-go="t/${esc(x.oid)}"`:"div"} class="tea-sr ${x.won?"ply-w":"ply-l"}">${x.oid?logo(x.oid,24):`<span class="mono" style="width:24px;height:24px;background:var(--card2)">?</span>`}<span class="grow"><b>${esc(x.oid?tid(x.oid):String(x.opp))}</b><small>${esc(tourName(x.op))} · ${esc(fmtShort(x.dt))}</small></span><em>${x.s}-${x.o}</em><i>${x.won?"V":"D"}</i></${x.oid?"button":"div"}>`;
-    h+=`<div class="blk"><div class="bh">${L.length} dernières séries<span class="tag ${w>L.length-w?"on":""}">${w}–${L.length-w}</span></div><div class="tea-ls">${L.map(x=>`<i class="${x.won?"ply-w":"ply-l"}" title="${esc(x.oid?tid(x.oid):x.opp)} ${x.s}-${x.o}">${x.oid?logo(x.oid,20):`<b>${esc(String(x.opp).slice(0,3))}</b>`}</i>`).join("")}</div>
-      <button class="ply-lk" data-info="${xi("tl|"+id,()=>[`${t.name} : ${L.length} dernières séries`,`<div class="list">${L.map(row).join("")}</div>`,true])}">Le détail des séries<i class="chev">›</i></button></div>`}
-  const f=SJ.fl&&SJ.fl.t&&SJ.fl.t[id];
-  if(f&&f[0]>=10){const pc=(a,b)=>b?Math.round(a/b*100)+NB+"%":"–",[n,,fb,fbw,ft,ftw,fd,fdw,nb,fn,fnw,,,so,sow,soa]=f;
-    h+=`<div class="blk"><div class="bh">Début de partie</div><div class="ply-lns">${plyLn("Premiers objectifs",`1er sang ${pc(fb,n)} · 1re tour ${pc(ft,n)} · 1er dragon ${pc(fd,n)}${so?`<small>âme du dragon ${so} fois en ${n} parties</small>`:""}`,`data-info="${xi("tfl|"+id,()=>["Début de partie",`<p>Saison 2026, ${n} parties au flux complet.</p><p>Quand ${esc(tid(id))} fait le premier sang, elle gagne <b>${pc(fbw,fb)}</b> de ces parties ; la première tour, <b>${pc(ftw,ft)}</b> ; le premier dragon, <b>${pc(fdw,fd)}</b>.</p><p>Premier Baron dans ${pc(fn,nb)} des parties avec un Baron (${pc(fnw,fn)} gagnées). Âme du dragon : ${so} fois, ${sow} gagnées ; âme adverse : ${soa} fois.</p>`,true])}"`)}</div></div>`}
+    /* la bande entière ouvre le détail (adversaire, compétition, date, score) ; « Le détail › » dans l'en-tête */
+    const det=xi("tl|"+id,()=>[`${t.name} : ${L.length} dernières séries`,`<div class="list">${L.map(row).join("")}</div>`,true]);
+    h+=`<div class="blk"><div class="bh">${L.length} dernières séries<span class="tag ${w>L.length-w?"on":""}">${w}–${L.length-w}</span><button class="ply-bhl" data-info="${det}">Le détail<i class="chev" aria-hidden="true">›</i></button></div><button class="tea-ls" data-info="${det}" aria-label="Le détail des ${L.length} dernières séries">${L.map(x=>`<i class="${x.won?"ply-w":"ply-l"}" title="${esc(x.oid?tid(x.oid):x.opp)} ${x.s}-${x.o}">${x.oid?logo(x.oid,20):`<b>${esc(String(x.opp).slice(0,3))}</b>`}</i>`).join("")}</button></div>`}
   return h}
 /* ses matchs à ces Worlds, puis les face-à-face (SJ.h2h) avec les équipes de ces Worlds affrontées en 2026 */
 function teaMa(t){
@@ -5382,8 +5453,8 @@ function teaH2H(a,b){
     ${H.intl.aw+H.intl.bw?`<p class="ply-sub" style="text-align:center">En compétition internationale : ${esc(tid(a))} ${H.intl.aw}, ${esc(tid(b))} ${H.intl.bw}</p>`:""}
     <div class="tea-h2">${H.list.map(z=>`<div class="tea-h2r"><span>${esc(fmtShort(z.dt))}<small>${esc(tourName(z.op))}</small></span><b><em class="${z.aWon?"ply-w":""}">${z.as}</em>-<em class="${z.aWon?"":"ply-w"}">${z.bs}</em></b>${logo(z.aWon?a:b,20)}</div>`).join("")}</div>`}
 /* « Suivre » : data-fav, géré par le socle (setFav dans app.js : w26_fav, toucher à nouveau retire, comme v13.5) */
-INFO.equipe=()=>["Fiche équipe","Aperçu : sa forme à ces Worlds, son prochain match, l’avis du robot (force, chances, joueurs, grands tournois) et ses cinq titulaires. Saison : stats 2026, dernières séries, début de partie. Matchs : ses matchs à ces Worlds et les face-à-face. « Suivre » : ses matchs sont mis en avant dans l’appli."];
-INFO.teabrief=()=>["Le robot en bref",`<p>Force : somme des notes d’impact des 5 titulaires (niveau des adversaires et des ligues compris). Chances : ${((SJ&&SJ.sim&&SJ.sim.n)||20000).toLocaleString("fr-FR")} tournois simulés avec les résultats déjà acquis. Joueurs : rang de la note d’impact parmi les 19 titulaires du poste. Grands tournois : victoires réelles moins victoires attendues d’après la note de ses joueurs avant chaque tournoi, depuis 2024.</p>`,true];
+INFO.equipe=()=>["Fiche équipe","En tête : son statut, les défaites encore permises, son parcours à ces Worlds (une case par série, le prochain match en pointillés, les places suisses restantes) et son prochain match. Aperçu : ses cinq titulaires, l’avis du robot (force, chances, joueurs, grands tournois) et un fait. Saison : stats 2026, côtés bleu et rouge, dernières séries, début de partie. Matchs : ses matchs à ces Worlds et les face-à-face. « Suivre » : ses matchs sont mis en avant dans l’appli."];
+INFO.teabrief=()=>["Le robot en bref",`<p>Force : somme des notes d’impact des 5 titulaires (niveau des adversaires et des ligues compris). Chances : ${((SJ&&SJ.sim&&SJ.sim.n)||20000).toLocaleString("fr-FR")} tournois simulés avec les résultats déjà acquis. Joueurs : rang de la note d’impact parmi les 19 titulaires du poste. Grands tournois : victoires réelles moins victoires attendues d’après la note de ses joueurs avant chaque tournoi, depuis 2024 ; « au-delà du hasard » : au moins 2 erreurs types, 20 parties et le même sens en 2024 et depuis 2025 ; « comme prévu » : moins d’une erreur type d’écart.</p>`,true];
 INFO.teasaison=()=>["Saison 2026","Toutes les compétitions officielles de 2026 (ligue, First Stand, MSI, EWC, Worlds). Côtés : victoires côté bleu et côté rouge. Écart d’or final : différence d’or moyenne en fin de partie. Données du robot (LoL Esports)."];
 
 /* ---------- branchements ---------- */
@@ -6012,8 +6083,13 @@ const leaPend=()=>MATCHES.filter(x=>picks[x.key]&&!x.winner&&x.t1&&x.t2);
 const leaDue=()=>MATCHES.filter(x=>x.state==="soon"&&x.t1&&x.t2&&!picks[x.key]&&new Date(x.start)-Date.now()<24*3600e3).length;
 
 /* ===================== widgets de l'accueil ===================== */
-function wBets(k){const {done,good,open}=betStats(),p=done.length?good/done.length:0,due=leaDue();
-  return W("w11","bets",`<div class="wh">Mes paris${due?`<em class="lea-due">${due}</em>`:""}</div><div class="wb" style="flex-direction:row;align-items:flex-end;justify-content:space-between;gap:8px"><div style="min-width:0"><div class="wn">${good}<small>/${done.length}</small></div><div class="ws">${open.length?`<b>${open.length}</b> à parier`:"tout est parié"}</div></div><span class="ring">${ringSVG(p)}<b>${done.length?Math.round(p*100):"–"}</b></span></div>`,k,"",`Mes paris : ${good} sur ${done.length} gagnés`);}
+/* une seule indication, lisible en 2 secondes : les matchs à parier de la prochaine soirée (« 4 ce soir », « 2 demain »,
+   « 3 mardi »), sinon « à jour » ; la liste complète est dans Mes paris › À parier (intégrateur, demandes du socle 02:55 et 10:00) */
+function leaNextDue(open){if(!open.length)return null;const o=open.slice().sort((a,b)=>new Date(a.start)-new Date(b.start)),dk=dayKeyL(new Date(o[0].start)),n=o.filter(x=>dayKeyL(new Date(x.start))===dk).length;
+  const today=dayKeyL(new Date()),tom=dayKeyL(new Date(Date.now()+864e5)),wd=new Intl.DateTimeFormat("fr-FR",{weekday:"long"}).format(evDate(new Date(o[0].start)));
+  return {n,when:dk===today?"ce soir":dk===tom?"demain":wd}}
+function wBets(k){const {done,good,open}=betStats(),p=done.length?good/done.length:0,nx=leaNextDue(open);
+  return W("w11","bets",`<div class="wh">Mes paris</div><div class="wb" style="flex-direction:row;align-items:flex-end;justify-content:space-between;gap:8px"><div style="min-width:0"><div class="wn">${good}<small>/${done.length}</small></div><div class="ws">${nx?`<b>${nx.n}</b> ${nx.when}`:"à jour"}</div></div><span class="ring">${ringSVG(p)}<b>${done.length?Math.round(p*100):"–"}</b></span></div>`,k,"",`Mes paris : ${good} sur ${done.length} gagnés${nx?`, ${nx.n} à parier ${nx.when}`:", tout est parié"}`);}
 function wLeague(k){const S=leaStand(),me=S.find(u=>u.me),bot=S.find(u=>u.bot);
   if(lg&&leaOthers()){const f=S[0];
     return W("w11","lg",`<div class="wh">Ligue<em>${esc(lg.code)}</em></div><div class="wb"><div class="wn">${ordS(me.rank)}<small>/${S.length}</small></div><div class="ws"><b>${plur(me.pts,"pt")}</b> · ${f===me||f.pts===me.pts?"en tête":"1<sup>er</sup>"+" : "+esc(f.name)}</div></div>`,k,"",`Ligue ${lg.code}`);}
@@ -6119,7 +6195,7 @@ const leaCode=()=>`<div class="lea-code" aria-label="Code ${esc(lg.code)}">${[..
 function leaLbMotion(){const el=topScreen();if(!lg||!el||!el._d||el._d.v!=="lg")return;const box=el.querySelector(".lea-lb[data-code]");if(!box)return;
   const rows=[...box.querySelectorAll(".lea-r")];if(rows.length<2)return;
   const cur=rows.map(r=>{const e=r.querySelector(":scope>em");return {r,n:r.dataset.nm,e,p:e?parseInt(e.textContent,10)||0:0}});
-  const key="w26_mv_lb_"+lg.code;let prev=null;try{prev=JSON.parse(localStorage.getItem(key)||"null")}catch(e){}
+  const key="w26pp_mv_lb_"+lg.code;let prev=null;try{prev=JSON.parse(localStorage.getItem(key)||"null")}catch(e){}
   const now={o:cur.map(x=>x.n),p:{}};cur.forEach(x=>now.p[x.n]=x.p);try{localStorage.setItem(key,JSON.stringify(now))}catch(e){}
   if(RM||!Element.prototype.animate||!prev||!Array.isArray(prev.o)||!prev.p)return;
   if(prev.o.join("\n")===now.o.join("\n")&&now.o.every(n=>prev.p[n]===now.p[n]))return;
