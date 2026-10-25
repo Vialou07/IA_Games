@@ -132,7 +132,7 @@ function diagReport(){relayHealth();
 }
 async function diagAction(a){
   if(a==="run"){runDiag();return}
-  if(a==="sync"){toast("Actualisation…");SJt=0;if(typeof LV!=="undefined")LV.liveT=0;await sync();paintSet();toast(SYNC.off?"Sources injoignables":"Données à jour");return}
+  if(a==="sync"){toast("Actualisation…");if(await checkVersion(true))return;SJt=0;if(typeof LV!=="undefined")LV.liveT=0;await sync();paintSet();toast(SYNC.off?"Sources injoignables":"Données à jour");return}
   if(a==="photos"){loadPhotos(true);return}
   if(a==="copy"){try{await navigator.clipboard.writeText(diagReport());toast("Rapport copié")}catch(e){toast("Copie impossible")}}
 }

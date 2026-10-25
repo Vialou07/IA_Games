@@ -9,7 +9,7 @@
    prend la hauteur restante, sans min-height en vh) ; un écran dont le contenu tient reçoit .fit (défilement coupé : rien ne
    bouge, ni « mini défilement » ni rebond) ; html et body ne défilent jamais (overscroll-behavior:none).
    ===================================================================================== */
-const APP_VERSION="v14.1, 25/10/2026";
+const APP_VERSION="v14.2, 25/10/2026";
 const BASE="https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/";
 const QS=new URLSearchParams(location.search),FORCE_MO=QS.get("mo");
 /* état propre à la refonte (MATCHES, SOURCE, lastSync, picks, manual, fav, celebrated, ui : legacy « état » ;
@@ -31,6 +31,13 @@ const sgn=v=>(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("fr-F
 const plur=(n,w,ws)=>n+" "+(n>1?(ws||w+"s"):w);
 const safe=(f,...a)=>{try{return f(...a)}catch(e){console.warn(e);return""}};
 const pkey=k=>PLAYERS.find(p=>p.key===k)||null;
+/* nouvelle version en ligne ? GitHub Pages garde la page 10 min en cache : on la relit sans cache et, si APP_VERSION a changé,
+   on recharge (une seule fois par version et par onglet, sauf demande explicite depuis le diagnostic) */
+async function newVersion(){try{const r=await fetch(location.pathname+"?nv="+Date.now(),{cache:"no-store"});if(!r.ok)return null;
+  const v=((await r.text()).match(/const APP_VERSION="(v[^"]+)"/)||[])[1];return v&&v!==APP_VERSION?v:null}catch(e){return null}}
+async function checkVersion(force){const v=await newVersion();if(!v)return false;
+  try{if(!force&&sessionStorage.getItem("w26_nv")===v)return false;sessionStorage.setItem("w26_nv",v)}catch(e){if(!force)return false}
+  location.replace(location.pathname+"?v="+encodeURIComponent(v.split(",")[0])+location.hash);return true}
 const toast=msg=>{const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2200)};
 const XI=new Map(),XK=new Map();
 function xi(key,fn){let id=XK.get(key);if(id==null){id=XK.size;XK.set(key,id)}XI.set(id,fn);return "x:"+id}
@@ -375,7 +382,8 @@ function boot(){
   champMap().then(()=>{if(MATCHES.length){renderHome(HOME);NAV.forEach(x=>rerender(x.el))}});
   quickStart();sync();
   /* retour dans l'appli après plus d'une minute : synchro immédiate (v13.5, 2092) */
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&(!lastSync||Date.now()-lastSync>60e3))sync()});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&(!lastSync||Date.now()-lastSync>60e3)){sync();if(!NAV.length)checkVersion(false)}});
+  setTimeout(()=>{if(!NAV.length)checkVersion(false)},4000);
   if(IMPORTED)setTimeout(()=>toast("Profil de "+IMPORTED+" repris sur ce navigateur"),1500);
   /* iPhone : le clavier (recherche) peut décaler la page fixe ; à sa fermeture, on la remet à sa place */
   const unshift=()=>setTimeout(()=>{const se=document.scrollingElement;if(scrollY||(se&&se.scrollTop)){window.scrollTo(0,0);if(se)se.scrollTop=0}},80);
