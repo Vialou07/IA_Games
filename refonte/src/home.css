@@ -121,3 +121,29 @@
 .hero .cdl{align-items:center;gap:10px}.hero .cdl .cdd{margin:0}
 /* la grande carte se touche : chevron en haut à droite */
 .w22.hero .hmeta::after{content:"›";flex:none;display:grid;place-items:center;width:26px;height:26px;margin-left:8px;border-radius:50%;background:rgba(5,11,24,.45);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:17px;font-weight:700;line-height:1}
+/* ce soir : un match joué se lit comme un résultat (vainqueur en avant, perdant estompé, prono ✓ ou ✗) */
+.wrow.res time{font-size:11px;font-family:var(--body);font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.4px}
+.wrow.res .mt span{display:inline-flex;align-items:center;gap:5px;min-width:0}
+.wrow.res .mt .lo{opacity:.42}.wrow.res .mt .wi{color:#fff}
+.wrow.res .mt i.sc{color:var(--gold2);font-family:var(--disp);font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.wrow.res .rb{display:inline-flex;align-items:center;gap:4px}
+.pkr{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:800;color:#fff;background:var(--dim)}
+.wrow.res.ok .pkr{background:#0AC8B9;color:#04201E}.wrow.res.ko .pkr{background:#E84057}
+.grid.first .wrow{animation:wIn .45s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 180ms)}
+.grid.first .wrow:nth-child(2){animation-delay:calc(var(--k,0) * 45ms + 250ms)}.grid.first .wrow:nth-child(3){animation-delay:calc(var(--k,0) * 45ms + 320ms)}
+.grid.first .pkr{animation:pkPop .5s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 520ms)}
+@keyframes pkPop{from{transform:scale(0)}70%{transform:scale(1.25)}}
+/* widget agrandi pour remplir l'écran : le contenu respire (affiche au centre, pied en bas) */
+.w.grow.hero .vs{margin-top:auto;margin-bottom:auto}
+.w.grow.hero .side .ti,.w.grow.hero .side img{transition:transform .3s}
+.weve .rgrid{margin-top:auto;margin-bottom:auto}.weve .wb{flex:none;margin-top:0}
+/* prochaine étape (jour sans affiche) : titre, qualifiés, pancartes */
+.nday .ndw{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;gap:34px;text-align:center}   /* le faisceau passe entre le titre et les qualifiés */
+.nday .ndq small{flex-basis:100%;font-size:11px;font-weight:600;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.6px}
+.nday .ndt{font-family:var(--disp);font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1.02;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+.nday .ndq{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:300px}
+.nday .ndq span{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(5,11,24,.5);border:1px solid rgba(255,255,255,.12);animation:wIn .5s var(--ease) backwards;animation-delay:calc(var(--i,0) * 70ms + 200ms)}
+.nday .ws{color:rgba(255,255,255,.7)}
+.nday .hfoot{margin-top:0}.nday .cdl{justify-content:center}
+@media (prefers-reduced-motion:reduce){.grid.first .wrow,.grid.first .pkr,.nday .ndq span{animation:none}}
+.hom-ob .mic{width:13px;height:13px;vertical-align:-2px}.hom-ob .mic.br{width:15px;height:15px}

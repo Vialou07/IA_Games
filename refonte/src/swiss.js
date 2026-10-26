@@ -81,25 +81,6 @@ function swiHead(S){
   const seg=[1,2,3,4,5].map(i=>{const d=S.over||i<S.r||(!S.drawn&&i<=S.played),c=!S.over&&i===S.r&&!d;return `<i class="${d?"d":c?"c":""}"></i>`}).join("");
   return `<div class="swi-hd"><div class="swi-hl"><b>${S.over?"Terminée":`Ronde ${S.r}<small> sur 5</small>`}</b><div class="swi-sg">${seg}</div></div><div class="swi-ct"><span class="cq"><b>${S.q}</b>en quarts</span>${S.over?"":`<span><b>${S.teams.length-S.q-S.x}</b>en lice</span>`}<span class="cx"><b>${S.x}</b>dehors</span></div></div>`;
 }
-function swiGroups(S,round){
-  const L=S.sw.filter(m=>m.round===round);if(!L.length)return "";
-  const pre=id=>{const p=S.P[id]||[[0,0]];return (p[round-1]||p[p.length-1]).join("-")},G={};
-  L.forEach(m=>{const k=pre(m.t1);(G[k]=G[k]||[]).push(m)});
-  return Object.keys(G).sort(swiRecSort).map(k=>{const g=G[k].sort((a,b)=>a.start.localeCompare(b.start)),bo=g.some(m=>m.bo>1);
-    return `<div class="swi-gh${swiStakeCls(k)}"><b>${k}</b><span>${esc(swiStake(k))}</span>${bo?`<em>Bo3</em>`:""}</div><div class="list">${g.map(mrow).join("")}</div>`}).join("");
-}
-function swiTabRound(S){
-  let h=swiMine(S);
-  if(S.over){const R=records(),Q=S.teams.filter(t=>swiRec(S.P,t.id)[0]>=3).map(t=>t.id);
-    return h+`<div class="blk"><div class="bh">Phase suisse terminée</div><p class="swi-lead">${Q.length} équipes en quarts de finale.</p><div class="swi-ql">${Q.map(id=>swiQT(id,S)).join("")}</div><button class="btn" data-tab="fn">Voir la phase finale</button></div>`}
-  const rr=S.drawn?S.r:S.played;
-  if(S.drawn)h+=`<div class="swi-tt">Ronde ${rr}<small>${plur(S.open.length,"match à jouer","matchs à jouer")}</small></div>`;
-  else if(rr)h+=`<div class="swi-tt">Ronde ${rr}<small>résultats</small></div>`;
-  h+=swiGroups(S,rr);
-  if(!S.drawn){const nd=swiNextDraw(S.r),tb=MATCHES.filter(m=>m.stage==="sw"&&!(m.t1&&m.t2)&&!m.winner).length;
-    h+=`<div class="blk swi-nx"><div class="bh">Ronde ${S.r}</div><p class="swi-lead">${nd?`${esc(nd.tir.charAt(0).toUpperCase()+nd.tir.slice(1))}.`:"Affiches publiées au tirage."}</p><p class="small">${tb?`${plur(tb,"match annoncé","matchs annoncés")}, affiches au tirage. `:""}${nd?`Premiers matchs ${esc(fmtDay(evDate(nd.dt)).toLowerCase())} à ${esc(fmtTime(nd.dt))}.`:""}</p></div>`}
-  return h;
-}
 /* l'arbre suisse, repensé en vertical : une rangée par ronde, une case par bilan, aucune largeur fixe */
 const SWI_CAP={"0-0":16,"1-0":8,"0-1":8,"2-0":4,"1-1":8,"0-2":4,"3-0":2,"2-1":6,"1-2":6,"0-3":2,"3-1":3,"2-2":6,"1-3":3,"3-2":3,"2-3":3};
 const SWI_ROWS=[[[0,0]],[[1,0],[0,1]],[[2,0],[1,1],[0,2]],[[3,0],[2,1],[1,2],[0,3]],[[3,1],[2,2],[1,3]],[[3,2],[2,3]]];
@@ -143,15 +124,25 @@ INFOP.swn=k=>{const S=swiState(),R=records(),[w,l]=String(k).split("-").map(Numb
   const lead=w===3?"Trois victoires : qualifiées pour les quarts de finale.":l===3?"Trois défaites : éliminées de ces Worlds.":`Prochain match en ${w===2||l===2?"Bo3":"Bo1"} : ${swiStake(k)}.`;
   return [t,`<p>${esc(lead)}</p>${here.length?`<h4 class="swi-sh">${w===3||l===3?"Les équipes":"Ici maintenant"}</h4><div class="list">${here.map(id=>swiSheetRow(id,R,S,false)).join("")}</div>`:`<p class="small">${past.length?"Plus personne ici : toutes ont avancé.":"Personne pour l’instant."}</p>`}${past.length?`<h4 class="swi-sh">Passées par là</h4><div class="list">${past.map(id=>swiSheetRow(id,R,S,true)).join("")}</div>`:""}`,true]};
 /* bilans : qualifiées, en lice (sursis), éliminées */
-function swiTabBilans(S){
-  const R=records(),key=id=>{const [w,l]=swiRec(S.P,id);return [w,l]};const e=id=>SJ&&SJ.sim&&SJ.sim.eq&&SJ.sim.eq[id];
+function swiTabChances(S,cas){
+  /* bilans et chances du robot réunis : une ligne par équipe, groupées en quarts / en lice / éliminées ; podium du titre en tête */
+  const R=records(),SIM=SJ&&SJ.sim,E=SIM&&SIM.eq||null,e=id=>E&&E[id],key=id=>swiRec(S.P,id),fin=MATCHES.find(m=>m.stage==="f"&&m.winner);
   const ids=S.teams.map(t=>t.id).sort((a,b)=>{const [wa,la]=key(a),[wb,lb]=key(b);return wb-wa||la-lb||((e(b)||[])[10]||0)-((e(a)||[])[10]||0)});
+  const mx=Math.max(.01,...ids.map(id=>(e(id)||[])[10]||0));let k=0,h="";
+  if(fin)h+=`<div class="blk swi-champ" data-t="${esc(fin.winner)}" role="button" tabindex="0"><span class="swi-cup">${ICUP}</span>${logo(fin.winner,64)}<b>${esc(T[fin.winner]?T[fin.winner].name:fin.winner)}</b><small>Champion du monde 2026</small></div>`;
+  else if(E){const top=Object.entries(E).sort((a,b)=>b[1][10]-a[1][10]).slice(0,3);
+    h+=`<div class="swi-pod${cas?" cas":""}">${top.map(([t,v],i)=>`<button class="swi-pp p${i+1}" data-info="swt:${esc(t)}" aria-label="${esc(tid(t))} : ${rkPct(v[10])} % de chances de titre">${i?"":`<span class="swi-cup">${ICUP}</span>`}${logo(t,i?38:50)}<b>${esc(tid(t))}</b><strong>${rkPct(v[10])}${NB}%</strong><span class="swi-bar"><i style="width:${Math.max(2,v[10]/top[0][1][10]*100).toFixed(1)}%;--k:${i}"></i></span></button>`).join("")}</div>`}
+  const row=id=>{const [w,l]=key(id),L=lives(id,R),x=e(id),i=k++,q=w>=3,o=l>=3;
+    const qc=q?`<span class="swi-cq ok" aria-label="en quarts">${SWI_OK}</span>`:o?`<span class="swi-cq ko" aria-label="éliminée">${SWI_KO}</span>`
+      :x?`<span class="swi-cq"><b>${rkPct(x[7])}${NB}%</b><span class="swi-bar t"><i style="width:${Math.max(2,x[7]*100).toFixed(1)}%;--k:${i}"></i></span></span>`:`<span class="swi-cq"></span>`;
+    const tc=x&&!o?`<span class="swi-cg"><b>${rkPct(x[10])}${NB}%</b><span class="swi-bar"><i style="width:${Math.max(2,x[10]/mx*100).toFixed(1)}%;--k:${i}"></i></span></span>`:`<span class="swi-cg"></span>`;
+    return `<button class="swi-cr${id===fav?" me":""}${o?" out":""}" ${x?`data-info="swt:${esc(id)}"`:`data-t="${esc(id)}"`} style="--k:${i}"><span class="tn">${logo(id,26)}<b>${esc(tid(id))}</b></span><span class="rc"><b>${w}-${l}</b>${w<3&&l<3?swiPips(L):""}</span>${qc}${tc}</button>`};
   const grp=[["bq","En quarts",ids.filter(id=>key(id)[0]>=3)],["bin","En lice",ids.filter(id=>key(id)[0]<3&&key(id)[1]<3)],["bx","Éliminées",ids.filter(id=>key(id)[1]>=3)]];
-  const row=id=>{const [w,l]=key(id),L=lives(id,R);
-    return `<button class="rowb swi-br${id===fav?" me":""}${l>=3?" out":""}" data-t="${esc(id)}">${logo(id,30)}<span class="grow"><b class="nm">${esc(tid(id))}${swiFull(id)}</b><small>${swiSubHTML(id,R)}</small></span><span class="swi-bv"><b>${w}-${l}</b>${w<3&&l<3?swiPips(L):""}</span></button>`};
+  h+=`<div class="blk swi-chs${cas?" cas":""}"><div class="swi-ch"><span></span><span>Bilan</span><span>Quarts</span><span>Titre</span></div>`
+    +grp.filter(g=>g[2].length).map(([c,lab,L])=>`<div class="swi-gh ${c}"><b>${lab}</b><span>${L.length}</span></div>${L.map(row).join("")}`).join("")+`</div>`;
   const pi=TEAMS.filter(t=>!S.teams.some(x=>x.id===t.id));
-  return grp.filter(g=>g[2].length).map(([k,lab,L])=>`<div class="swi-gh ${k}"><b>${lab}</b><span>${L.length}</span></div><div class="list">${L.map(row).join("")}</div>`).join("")
-    +(pi.length?`<div class="swi-gh bx"><b>Éliminées au Play-In</b><span>${pi.length}</span></div><div class="swi-pig">${pi.map(t=>`<button class="swi-qt out" data-t="${t.id}">${logo(t.id,26)}<b>${esc(t.id)}</b></button>`).join("")}</div>`:"");
+  if(pi.length)h+=`<div class="swi-gh bx"><b>Éliminées au Play-In</b><span>${pi.length}</span></div><div class="swi-pig">${pi.map(t=>`<button class="swi-qt out" data-t="${t.id}">${logo(t.id,26)}<b>${esc(t.id)}</b></button>`).join("")}</div>`;
+  return h+(SIM?`<p class="note">${(SIM.n||20000).toLocaleString("fr-FR")} tournois simulés · ${esc(simMaj(SIM))}</p>`:"");
 }
 /* sous-ligne d'une équipe avec « EN DIRECT » en pastille */
 function swiSubHTML(id,R){const nx=nextOf(id);if(nx&&nx.state==="live")return `${esc(swiSub(id,R,false))} · <span class="lv">LIVE</span> contre ${esc(tid(swiOpp(nx,id)))}`;return esc(swiSub(id,R))}
@@ -168,11 +159,10 @@ function swiTabKO(S){
   const fin=MATCHES.find(m=>m.stage==="f"&&m.winner);let h="";
   if(fin)h+=`<div class="blk swi-champ" data-t="${esc(fin.winner)}" role="button" tabindex="0"><span class="swi-cup">${ICUP}</span>${logo(fin.winner,64)}<b>${esc(T[fin.winner]?T[fin.winner].name:fin.winner)}</b><small>Champion du monde 2026</small></div>`;
   const Q=S.teams.filter(t=>swiRec(S.P,t.id)[0]>=3).map(t=>t.id),qfKnown=MATCHES.some(m=>m.stage==="qf"&&m.t1&&m.t2);
-  if(!fin&&!qfKnown){const e=SJ&&SJ.sim&&SJ.sim.eq,left=8-Q.length,cand=e&&left>0?S.teams.map(t=>t.id).filter(id=>{const [w,l]=swiRec(S.P,id);return w<3&&l<3&&e[id]}).sort((a,b)=>e[b][7]-e[a][7]).slice(0,Math.min(8,left+2)):[];
-    h+=`<div class="blk"><div class="bh">${Q.length?"Déjà en quarts":"Les mieux placées pour les quarts"}<button class="i swi-i" data-info="swfin" aria-label="Comment se fait le tirage">i</button></div>
+  if(!fin&&!qfKnown){
+    h+=`<div class="blk"><div class="bh">${Q.length?`En quarts<span class="swi-bhs">${Q.length}/8</span>`:"Phase finale"}<button class="i swi-i" data-info="swfin" aria-label="Comment se fait le tirage">i</button></div>
       ${Q.length?`<div class="swi-ql">${Q.map(id=>swiQT(id,S)).join("")}</div>`:""}
-      ${cand.length?`${Q.length?`<p class="swi-lead">Encore ${plur(left,"place")}. Les mieux placées selon le robot :</p>`:""}<div class="swi-ql">${cand.map(id=>`<button class="swi-qt" data-info="swt:${esc(id)}">${logo(id,26)}<b>${esc(tid(id))}</b><small>${rkPct(e[id][7])}${NB}%</small></button>`).join("")}</div>`:""}
-      <p class="small" style="margin:8px 0 0">${Q.length?"":"Chances d’aller en quarts selon le robot. "}Tirage des quarts le 31 octobre.</p></div>`}
+      <p class="small" style="margin:8px 0 0">Tirage des quarts le 31 octobre.</p><button class="chip swi-tochs" data-tab="ch">Chances de chaque équipe ›</button></div>`}
   [["qf","Quarts de finale",4],["sf","Demi-finales",2],["f","Finale",1]].forEach(([s,lab,n])=>{
     const L0=MATCHES.filter(m=>m.stage===s).sort((a,b)=>a.start.localeCompare(b.start)),kn=L0.filter(m=>m.t1||m.t2),L=kn.length>=n?kn:L0,cov=new Set(L.map(m=>dayKeyL(new Date(m.start))));
     const ph=DAYS.filter(d=>d.stage===s).map(d=>({dt:new Date(d.d+"T"+d.t+":00Z"),lab:d.what.replace(/^Quart de finale/,"Quart").replace(/^Demi-finale/,"Demie").replace(/^Grande finale/,"Finale")})).filter(x=>!cov.has(dayKeyL(x.dt)));
@@ -182,12 +172,13 @@ function swiTabKO(S){
   return h||`<p class="empty">Phase finale pas encore programmée.</p>`;
 }
 function scrSui(d){
-  const S=swiState();if(!d.tab)d.tab=S.over?"fn":"rd";
-  return {title:`Phase suisse<small>${S.over?"terminée":`ronde ${S.r} sur 5${S.drawn?"":" · tirage à venir"}`}</small>`,info:"sui",head:swiHead(S),tabs:[["rd","Ronde"],["tb","Tableau"],["bl","Bilans"],["fn","Finale"]],
-    render:t=>t==="tb"?swiTree(S):t==="bl"?swiTabBilans(S):t==="fn"?swiTabKO(S):swiTabRound(S)};
+  const S=swiState();if(!d.tab||!["tb","ch","fn","rob"].includes(d.tab))d.tab=S.over?"fn":"tb";
+  return {title:`Phase suisse<small>${S.over?"terminée":`ronde ${S.r} sur 5${S.drawn?"":" · tirage à venir"}`}</small>`,info:"sui",head:swiHead(S),tabs:[["tb","Tableau"],["ch","Chances"],["fn","Finale"],["rob","Robot"]],
+    needs:SJ?[]:[loadSJ()],
+    render:t=>{const cas=swiAnimOn(d);return t==="ch"?swiTabChances(S,cas):t==="fn"?swiTabKO(S):t==="rob"?swiFiab():swiTree(S)+(fav&&T[fav]?swiMine(S):"")}};
 }
 INFO.sui=()=>["Phase suisse",`<p>16 équipes, 5 rondes : 3 victoires pour les quarts, 3 défaites pour la sortie. On affronte une équipe au même bilan. Matchs décisifs (qualification ou élimination) en Bo3, les autres en Bo1.</p>
-  <p><b>Ronde</b> : les affiches de la ronde, groupées par bilan, avec l’enjeu. <b>Tableau</b> : le chemin de chaque équipe. <b>Bilans</b> : qui est qualifié, en lice, éliminé, et le sursis (pastilles : défaites encore permises). <b>Finale</b> : le tableau à élimination directe.</p>`,true];
+  <p><b>Tableau</b> : le chemin de chaque équipe. <b>Chances</b> : bilan, défaites encore permises (pastilles) et chances du robot pour les quarts et le titre. <b>Finale</b> : le tableau à élimination directe. <b>Robot</b> : ses pronos match par match. Les matchs eux-mêmes sont dans le Calendrier.</p>`,true];
 INFO.swtree=()=>["Le tableau suisse",`<p>Une rangée par ronde, une case par bilan (victoires-défaites). Logos vifs : les équipes qui y sont maintenant ; pâles : celles qui y sont passées.</p>
   <p>Trait sarcelle : la victoire mène à la case de gauche ; trait rouge : la défaite, à celle de droite. Cases sarcelle : qualifiées pour les quarts ; rouges : éliminées.${fav?` En or : le parcours de ${esc(tid(fav))}.`:""}</p><p>Touche une case pour voir ses équipes.</p>`,true];
 INFO.swfin=()=>["Phase finale",`<p>Tirage des quarts le 31 octobre. Les deux équipes à 3-0 seront placées dans des moitiés de tableau opposées, face à des équipes à 3-2. Quarts du 3 au 6 novembre, demies les 7 et 8, finale le 14 au Barclays Center (Brooklyn, New York). Tout en Bo5.</p>`,true];
@@ -195,25 +186,6 @@ INFO.swfin=()=>["Phase finale",`<p>Tirage des quarts le 31 octobre. Les deux éq
 /* ===================== QUI VA GAGNER (sim) ===================== */
 const simMaj=S=>S.maj?"mis à jour "+new Date(S.maj).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"}):"";
 function swiWho(){const R=RKX(),W2=R&&R.W;if(!W2||!W2.fav)return [];return [["fav",W2.fav],...(W2.ch||[]).map(x=>["ch",x]),...(W2.out?[["out",W2.out]]:[])]}
-function swiSimTitle(S,cas){
-  const fin=MATCHES.find(m=>m.stage==="f"&&m.winner),L=swiWho();let h="";
-  if(fin)h+=`<div class="blk swi-champ" data-t="${esc(fin.winner)}" role="button" tabindex="0"><span class="swi-cup">${ICUP}</span>${logo(fin.winner,64)}<b>${esc(T[fin.winner]?T[fin.winner].name:fin.winner)}</b><small>Champion du monde 2026</small></div>`;
-  if(L.length&&!fin){const mx=Math.max(...L.map(([,x])=>x.p[0]))||1,[k0,f0]=L[0];
-    const bar=(v,i)=>`<span class="swi-bar"><i style="width:${Math.max(2,v/mx*100).toFixed(1)}%;--k:${i}"></i></span>`;
-    h+=`<div class="blk swi-who${cas?" cas":""}"><p class="swi-ans">${rkWho1()}</p>
-      <button class="swi-fav" data-info="swt:${esc(f0.t)}">${logo(f0.t,50)}<span class="grow"><b>${esc(tid(f0.t))}<span class="swi-kd">${RK_KIND[k0]}</span></b><small>${esc(rkTeamShort(f0))}</small></span><strong>${rkPct(f0.p[0])}${NB}%</strong>${bar(f0.p[0],0)}</button>
-      ${L.slice(1).map(([k,x],i)=>`<button class="swi-tr" data-info="swt:${esc(x.t)}">${logo(x.t,28)}<span class="grow"><b>${esc(tid(x.t))}<span class="swi-kd${k==="out"?" o":""}">${RK_KIND[k]}</span></b><small>${esc(rkTeamShort(x))}</small></span><em>${rkPct(x.p[0])}${NB}%</em>${bar(x.p[0],i+1)}</button>`).join("")}</div>`}
-  else if(!fin){const rows=Object.entries(S.eq).sort((a,b)=>b[1][10]-a[1][10]).slice(0,5),mx=rows[0][1][10]||1;
-    h+=`<div class="blk swi-who${cas?" cas":""}">${rows.map(([t,v],i)=>`<button class="swi-tr" data-info="swt:${esc(t)}">${logo(t,28)}<span class="grow"><b>${esc(tid(t))}</b><small>bilan ${esc(v[0])} · quarts ${rkPct(v[7])}${NB}%</small></span><em>${rkPct(v[10])}${NB}%</em><span class="swi-bar"><i style="width:${Math.max(2,v[10]/mx*100).toFixed(1)}%;--k:${i}"></i></span></button>`).join("")}</div>`}
-  h+=`<button class="rowb swi-spe" data-go="spe"><span class="grow"><b class="nm">Spécial Worlds</b><small>qui se transforme aux grands tournois ?</small></span><span class="chev">›</span></button>`;
-  return h+`<p class="note">${(S.n||20000).toLocaleString("fr-FR")} tournois simulés · ${esc(simMaj(S))}</p>`;
-}
-function swiSimTable(S,cas){
-  const rows=Object.entries(S.eq).sort((a,b)=>b[1][10]-a[1][10]||b[1][7]-a[1][7]);
-  return `<div class="blk swi-tbl${cas?" cas":""}"><div class="swi-th"><span></span><span>Bilan</span><span>Quarts</span><span>Demies</span><span>Titre</span></div>
-    ${rows.map(([t,v],i)=>{const [w,l]=String(v[0]).split("-").map(Number);return `<button class="swi-td${t===fav?" me":""}${l>=3?" out":""}" data-info="swt:${esc(t)}"><span class="tn">${logo(t,22)}<b>${esc(tid(t))}</b></span><span>${esc(v[0])}</span><span>${rkPct(v[7])}${NB}%</span><span>${rkPct(v[8])}${NB}%</span><span class="ti"><span class="swi-bar"><i style="width:${Math.min(100,v[10]*200).toFixed(1)}%;--k:${i}"></i></span><b>${rkPct(v[10])}${NB}%</b></span></button>`}).join("")}</div>
-    `;
-}
 /* le robot a-t-il vu juste ? (fiabHTML de v13.5 : même décompte, mis en page façon B) */
 function swiFiab(){
   const F=SJ&&SJ.fiab;if(!F||!F.w26||!F.w26.m||!F.w26.m.length)return `<p class="empty">Pas encore de match joué : le bilan du robot arrive avec le premier résultat.</p>`;
@@ -250,12 +222,8 @@ INFOP.swt=a=>{const S=SJ&&SJ.sim,e=S&&S.eq&&S.eq[a];const W2=RKX()&&RKX().W;let 
     h+=`<h4 class="swi-sh">Évolution de ses chances de titre</h4><div class="swi-evo"><svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}"/></svg><span>${rkPct(hs[0])}${NB}%</span><b>${rkPct(hs[n])}${NB}%</b></div>`}
   h+=`<div class="swi-sb"><button class="btn" data-t="${esc(a)}">Fiche ${esc(tid(a))}</button>${nx?`<button class="btn" data-m="${esc(nx.id)}">Son prochain match</button>`:""}</div>`;
   return [`${tid(a)}${kind?" · "+RK_KIND[kind]:""}`,h,true]};
-function scrSim(d){const S=SJ&&SJ.sim;
-  if(!S||!S.eq)return {title:"Qui va gagner ?",info:"sim",body:SJ?`<p class="empty">Simulation pas encore publiée par le robot.</p>`:skel(56,7),needs:SJ?[]:[loadSJ()]};
-  const fin=MATCHES.some(m=>m.stage==="f"&&m.winner);
-  return {title:`Qui va gagner ?<small>${fin?"le verdict":"chances de titre selon le robot"}</small>`,info:"sim",tabs:[["ti","Titre"],["tb","Tableau"],["rob","Robot"]],
-    render:t=>{const cas=swiAnimOn(d);return t==="tb"?swiSimTable(S,cas):t==="rob"?swiFiab():swiSimTitle(S,cas)}};
-}
+/* « Qui va gagner ? » vit maintenant dans la phase suisse (onglets Chances et Robot) : l'ancienne route y mène */
+function scrSim(d){if(!d._sim){d._sim=1;d.tab=d.tab==="rob"?"rob":"ch"}return scrSui(d)}
 INFO.sim=()=>{const s=SJ&&SJ.sim,W2=RKX()&&RKX().W;return ["Qui va gagner ?",(s?rkSimInfo(s,W2):"")+`<p>Probabilités du robot, pas des certitudes.${s&&s.modele&&/secours/.test(s.modele)?" Modèle de secours utilisé cette fois.":""}${s&&s.maj?` Mis à jour ${esc(new Date(s.maj).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"}))}.`:""}</p>`,true]};
 
 /* ===================== CALENDRIER (cal) ===================== */

@@ -92,18 +92,30 @@ function boardRows(A,B){const best=S=>S.reduce((b,x)=>x&&x.ds!=null&&(!b||x.ds>b
     return `<div class="ls-r">${cell(a,0,bA,bA&&bA.ds)}<span class="ls-m${gd==null||Math.abs(gd)<150?"":gd>0?" a":" b"}"><small>${r==="BOT"?"ADC":r}</small>${gd==null?"":Math.abs(gd)<150?"=":l2k(Math.abs(gd))}</span>${cell(b,1,bB,bB&&bB.ds)}</div>`}).join("")}</div>`}
 /* rangée d'objectifs : tours, dragons (couleur du type), Barons, inhibiteurs, des deux côtés */
 function homObj(S){const dr=x=>(x.dragons||[]).slice(0,5).map(t=>`<i class="hom-dg" style="background:${typeof DRAG!=="undefined"&&DRAG[t]||"var(--gold)"}" title="${esc(t)}"></i>`).join("")||`<i class="hom-dg no"></i>`;
-  const sd=(x,r)=>`<span class="hom-ob${r?" r":""}"><span>${ITOW}${x.towers||0}</span><span class="hom-dgs">${dr(x)}</span><span>${IBAR}${x.barons||0}</span><span>${IINH}${x.inhibitors||0}</span></span>`;
+  const sd=(x,r)=>`<span class="hom-ob${r?" r":""}"><span>${typeof MIC!=="undefined"?MIC.tw:ITOW}${x.towers||0}</span><span class="hom-dgs">${dr(x)}</span><span>${typeof MIC!=="undefined"?MIC.br:IBAR}${x.barons||0}</span><span>${typeof MIC!=="undefined"?MIC.ih:IINH}${x.inhibitors||0}</span></span>`;
   return `<div class="hom-obj">${sd(S.A)}${sd(S.B,1)}</div>`}
 
 /* ===================== listes et prochain match ===================== */
+/* un match joué n'est jamais « ensuite » : vainqueur en avant, perdant estompé, ton prono juste (✓) ou faux (✗) ;
+   titre selon le contenu (Thomas, 26/10) : tout joué = résultats, mélange = ce soir, rien de joué = le titre demandé */
 function wTonight(list,k,title="Ce soir"){
-  const rows=list.slice(0,3).map(x=>{const f=seriesFav(x),st=new Date(x.start),pk=picks[x.key],fv=fav&&(x.t1===fav||x.t2===fav);
-    const dot=x.winner?(pk?`<span class="dotp ${pk===x.winner?"ok":"ko"}"></span>`:`<span class="dotp none"></span>`):pk?`<span class="mypk" title="Ton prono">${logo(pk,16)}</span>`:typeof betOpen==="function"&&betOpen(x)?`<span class="dotp todo" title="À parier"></span>`:`<span class="dotp none"></span>`;
-    return `<div class="wrow${fv?" fav":""}"><time>${x.state==="live"?`<span class="lv">LIVE</span>`:fmtTime(st)}</time><span class="mt">${logo(x.t1,18)}${esc(tid(x.t1))}<i>${x.winner?`${x.s1}-${x.s2}`:"vs"}</i>${esc(tid(x.t2))}${logo(x.t2,18)}</span><span class="rb">${f&&!x.winner?`${esc(tid(f.t))} <b>${P(f.p)}</b> `:""}${dot}</span></div>`}).join("");
+  const L=list.slice(0,3),done=L.filter(x=>x.winner),mine=done.filter(x=>picks[x.key]),good=mine.filter(x=>picks[x.key]===x.winner).length;
+  const ttl=!done.length?title:done.length===L.length?"Résultats de ce soir":"Ce soir";
+  const rows=L.map(x=>{const f=seriesFav(x),st=new Date(x.start),pk=picks[x.key],fv=fav&&(x.t1===fav||x.t2===fav),w=x.winner;
+    if(w){const sd=t=>`<span class="${t===w?"wi":"lo"}">${t===x.t1?logo(t,18)+esc(tid(t)):esc(tid(t))+logo(t,18)}</span>`;
+      return `<div class="wrow res${fv?" fav":""}${pk?(pk===w?" ok":" ko"):""}"><time>${x.s1!=null?"Fini":""}</time><span class="mt">${sd(x.t1)}<i class="sc">${x.s1}-${x.s2}</i>${sd(x.t2)}</span><span class="rb">${pk?`${logo(pk,16)}<span class="pkr">${pk===w?"✓":"✗"}</span>`:`<span class="dotp none"></span>`}</span></div>`}
+    const dot=pk?`<span class="mypk" title="Ton prono">${logo(pk,16)}</span>`:typeof betOpen==="function"&&betOpen(x)?`<span class="dotp todo" title="À parier"></span>`:`<span class="dotp none"></span>`;
+    return `<div class="wrow${fv?" fav":""}"><time>${x.state==="live"?`<span class="lv">LIVE</span>`:fmtTime(st)}</time><span class="mt">${logo(x.t1,18)}${esc(tid(x.t1))}<i>vs</i>${esc(tid(x.t2))}${logo(x.t2,18)}</span><span class="rb">${f?`${esc(tid(f.t))} <b>${P(f.p)}</b> `:""}${dot}</span></div>`}).join("");
   const nx=list.find(x=>x.state==="soon");
-  const em=nx&&new Date(nx.start)-Date.now()<3*3600e3?`dans <span data-cd="${new Date(nx.start).getTime()}"></span>`:list.length>3?`+${list.length-3}`:plur(list.length,"match","matchs");
-  return W("w21","cal",`<div class="wh">${title}<em>${em}</em></div><div class="wb" style="justify-content:center;gap:2px">${rows}</div>`,k,"",title);
+  const em=nx&&new Date(nx.start)-Date.now()<3*3600e3?`dans <span data-cd="${new Date(nx.start).getTime()}"></span>`:!nx&&mine.length?`tes paris <b>${good}/${mine.length}</b>`:list.length>3?`+${list.length-3}`:plur(list.length,"match","matchs");
+  return W("w21","cal",`<div class="wh">${ttl}<em>${em}</em></div><div class="wb" style="justify-content:center;gap:2px">${rows}</div>`,k,"",ttl);
 }
+/* jour sans affiche connue (tirage à venir) : la prochaine étape en grand, avec les pancartes du compte à rebours */
+function wNextDayBig(k){const d=homNextDay();if(!d)return"";const R=records();
+  const tq=Object.keys(T).filter(t=>{try{return R[t]&&status(t,R).k==="ko"}catch(e){return false}}).slice(0,8);
+  return W("w22 hero tall nday","cal",`${heroBg({})}<div class="hin"><div class="hmeta"><span>${esc(fmtDay(evDate(d.dt)))}</span><span class="badge">${esc(fmtTime(d.dt))}</span></div>
+    <div class="ndw"><div class="ndt">${esc(d.d.what.split(",")[0])}</div>${tq.length?`<div class="ndq">${tq.map((t,i)=>`<span style="--i:${i}">${logo(t,30)}</span>`).join("")}<small>${tq.length>1?"qualifiés":"qualifié"} pour les quarts</small></div>`:`<div class="ws">affiches au tirage</div>`}</div>
+    <div class="hfoot"><div class="cdl"><span class="cdp" data-cdp="${d.dt.getTime()}"></span></div></div></div>`,k,"--c1:#1B3766;--c2:#6B4A18",`Prochaine étape : ${d.d.what}, ${fmtDay(evDate(d.dt))}`)}
 function wNextWide(m,k){
   if(!m){const d=homNextDay();if(!d)return"";
     return W("w21","cal",`<div class="wh">Prochain match<em>${esc(fmtDay(evDate(d.dt)))}</em></div><div class="wb"><div class="wn" style="font-size:24px;line-height:1.1">${esc(d.d.what)}</div><div class="ws">Premier match à ${esc(fmtTime(d.dt))} · affiches au tirage</div></div>`,k,"","Prochain match")}
@@ -174,21 +186,24 @@ const HOM_W={bets:k=>widget("bets",k),league:k=>widget("league",k),rank:k=>widge
   simbig:k=>widget("sim",k,true),swiss:k=>widget("swiss",k),myteam:k=>homTeam(k),cal:k=>wCal(k)};
 /* ordre et priorité de chaque moment : « nom:priorité » (plus le chiffre est grand, plus le widget part tôt quand la place manque ;
    0 = jamais retiré). Les carrés (w11) vont par deux dans l'ordre ; réserve (HOM_SPARE) pour compléter un carré seul. */
+/* « nom:F » = bouche-trou : ajouté seulement s'il tient en entier sans faire défiler ; puis la place qui reste va au
+   premier widget extensible (héros, bilan, prochaine étape) : l'accueil sans direct remplit l'écran (Thomas, 26/10) */
 const HOM_ORDER={
   live:"hero:0 lsb:1 paris:1 next:2",
-  soon:"hero:0 paris:1 next:1 evemini:3",
-  day:"hero:0 paris:1 next:1 evemini:3",
-  after:"eve:0 paris:1 next:1",
-  rest:"next:0 paris:1 simbig:2 evemini:3",
-  final:"champ:0 paris:1 eve:2"},HOM_SPARE="";   // accueil épuré (Thomas, 26/10) : le reste est rangé dans les onglets
+  soon:"hero:0 paris:1 next:1 evemini:3 swiss:F fact:F",
+  day:"hero:0 paris:1 next:1 evemini:3 swiss:F fact:F",
+  after:"eve:0 paris:1 next:1 swiss:F fact:F",
+  rest:"nbig:0 paris:1 evemini:3 swiss:F fact:F simbig:F",
+  final:"champ:0 paris:1 eve:2"},HOM_SPARE="",HOM_GROW=["hero","eve","nbig","champ"];   // accueil épuré (Thomas, 26/10) : le reste est rangé dans les onglets
 function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES.filter(x=>ok(x)&&dayKeyL(new Date(x.start))===dk);
   const fin=M.champ&&!M.live&&!M.next,hm=M.k==="live"?(M.live||M.next):M.next,yday=M.recent&&M.recent!==dk?M.recent:null;
   const rest=(()=>{const o=today.filter(x=>x!==hm),up=o.filter(x=>x.state!=="done");return [...up,...o.filter(x=>x.state==="done").reverse()].slice(0,3).sort((a,b)=>new Date(a.start)-new Date(b.start))})(),other=MATCHES.find(x=>x.state==="soon"&&x!==hm&&ok(x));
   const F={...HOM_W,
     hero:k=>hm?wHeroMatch(hm,k):"",lsb:k=>M.k==="live"&&hm?wLiveBoard(hm,k):"",paris:k=>typeof wParis==="function"?wParis(k,hm):"",livebets:k=>hm?widget("livebets",hm,k):"",
     next:k=>M.k==="after"||M.k==="rest"?wNextWide(M.next,k):rest.length?wTonight(rest,k,M.k==="day"?"Ce soir":"Ensuite"):wNextWide(other,k),
+    nbig:k=>M.next?wHeroMatch(M.next,k):wNextDayBig(k)||wNextWide(null,k),
     eve:k=>M.recent||M.last?wEve(M.recent||M.last,k):"",evemini:k=>(M.k==="rest"?M.recent:yday)?wEveMini(M.k==="rest"?M.recent:yday,k):"",champ:k=>M.champ?wChampion(M.champ,k):""};
-  const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return {n,f:F[n],pr:+p}});
+  const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return p==="F"?{n,f:F[n],pr:9,fill:true}:{n,f:F[n],pr:+p}});
   /* équipe suivie (w26_fav) : son widget passe juste après « Mes paris » et n'est retiré qu'en dernier recours */
   if(fav&&T[fav]){const i=I.findIndex(x=>x.n==="myteam");if(i>=0){const it=I.splice(i,1)[0];it.pr=Math.min(it.pr,2);const j=I.findIndex(x=>x.n==="bets");I.splice(j>=0?j+1:I.length,0,it)}}
   return {I,spares:HOM_SPARE.split(" ").map(n=>[n,F[n]])};
@@ -196,24 +211,35 @@ function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES
 /* rangées : un widget large, ou deux carrés côte à côte (un carré seul est complété par un widget de réserve, sinon élargi) */
 function homRows(M){const {I,spares}=homItems(M),used=new Set(),rows=[];let k=0,pend=null;
   const take=(n,f)=>{const h=safe(f,k)||"";if(!h)return null;used.add(n);return {n,h,sz:homSz(h),k:k++}};
-  for(const it of I){const x=take(it.n,it.f);if(!x)continue;x.pr=it.pr;
+  for(const it of I){const x=take(it.n,it.f);if(!x)continue;x.pr=it.pr;x.fill=!!it.fill;
     /* une paire reste tant que l'un des deux compte (priorité la plus forte des deux) */
-    if(x.sz==="w11"){if(pend){rows.push({h:HOM_H.w11,html:pend.h+x.h,pr:Math.min(pend.pr,x.pr),n:pend.n+"+"+x.n});pend=null}else pend=x;continue}
-    rows.push({h:HOM_H[x.sz],html:x.h,pr:x.pr,n:x.n,fixed:x.pr===0})}
+    if(x.sz==="w11"){if(pend){rows.push({h:HOM_H.w11,html:pend.h+x.h,pr:Math.min(pend.pr,x.pr),n:pend.n+"+"+x.n,fill:pend.fill&&x.fill});pend=null}else pend=x;continue}
+    /* bilan : hauteur selon le nombre de matchs (2 par rangée), au lieu des 284 px d'un bilan de 8 matchs */
+    const h=x.n==="eve"?(n=>Math.min(HOM_H.w22,128+Math.ceil(n/2)*42))((homEve(M.recent||M.last)||{L:[]}).L.slice(0,8).length):HOM_H[x.sz];
+    rows.push({h,hx:h!==HOM_H[x.sz],html:x.h,pr:x.pr,n:x.n,fixed:x.pr===0,fill:x.fill,grow:HOM_GROW.includes(x.n)})}
   if(pend){let sp=null;for(const [n,f] of spares){if(used.has(n))continue;const x=take(n,f);if(x&&x.sz==="w11"){sp=x;break}}
-    rows.push(sp?{h:HOM_H.w11,html:pend.h+sp.h,pr:pend.pr,n:pend.n+"+"+sp.n}:{h:HOM_H.w11,html:pend.h.replace('class="w w11','class="w w11 solo'),pr:pend.pr,n:pend.n})}
+    rows.push(sp?{h:HOM_H.w11,html:pend.h+sp.h,pr:pend.pr,n:pend.n+"+"+sp.n}:{h:HOM_H.w11,html:pend.h.replace('class="w w11','class="w w11 solo'),pr:pend.pr,n:pend.n,fill:pend.fill})}
   return rows;
 }
 /* ≤ 1,5 écran, et jamais un dépassement de moins de 120 px (Thomas : « bien tout cadrer ») */
 function homFit(rows,el){const H=el.clientHeight||innerHeight,bar=el.querySelector(".bar"),chrome=(bar?bar.offsetHeight:54)+6+8+(parseFloat(getComputedStyle(el).paddingBottom)||28);
-  const tot=rs=>chrome+rs.reduce((s,r)=>s+r.h,0)+HOM_GAP*Math.max(0,rs.length-1);let rs=rows.slice();
+  const tot=rs=>chrome+rs.reduce((s,r)=>s+r.h,0)+HOM_GAP*Math.max(0,rs.length-1);let rs=rows.filter(r=>!r.fill);
   const drop=()=>{let j=-1;rs.forEach((r,i)=>{if(!r.fixed&&(j<0||r.pr>=rs[j].pr))j=i});if(j<0)return false;rs.splice(j,1);return true};
   while(tot(rs)>1.5*H&&drop());
   while(tot(rs)>H&&tot(rs)-H<120&&drop());
+  /* l'écran tient : bouche-trous qui entrent en entier (à leur place dans l'ordre), puis le reste au widget extensible */
+  if(tot(rs)<=H){for(const f of rows.filter(r=>r.fill)){const t=rows.filter(r=>rs.includes(r)||r===f);if(tot(t)<=H)rs=t}
+    const g=rs.find(r=>r.grow),ex=Math.min(Math.floor(H-tot(rs)),260);
+    rs=rs.map(r=>r===g&&ex>6?{...r,h:r.h+ex,hx:true,html:r.html.replace('class="w ','class="w grow ')}:r)}
+  rs=rs.map(r=>r.hx?{...r,html:r.html.replace('style="--k:',`style="height:${r.h}px;--k:`)}:r);
   HM.rows=rs.map(r=>r.n);HM.est=tot(rs);return rs}
+/* chiffres qui défilent jusqu'à leur valeur à l'arrivée sur l'accueil (nombres entiers seuls dans leur texte) */
+function homRoll(g){g.querySelectorAll(".pw-v,.wn,.rres em,.wrow .sc").forEach(e=>{[...e.childNodes].forEach(t=>{if(t.nodeType!==3)return;const m=/^(\d{1,3})(-(\d{1,2}))?$/.exec(t.nodeValue.trim());if(!m)return;
+  const a=+m[1],b=m[3]!=null?+m[3]:null,fin=t.nodeValue,t0=performance.now(),D=800;
+  const st=n=>{const p=Math.min(1,(n-t0)/D),q=1-Math.pow(1-p,3);t.nodeValue=p>=1?fin:String(Math.round(a*q))+(b!=null?"-"+Math.round(b*q):"");if(p<1)requestAnimationFrame(st)};requestAnimationFrame(st)})})}
 function renderHome(el=HOME){if(!el)return;
   const M=homeMoment();HM=M;const rows=homFit(homRows(M),el),h=rows.map(r=>r.html).join("");
-  const g=el.querySelector(".grid");if(g._h!==h){const first=!g._h;g._h=h;g.innerHTML=h;if(first&&!RM){g.classList.add("first");setTimeout(()=>g.classList.remove("first"),1400)}startBeam(g.querySelector(".hero .beam"))}
+  const g=el.querySelector(".grid");if(g._h!==h){const first=!g._h;g._h=h;g.innerHTML=h;if(first&&!RM){g.classList.add("first");setTimeout(()=>g.classList.remove("first"),1400);homRoll(g)}startBeam(g.querySelector(".hero .beam"))}
   tickCd(el);const wl=g.querySelector("#wlive");if(wl){const m=MATCHES.find(x=>x.key===wl.dataset.k);if(m){const lh=safe(liveMini,m);if(wl._h!==lh){wl._h=lh;wl.innerHTML=lh}}}
   const wb=g.querySelector("#wlsb");if(wb){const m=MATCHES.find(x=>x.key===wb.dataset.k);if(m){const bh=safe(homLsb,m);if(bh&&wb._h!==bh){wb._h=bh;wb.innerHTML=bh}}}
   paintPill();if(typeof paintTabs==="function")paintTabs();

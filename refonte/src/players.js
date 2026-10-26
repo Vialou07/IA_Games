@@ -8,7 +8,7 @@
    ===================================================================================== */
 
 /* ---------- état du module (mémoire de la session, rien dans localStorage) ---------- */
-const PLY={role:"all",nat:null,q:"",live:false,leg:false,map:false,svg:null,mapP:null,mapAnim:true,st:"imp",rkLeg:false,qt:0};
+const PLY={role:"all",nat:null,q:"",live:false,leg:false,map:false,svg:null,mapP:null,mapAnim:true,st:"imp",qt:0};
 const PLY_ISR=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>`;
 const plyRoles=()=>[["all","Tous"],...ROLE_ORDER.map(r=>[r,ROLE_S[r]])];
 const plyY=()=>{const R=RKX();return R&&R.y?R.y:"2026"};
@@ -17,7 +17,8 @@ function plyAfter(fn){
   if(SHEET.open&&history.state&&history.state.sheet){addEventListener("popstate",()=>setTimeout(fn,0),{once:true});closeSheet()}
   else{if(SHEET.open)hideSheet();fn()}}
 /* écran du dessus s'il est de ce type */
-const plyTop=v=>{const el=topScreen();return el&&el._d&&el._d.v===v?el:null};
+const PLY_SCR=v=>v==="pl"||v==="rk";   // « Par poste » (rk) est désormais l'écran Joueurs filtré sur un poste
+const plyTop=v=>{const el=topScreen();return el&&el._d&&(el._d.v===v||PLY_SCR(v)&&PLY_SCR(el._d.v))?el:null};
 /* ligne « libellé | réponse | › » (En bref, style de jeu, robot en bref) */
 const plyLn=(lab,txt,attr)=>`<button class="ply-ln" ${attr}><b>${lab}</b><span>${txt}</span><i class="chev" aria-hidden="true">›</i></button>`;
 const plyPct=v=>Math.round(v*100)+NB+"%";
@@ -73,11 +74,12 @@ function wRank(k){const R=RKX();if(!R)return"";const top=ROLE_ORDER.map(r=>R.P[r
    1. JOUEURS (pl) : recherche, poste, en lice, champions du monde, pays, carte du monde, grille de cartes holo
    ===================================================================================== */
 function plyNats(){const n={};PLAYERS.forEach(p=>n[p.cc]=(n[p.cc]||0)+1);return Object.entries(n).sort((a,b)=>b[1]-a[1]||cname(a[0]).localeCompare(cname(b[0]),"fr"))}
-function plyList(){const q=norm(PLY.q),R=PLY.live?records():null;
-  return PLAYERS.filter(p=>(PLY.role==="all"||p.role===PLY.role)&&(!PLY.leg||p.titles.length)&&(!PLY.nat||p.cc===PLY.nat)&&(!PLY.live||status(p.team,R).k!=="out")
+function plyList(role){const q=norm(PLY.q),R=PLY.live?records():null;
+  return PLAYERS.filter(p=>(role==="all"||p.role===role)&&(!PLY.leg||p.titles.length)&&(!PLY.nat||p.cc===PLY.nat)&&(!PLY.live||status(p.team,R).k!=="out")
     &&(!q||norm(p.id).includes(q)||norm(p.realName).includes(q)||T[p.team].al.some(a=>a.includes(q))))}
-function plyResults(){
-  const L=plyList(),f=[PLY.role!=="all"?ROLE_S[PLY.role]:null,PLY.live?"en lice":null,PLY.leg?"champions du monde":null,PLY.nat?cname(PLY.nat):null,PLY.q?"« "+PLY.q.trim()+" »":null].filter(Boolean);
+function plyRes(d){const r=d&&d.role||"all";return r!=="all"&&!PLY.q&&!PLY.nat&&RKX()?plyRankTab(r):plyResults(r)}
+function plyResults(role){
+  const L=plyList(role),f=[role!=="all"?ROLE_S[role]:null,PLY.live?"en lice":null,PLY.leg?"champions du monde":null,PLY.nat?cname(PLY.nat):null,PLY.q?"« "+PLY.q.trim()+" »":null].filter(Boolean);
   return `<div class="ply-n"><span><b>${L.length}</b> joueur${L.length>1?"s":""}${f.length?" · "+esc(f.join(", ")):""}</span>${f.length?`<button class="chip" data-plyclear>Tout effacer</button>`:""}</div>`
     +(L.length?`<div class="ply-grid">${L.slice(0,PLY_FIRST).map(plyCardHTML).join("")}${L.length>PLY_FIRST?plyLater(L.slice(PLY_FIRST)):""}</div>`
       :`<p class="empty">Aucun joueur ne correspond.</p>`)}
@@ -90,18 +92,17 @@ function plyLater(rest){const tk=PLY.tk=(PLY.tk||0)+1;
 function plyMapHTML(){
   if(!PLY.map)return"";if(!PLY.svg)return `<div class="sk" style="height:168px;margin-top:6px"></div>`;
   let s=PLY.svg;if(PLY.nat)s=s.split(`data-plynat="${PLY.nat}" class="`).join(`data-plynat="${PLY.nat}" class="sel `);return s}
-function plyBody(){
+function plyBody(d){
   const N=plyNats(),an=PLY.mapAnim&&PLY.svg&&!RM;if(an)PLY.mapAnim=false;
   return `<div class="ply-tools">
     <label class="ply-q">${PLY_ISR}<input class="ply-qi" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Pseudo, vrai nom ou équipe" aria-label="Chercher un joueur" value="${esc(PLY.q)}"></label>
-    <div class="ply-seg" role="group" aria-label="Poste">${plyRoles().map(([k,l])=>`<button data-plyrole="${k}" aria-pressed="${PLY.role===k}">${l}</button>`).join("")}</div>
+    <div class="ply-seg" role="group" aria-label="Poste : tous les joueurs ou le classement d’un poste">${plyRoles().map(([k,l])=>`<button data-plyrole="${k}" aria-pressed="${(d.role||"all")===k}">${l}</button>`).join("")}</div>
     <div class="ply-chips"><button class="chip" data-plytog="live" aria-pressed="${PLY.live}">En lice</button><button class="chip" data-plytog="leg" aria-pressed="${PLY.leg}">${ICUP}Champions du monde</button>${PLY.nat?`<button class="chip" data-plynat="${esc(PLY.nat)}" aria-pressed="true" aria-label="Retirer le filtre ${esc(cname(PLY.nat))}">${flag(PLY.nat)}${esc(cname(PLY.nat))} ×</button>`:`<button class="chip" data-plynats>Pays ›</button>`}</div>
   </div>
-  <div class="ply-go"><button class="ply-gt" data-go="rk/TOP"><b>Classement 2026</b><small>le meilleur à chaque poste</small></button><button class="ply-gt" data-go="spe"><b>Spécial Worlds</b><small>qui se transforme ?</small></button></div>
-  <details class="blk ply-map"${PLY.map?" open":""}><summary><span><b>Tous les chemins mènent à Allen</b><small>${N.length} nationalités · touche un pays pour filtrer</small></span><i class="chev" aria-hidden="true">›</i></summary><div class="ply-wm${an?" anim":""}">${plyMapHTML()}</div></details>
-  <div class="ply-res">${plyResults()}</div>`}
-function scrPlayers(){return {title:`Joueurs<small>${PLAYERS.length} titulaires des Worlds</small>`,info:"pl",render:()=>plyBody(),
-  opened:el=>{if(PLY.map&&!PLY.svg)plyMapLoad(el)}}}
+  ${(d.role||"all")==="all"?`<details class="blk ply-map"${PLY.map?" open":""}><summary><span><b>Tous les chemins mènent à Allen</b><small>${N.length} nationalités · touche un pays pour filtrer</small></span><i class="chev" aria-hidden="true">›</i></summary><div class="ply-wm${an?" anim":""}">${plyMapHTML()}</div></details>`:""}
+  <div class="ply-res">${plyRes(d)}</div>`}
+function scrPlayers(d){if(d.role==null)d.role="all";return {title:`Joueurs<small>${PLAYERS.length} titulaires · classement par poste</small>`,info:"pl",render:()=>plyBody(d),
+  needs:RKX()?[]:[plyNeedSJ()],opened:el=>{if(PLY.map&&!PLY.svg)plyMapLoad(el)}}}
 /* carte du monde (d3 + topojson chargés à la demande, comme v13.5) : pays colorés selon l'effectif, arcs vers Allen, points */
 function plyMapLoad(el){
   if(!PLY.mapP)PLY.mapP=(async()=>{try{
@@ -121,52 +122,48 @@ function plyMapLoad(el){
    catch(e){PLY.svg=`<p class="note" style="margin:6px 0 4px">Carte indisponible (réseau).</p><div class="ply-nats">${plyNats().map(([cc,n])=>`<button class="chip" data-plynat="${cc}" aria-pressed="${PLY.nat===cc}">${flag(cc)}${esc(cname(cc))}<b>${n}</b></button>`).join("")}</div>`}})();
   PLY.mapP.then(()=>{const e=plyTop("pl")||el;if(e&&e.isConnected)refreshTab(e,0)});
 }
-function plyRefresh(){NAV.forEach(x=>{if(x.d.v==="pl"&&x.el.isConnected)refreshTab(x.el,0)})}
+function plyRefresh(){NAV.forEach(x=>{if(PLY_SCR(x.d.v)&&x.el.isConnected)refreshTab(x.el,0)})}
 function plyNatSheet(){showSheet("Nationalités",`<p>${PLAYERS.length} titulaires, ${plyNats().length} pays. Touche un pays pour filtrer les joueurs.</p><div class="ply-nats">${plyNats().map(([cc,n])=>`<button class="chip" data-plynat="${cc}" aria-pressed="${PLY.nat===cc}">${flag(cc)}${esc(cname(cc))}<b>${n}</b></button>`).join("")}</div>`,true)}
-onAct("[data-plyrole]",b=>{PLY.role=b.dataset.plyrole;vib(6);plyRefresh()});
+onAct("[data-plyrole]",b=>{const el=b.closest(".scr");if(!el||!el._d)return;el._d.role=b.dataset.plyrole;vib(6);refreshTab(el,0)});
 onAct("[data-plytog]",b=>{const k=b.dataset.plytog;PLY[k]=!PLY[k];vib(6);plyRefresh()});
 onAct("[data-plynats]",()=>plyNatSheet());
 onAct("[data-plynat]",b=>{const cc=b.dataset.plynat;PLY.nat=PLY.nat===cc?null:cc;vib(8);plyAfter(()=>{plyRefresh();const el=plyTop("pl"),r=el&&el.querySelector(".ply-res");if(PLY.nat&&r&&!RM)r.scrollIntoView({behavior:"smooth",block:"start"})})});
-onAct("[data-plyclear]",()=>{Object.assign(PLY,{role:"all",nat:null,q:"",live:false,leg:false});vib(6);plyRefresh()});
+onAct("[data-plyclear]",b=>{Object.assign(PLY,{nat:null,q:"",live:false,leg:false});const el=b.closest(".scr");if(el&&el._d)el._d.role="all";vib(6);plyRefresh()});
 /* frappe dans la recherche : seule la liste est redessinée (le champ garde le clavier) */
 document.addEventListener("input",e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains("ply-qi"))return;PLY.q=t.value;clearTimeout(PLY.qt);
-  PLY.qt=setTimeout(()=>{const el=t.closest(".scr"),r=el&&el.querySelector(".ply-res");if(!r)return;r.innerHTML=plyResults();const c=el.querySelector(".tabc");if(c&&el._o&&el._o.render)c._h=safe(el._o.render,el._d.tab)},120)});
+  PLY.qt=setTimeout(()=>{const el=t.closest(".scr"),r=el&&el.querySelector(".ply-res");if(!r)return;r.innerHTML=plyRes(el._d);const c=el.querySelector(".tabc");if(c&&el._o&&el._o.render)c._h=safe(el._o.render,el._d.tab)},120)});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.classList&&e.target.classList.contains("ply-qi"))e.target.blur()});
 /* carte : chargée à la première ouverture du repli */
 document.addEventListener("toggle",e=>{const d=e.target;if(!d||!d.classList||!d.classList.contains("ply-map"))return;PLY.map=d.open;
   const el=d.closest(".scr"),c=el&&el.querySelector(".tabc");if(PLY.map&&!PLY.svg)plyMapLoad(el);else if(c&&el._o)c._h=safe(el._o.render,el._d.tab)},true);
-INFO.pl=()=>["Joueurs","Les 95 titulaires des 19 équipes. Cherche par pseudo, vrai nom ou équipe ; filtre par poste, équipes encore en lice, champions du monde ou pays (aussi en touchant la carte). Touche une carte pour la fiche du joueur."];
+INFO.pl=()=>["Joueurs",`<p>Les 95 titulaires des 19 équipes. « Tous » : toutes les cartes, avec la recherche (pseudo, vrai nom, équipe) et les filtres. Un poste (TOP, JGL, MID, ADC, SUP) : le classement du robot à ce poste ; touche une ligne pour le pourquoi.</p>${rkMethod()}`,true];
 
 /* =====================================================================================
    2. CLASSEMENT PAR POSTE (rk/<poste>) : phrase-réponse, podium, lignes avec fourchette et raisons ; tri par stat brute
    ===================================================================================== */
-function scrRank(d){
-  const R=RKX();if(!R)return {title:"Classement par poste",render:()=>plyWaitSJ(52,8),needs:[plyNeedSJ()]};
-  if(!ROLE_ORDER.includes(d.id))d.id="TOP";d.tab=d.id;
-  return {title:`Classement par poste<small>${PLY.st==="imp"?"note d’impact, ligues comprises":"stat brute, ligues mélangées"}</small>`,info:"classement",tabs:ROLE_ORDER.map(r=>[r,ROLE_S[r]]),tab:d.id,render:r=>{d.id=r;return plyRankTab(r)}};
-}
+function scrRank(d){if(d.role==null)d.role=ROLE_ORDER.includes(d.id)?d.id:"TOP";return scrPlayers(d)}
 function plyRkRow(x){const p=pkey(x.key);if(!p)return"";const rg=x.lo!=null&&x.lo!==x.hi?`${x.lo}–${x.hi}e`:"";
   return `<button class="ply-rkr${x.i<=3?" top3":""}" data-info="why:${esc(x.key)}" aria-label="${esc(p.id)}, ${ordi(x.i)}, pourquoi ce rang"><span class="n">${x.i}${rg?`<small>${rg}</small>`:""}</span>${photo(p,"ava",38)}<span class="tx"><b>${esc(p.id)}${p.titles.length?`<i class="ply-cup" title="Champion du monde">${ICUP}</i>`:""}</b><small>${logo(p.team,13)}${esc(tid(p.team))} · ${rkLine(x)}</small></span><em class="${x.note<0?"neg":""}">${fxs(x.note)}</em></button>`}
 function plyRankTab(role){
   const R=RKX(),st=PSTAT.find(z=>z[0]===PLY.st)||PSTAT[0];
-  const ctl=`<div class="ply-sort"><button class="chip gold" data-info="plysort">Trier : ${esc(st[1])} ▾</button><button class="chip" data-plyrkleg aria-pressed="${PLY.rkLeg}">${ICUP}Champions</button></div>`;
+  const ctl=`<div class="ply-sort"><button class="chip gold" data-info="plysort">Trier : ${esc(st[1])} ▾</button><button class="chip" data-info="classement">Comment c’est calculé ›</button></div>`;
   const tail=`<button class="rowb ply-more" data-go="spe"><span class="grow"><b class="nm">Spécial Worlds</b><small>qui se transforme aux grands tournois ?</small></span><i class="chev">›</i></button>`;
   if(st[0]!=="imp")return ctl+plyRawList(role,st)+tail;
-  let L=R.P[role].r.map(z=>rkFind(z[0])).filter(Boolean);
-  if(PLY.rkLeg){L=L.filter(x=>{const p=pkey(x.key);return p&&p.titles.length});
-    return ctl+`<p class="ply-ans">Les champions du monde parmi les ${R.P[role].r.length} ${RK_ROLEN[role]}, et leur rang à leur poste.</p>`+(L.length?`<div class="list ply-rkl">${L.map(plyRkRow).join("")}</div>`:`<p class="empty">Aucun champion du monde à ce poste.</p>`)+tail}
+  let L=R.P[role].r.map(z=>rkFind(z[0])).filter(Boolean);const Rr=PLY.live?records():null;
+  if(PLY.live)L=L.filter(x=>{const p=pkey(x.key);return p&&status(p.team,Rr).k!=="out"});
+  if(PLY.leg||PLY.live){if(PLY.leg)L=L.filter(x=>{const p=pkey(x.key);return p&&p.titles.length});
+    return ctl+(L.length?`<div class="list ply-rkl">${L.map(plyRkRow).join("")}</div>`:`<p class="empty">Aucun joueur ne correspond à ce poste.</p>`)+tail}
   const top=L.slice(0,3).map(x=>{const p=pkey(x.key);return p?`<div class="pl" data-go="p/${esc(p.key)}" role="button" aria-label="${esc(p.id)}, ${ordi(x.i)}">${hcard(p,"mini")}<b>${ordi(x.i)}</b><small>${x.lo!==x.hi?`${x.lo}–${x.hi}e · `:""}${fxs(x.note)}</small></div>`:""}).join("");
-  return ctl+`<p class="ply-ans">${rkBest1(role)}</p><div class="podium">${top}</div><div class="list ply-rkl">${L.slice(3).map(plyRkRow).join("")}</div>${tail}`;
+  return ctl+`<div class="podium ply-pod">${top}</div><div class="list ply-rkl">${L.slice(3).map(plyRkRow).join("")}</div>${tail}`;
 }
 function plyRawList(role,d){
-  const inF=p=>p.role===role&&(!PLY.rkLeg||p.titles.length),r=ranking(d[0],inF),out=PLAYERS.filter(p=>inF(p)&&!r.some(x=>x.p===p));
+  const inF=p=>p.role===role&&(!PLY.leg||p.titles.length),r=ranking(d[0],inF),out=PLAYERS.filter(p=>inF(p)&&!r.some(x=>x.p===p));
   const lab=/^[A-Z]{2}/.test(d[1])?d[1]:d[1].charAt(0).toLowerCase()+d[1].slice(1);
   return `<p class="ply-ans">Classement <b>brut</b> : ${esc(lab)} sur la saison, ligues mélangées. Un même chiffre ne vaut pas autant en LCK qu’en CBLOL ; la note d’impact, elle, en tient compte.</p>
     <div class="list ply-rkl">${r.map((x,i)=>`<button class="ply-rkr" data-go="p/${esc(x.p.key)}"><span class="n">${i+1}</span>${photo(x.p,"ava",38)}<span class="tx"><b>${esc(x.p.id)}</b><small>${logo(x.p.team,13)}${esc(tid(x.p.team))} · ${seasonOf(x.p).g} parties</small></span><em>${d[3](x.v)}</em></button>`).join("")||`<p class="empty">Aucun joueur.</p>`}</div>
     <p class="note">Rang brut, ${MINR} parties minimum${out.length?`. Pas assez de parties : ${out.map(p=>esc(p.id)).join(", ")}`:""}.</p>`}
 INFO.plysort=()=>["Trier le classement",`<p>La note d’impact compare les joueurs ligues comprises. Les autres stats sont brutes, ligues mélangées.</p><div class="ply-nats">${PSTAT.map(([k,l])=>`<button class="chip" data-plyst="${k}" aria-pressed="${PLY.st===k}">${esc(l)}</button>`).join("")}</div>`,true];
-onAct("[data-plyst]",b=>{PLY.st=b.dataset.plyst;vib(6);plyAfter(()=>{const el=plyTop("rk");if(el)rerender(el)})});
-onAct("[data-plyrkleg]",()=>{PLY.rkLeg=!PLY.rkLeg;vib(6);const el=plyTop("rk");if(el)refreshTab(el,0)});
+onAct("[data-plyst]",b=>{PLY.st=b.dataset.plyst;vib(6);plyAfter(()=>{if(SHEET.open)closeSheet();plyRefresh()})});
 INFO.classement=()=>{const R=RKX();return ["Classement par poste",`${rkMethod()}<p>Entre parenthèses, sous chaque nom : rang parmi les 19 titulaires du poste sur la stat brute de la saison${R?" "+esc(R.y):""}, ligues mélangées. Sous le rang : les places possibles vu l’incertitude (1–3e : entre 1er et 3e). Touche une ligne pour le pourquoi.</p>`,true]};
 /* « Pourquoi ce rang » : la note décomposée en 6 barres, la saison avec les rangs bruts, la fiche et le voisin à comparer */
 INFOP.why=(key,self)=>{const x=rkFind(key),R=RKX();if(!x)return null;
