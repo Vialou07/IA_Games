@@ -242,3 +242,37 @@
 .snug .swi-tr{min-height:46px}
 .snug .swi-ko{gap:6px}
 .snug .swi-ql+.swi-lead{margin-top:6px}
+
+/* chances (fusion bilans + qui va gagner) */
+.swi-pod{display:grid;grid-template-columns:1fr 1.2fr 1fr;align-items:end;gap:8px;margin:2px 0 12px}
+.swi-pp{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px 10px;border-radius:var(--r3);background:var(--card);border:1px solid var(--line);min-width:0}
+.swi-pp.p1{order:2;padding-top:16px;border-color:var(--gold3);background:linear-gradient(180deg,rgba(200,170,110,.18),var(--card))}.swi-pp.p2{order:1}.swi-pp.p3{order:3}
+.swi-pp .swi-cup{position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:20px;height:20px;color:var(--gold2)}.swi-pp .swi-cup svg{width:100%;height:100%}
+.swi-pp b{font-size:14px;color:var(--text);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.swi-pp strong{font-family:var(--disp);font-weight:800;font-size:22px;line-height:1;color:var(--gold2);font-variant-numeric:tabular-nums}.swi-pp.p1 strong{font-size:27px}
+.swi-pp .swi-bar{width:80%;height:4px;margin-top:3px}
+.swi-pp:active{transform:scale(.97)}
+.cas .swi-pp{animation:swiRise .55s var(--ease) backwards}.cas .swi-pp.p1{animation-delay:.12s}.cas .swi-pp.p3{animation-delay:.2s}
+.swi-chs{padding:6px 10px 10px}
+.swi-ch,.swi-cr{display:grid;grid-template-columns:minmax(64px,1fr) 46px minmax(64px,.9fr) minmax(70px,1fr);align-items:center;gap:8px;width:100%}
+.swi-ch{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);padding:4px 4px 0}
+.swi-ch span:nth-child(2){text-align:center}.swi-ch span:nth-child(n+3){text-align:right}
+.swi-chs .swi-gh{margin:12px 2px 4px}
+.swi-cr{min-height:44px;padding:0 4px;border-top:1px solid var(--line2);text-align:left}
+.swi-cr:active{background:var(--card2)}
+.swi-cr .tn{display:flex;align-items:center;gap:7px;min-width:0}.swi-cr .tn b{font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-cr .rc{display:flex;flex-direction:column;align-items:center;gap:3px}
+.swi-cr .rc b{font-family:var(--disp);font-weight:800;font-size:16px;line-height:1;color:var(--gold2);font-variant-numeric:tabular-nums}
+.swi-cq,.swi-cg{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
+.swi-cq b,.swi-cg b{font-family:var(--disp);font-weight:800;font-size:14px;line-height:1;font-variant-numeric:tabular-nums;color:#D9DEE5}
+.swi-cg b{color:var(--gold2)}
+.swi-cq .swi-bar,.swi-cg .swi-bar{width:100%;height:4px}
+.swi-bar.t i{background:linear-gradient(90deg,#1E7A74,var(--teal))}
+.swi-cq.ok,.swi-cq.ko{align-items:flex-end}.swi-cq.ok svg,.swi-cq.ko svg{width:18px;height:18px}
+.swi-cq.ok{color:var(--teal)}.swi-cq.ko{color:#F28B9B}
+.swi-cr.me{background:rgba(200,170,110,.1);border-radius:10px;box-shadow:inset 3px 0 0 var(--gold)}
+.swi-cr.out{opacity:.5}
+.cas .swi-cr{animation:swiRise .45s var(--ease) backwards;animation-delay:calc(var(--k,0) * 28ms)}
+.swi-tochs{margin-top:10px}
+@keyframes swiRise{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.cas .swi-pp,.cas .swi-cr{animation:none}}

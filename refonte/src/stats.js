@@ -79,14 +79,22 @@ onAct("[data-leadph]",b=>{ui.leadPh=b.dataset.leadph;vib(6);refreshTab(b.closest
 /* ---------- onglet Champions : présence, bannis, joués (metaHTML, 2356 ; draft.json, meta gol.gg) ---------- */
 const STA_CF={pres:x=>x[1]+x[3],ban:x=>x[3],pick:x=>x[1]},STA_CL={pres:"choisi ou banni",ban:"banni",pick:"joué"};
 /* M.c : [champion, picks, victoires, bans, bans de la 1re rotation, premier choix, …, [[joueur, équipe, victoire], …]] */
-function staMetaRows(kind){const M=DJ.meta,f=STA_CF[kind]||STA_CF.pres;return M.c.filter(x=>f(x)>0).sort((a,b)=>f(b)-f(a)||b[3]-a[3]||a[0]-b[0])}
+/* gol.gg publie les drafts avec du retard : tant qu'il lui manque des parties, picks et victoires des champions du robot
+   (SJ.tourney.champs, API LoL Esports, 15 premiers) remplacent les siens. Mêmes chiffres que « Le saviez-vous ? » ; bans : gol.gg. */
+function staMC(){const M=DJ.meta,T=staT(),sig=(SJ&&SJ.built)+"|"+M.maj+"|"+M.n;if(STA.mc&&STA.mc.sig===sig&&STA.mc.dj===DJ)return STA.mc;
+  let c=M.c,n=M.n,lag=0;
+  if(T&&Array.isArray(T.champs)&&T.n>M.n){lag=T.n-M.n;n=T.n;const by=new Map(T.champs.map(t=>[norm(t.c),t])),seen=new Set();
+    c=M.c.map(x=>{const t=by.get(norm(DJ.ch[x[0]]||""));if(!t)return x;seen.add(t);const y=x.slice();y[1]=t.p;y[2]=t.w;return y});
+    T.champs.forEach(t=>{if(seen.has(t))return;const i=DJ.ch.findIndex(h=>norm(h)===norm(t.c));if(i>=0)c.push([i,t.p,t.w,0,0,0,0,[]])})}
+  return STA.mc={sig,dj:DJ,c,n,lag}}
+function staMetaRows(kind){const f=STA_CF[kind]||STA_CF.pres;return staMC().c.filter(x=>f(x)>0).sort((a,b)=>f(b)-f(a)||b[3]-a[3]||a[0]-b[0])}
 function staChamps(){
-  const D=DJ,M=D.meta,N=M.n,kind=STA_CF[STA.ck]?STA.ck:"pres",f=STA_CF[kind],rows=staMetaRows(kind),top=rows[0],fs=M.fs||[0,0,0];
+  const D=DJ,M=D.meta,MC=staMC(),N=MC.n,kind=STA_CF[STA.ck]?STA.ck:"pres",f=STA_CF[kind],rows=staMetaRows(kind),top=rows[0],fs=M.fs||[0,0,0];
   if(!top)return `<div class="blk"><p class="empty">Pas encore de draft publiée.</p></div>`;
   const nm=i=>D.ch[i]||"?",L=STA.chAll?rows:rows.slice(0,5);
   const row=x=>`<button class="sta-cr" data-info="sta:c:${x[0]}">${champ(nm(x[0]),34)}<span class="g"><b>${esc(nm(x[0]))}</b><small>${djS(x[3],"ban","bans")}, ${djS(x[1],"pick","picks")}${x[1]>=5?`, ${djS(x[2],"victoire","victoires")}`:""}</small></span><span class="cw"><i style="width:${Math.min(100,f(x)/N*100).toFixed(1)}%"></i></span><em>${Math.round(f(x)/N*100)}${NB}%</em></button>`;
   return `<div class="blk"><div class="bh">Champions des Worlds${staI("ch","Sources et méthode")}</div>
-    <p class="sta-ph"><b>${esc(nm(top[0]))}</b> : ${STA_CL[kind]} dans ${f(top)} parties sur ${N}.${fs[0]?` L’équipe du 1<sup>er</sup> pick a gagné ${fs[1]} parties sur ${fs[0]}.`:""}</p>
+    <p class="sta-ph"><b>${esc(nm(top[0]))}</b> : ${STA_CL[kind]} dans ${f(top)} parties sur ${N}.${fs[0]?` L’équipe du 1<sup>er</sup> pick a gagné ${fs[1]} parties sur ${fs[0]}.`:""}${MC.lag?` <small>Bans : ${M.n} parties sur ${N} publiées par gol.gg.</small>`:""}</p>
     <div class="sta-seg" style="--n:3">${[["pres","Présence"],["ban","Bannis"],["pick","Joués"]].map(([v,l])=>`<button data-sta-ck="${v}" aria-pressed="${kind===v}">${l}</button>`).join("")}</div>
     <div class="sta-cl">${L.map(row).join("")}</div>
     ${rows.length>5?`<button class="btn sta-more" data-sta-chall>${STA.chAll?"Seulement les 5 premiers":`Voir les ${rows.length-5} autres`}</button>`:""}</div>`;
@@ -100,7 +108,7 @@ onAct("[data-sta-ck]",b=>{STA.ck=b.dataset.staCk;vib(6);refreshTab(b.closest(".s
 onAct("[data-sta-chall]",b=>{STA.chAll=STA.chAll?0:1;const el=b.closest(".scr"),y=el.scrollTop;refreshTab(el,0);if(!STA.chAll)el.scrollTop=Math.min(y,el.scrollHeight)});
 /* détail d'un champion (feuille) : bans, picks, qui l'a joué (det et who de metaHTML, 2361-2364) */
 function staChSheet(i){
-  const D=DJ,M=D&&D.meta;if(!M)return null;const x=M.c.find(y=>y[0]===+i);if(!x)return null;const N=M.n,c=D.ch[x[0]]||"?";
+  const D=DJ,M=D&&D.meta;if(!M)return null;const MC=staMC(),x=MC.c.find(y=>y[0]===+i);if(!x)return null;const N=MC.n,c=D.ch[x[0]]||"?";
   const g=new Map();(x[7]||[]).forEach(([p,t,w])=>{const k=p+"|"+t,o=g.get(k)||{p,t,w:0,l:0};w?o.w++:o.l++;g.set(k,o)});
   const who=[...g.values()].sort((a,b)=>b.w+b.l-a.w-a.l||b.w-a.w);
   const tl=(v,l)=>`<div class="sta-t"><b>${v}</b><span>${l}</span></div>`;
@@ -170,7 +178,7 @@ INFOP.sta=(k,a)=>{
     <p>KDA : (kills + assists) ÷ morts. CS/min : sbires et monstres tués par minute. Dégâts : part des dégâts infligés aux champions par son équipe. Participation : part des kills de son équipe où il a tué ou aidé.</p><p>${src}.</p>`,true];
   if(k==="ch"){const M=DJ&&DJ.meta;if(!M)return null;const fs=M.fs||[0,0,0],bl=M.bl||[0,0];
     const links=(M.tn||[]).map(t=>`<a href="https://gol.gg/tournament/tournament-picksandbans/${encodeURIComponent(t)}/" target="_blank" rel="noopener">${esc(t)}</a>`).join(" et ");
-    return ["Champions des Worlds",`<p>Sur les ${djS(M.n,"partie","parties")} dont la draft est publiée par gol.gg${M.att?` (${M.att} en attente de publication)`:""}. Bans : gol.gg ; picks et vainqueurs : API LoL Esports, identiques à gol.gg sur ces parties. Victoires affichées à partir de 5 picks.</p>
+    return ["Champions des Worlds",`<p>Sur les ${djS(M.n,"partie","parties")} dont la draft est publiée par gol.gg${M.att?` (${M.att} en attente de publication)`:""}. Bans : gol.gg ; picks et vainqueurs : API LoL Esports, identiques à gol.gg sur ces parties. Quand gol.gg a du retard, les picks des 15 champions les plus joués viennent du robot (toutes les parties terminées, comme « Le saviez-vous ? »). Victoires affichées à partir de 5 picks.</p>
       <p>Présence : parties où le champion a été choisi ou banni. Toucher un champion : ses bans, ses picks et qui l’a joué.</p>
       ${fs[0]?`<p>Premier choix : depuis 2026 (« First Selection »), l’équipe prioritaire choisit soit son côté, soit le premier pick. Sur ${fs[0]} parties où l’ordre des picks est connu, l’équipe qui a choisi en premier a gagné ${fs[1]} fois ; elle était côté rouge ${fs[2]} fois.</p>`:""}
       ${bl[0]?`<p>Côté bleu : ${bl[1]} victoires sur ${bl[0]} parties.</p>`:""}${links?`<p>À vérifier sur gol.gg : ${links}.</p>`:""}`,true]}
@@ -186,6 +194,22 @@ INFOP.sta=(k,a)=>{
 };
 /* une puce dans une feuille (joueur de « Joué par ») : fermer la feuille, puis ouvrir l'écran (une seule entrée d'historique) */
 onAct("#shB [data-sta-go]",b=>{const r=b.dataset.staGo;if(SHEET.open&&history.state&&history.state.sheet){addEventListener("popstate",()=>setTimeout(()=>go(r),0),{once:true});history.back()}else{hideSheet();go(r)}});
+
+/* ---------- fraîcheur : à chaque synchro du planning (1 à 5 min), stats.json et draft.json sont rechargés s'ils ont plus de 10 min
+   (le robot publie toutes les 15 min) ; un nouveau fichier redessine aussitôt l'accueil et les écrans ouverts ---------- */
+const STA_FRESH=10*60e3;
+/* draft.json (DJ) et fiche.json (FJ) : chargés une fois par loadDJ / loadFJ, rechargés ici ; remplacés seulement si valides et différents */
+const STA_AUX=[["draft",()=>DJ,d=>Array.isArray(d.ch)&&d.meta,d=>{DJ=d}],["fiche",()=>FJ,d=>Array.isArray(d.gm),d=>{FJ=d}]];
+function staFresh(){if(document.hidden||!started)return;const now=Date.now();STA.at=STA.at||{};
+  if(SJ&&now-SJt>=STA_FRESH)loadSJ();
+  STA_AUX.forEach(([k,get,ok,set])=>{if(!get())return;if(!STA.at[k]){STA.at[k]=now;return}if(now-STA.at[k]<STA_FRESH||STA["p"+k])return;STA.at[k]=now;
+    STA["p"+k]=fetch(BASE+k+".json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{
+      if(!(d&&d.v===1&&ok(d))||JSON.stringify(d)===JSON.stringify(get()))return;if(AUX[k])AUX[k].d=d;set(d);STA.mc=null;staRepaint()})
+      .catch(()=>{}).finally(()=>{STA["p"+k]=null})})}
+function staRepaint(){if(started&&MATCHES.length)onData()}
+BUS.on("data",()=>safe(staFresh));
+BUS.on("sj",()=>{if(STA.sjb&&SJ&&SJ.built!==STA.sjb)staRepaint();STA.sjb=SJ&&SJ.built});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)safe(staFresh)});
 
 /* ===================== le saviez-vous ? (SJ.fx, v13.5 1736-1797) =====================
    SJ.fx : [[id, famille, texte, calcul, n, intérêt, clés, nouveau], …]. Les faits nés au dernier passage du robot d'abord ;

@@ -311,3 +311,12 @@ dl.ply-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.ply-kv3 dd{
 .scr.ply-fit2 .ply-gl,.scr.ply-fit2 .ply-sr{min-height:36px}.scr.ply-fit3 .ply-mch .chi{width:26px!important;height:26px!important}.scr.ply-fit3 .ply-c2c{gap:4px}
 .scr.ply-fit3 .ply-cs .ava{width:42px!important;height:42px!important}.scr.ply-fit3 .ply-cs b{font-size:18px}
 @media (prefers-reduced-motion:reduce){.ply-wm .flow,.ply-wm .hostring{display:none}}
+
+/* Joueurs + Par poste */
+.ply-seg{width:100%}
+.ply-seg button{transition:color .2s,background .25s}
+.ply-res .ply-rkr{animation:plyIn .4s var(--ease) backwards}
+.ply-res .ply-rkr:nth-child(n+2){animation-delay:.03s}.ply-res .ply-rkr:nth-child(n+4){animation-delay:.06s}.ply-res .ply-rkr:nth-child(n+7){animation-delay:.09s}.ply-res .ply-rkr:nth-child(n+10){animation-delay:.12s}
+.ply-pod .pl{animation:plyIn .5s var(--ease) backwards}.ply-pod .pl:nth-child(1){animation-delay:.08s}.ply-pod .pl:nth-child(3){animation-delay:.14s}
+@keyframes plyIn{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.ply-res .ply-rkr,.ply-pod .pl{animation:none}}

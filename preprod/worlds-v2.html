@@ -330,7 +330,7 @@ dl.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;margin:
 /* ---------- barre d'onglets (26/10) : collée en bas, pleine largeur, au-dessus des écrans, sous les feuilles ---------- */
 :root{--tabh:56px}
 .scr{padding-bottom:calc(28px + var(--tabh) + var(--sab))}
-#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:calc(var(--tabh) + var(--sab));padding:0 4px var(--sab);background:rgba(6,13,27,.9);-webkit-backdrop-filter:saturate(1.5) blur(18px);backdrop-filter:saturate(1.5) blur(18px);border-top:1px solid rgba(200,170,110,.22);box-shadow:0 -10px 30px rgba(0,0,0,.35)}
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:calc(var(--tabh) + var(--sab));padding:0 4px var(--sab);background:rgba(6,13,27,.9);-webkit-backdrop-filter:saturate(1.5) blur(18px);backdrop-filter:saturate(1.5) blur(18px);border-top:1px solid rgba(200,170,110,.22);box-shadow:0 -10px 30px rgba(0,0,0,.35)}
 #tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;color:#8C96A8;font-size:10.5px;font-weight:600;letter-spacing:.01em;transition:color .2s}
 #tabbar .ti{position:relative;display:grid;place-items:center;width:44px;height:28px;border-radius:14px;transition:background .25s}
 #tabbar svg{width:23px;height:23px}
@@ -346,7 +346,8 @@ dl.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;margin:
 .secw{padding:2px 0 6px;overflow-x:auto;scrollbar-width:none}.secw::-webkit-scrollbar{display:none}
 .secp{display:flex;gap:6px;padding:0 16px;width:max-content}
 .secw{border-bottom:1px solid var(--line);margin-bottom:6px;padding-bottom:0}
-.secp{gap:18px}
+.secp{gap:0;width:100%;min-width:max-content;padding:0 8px}
+.secp button{flex:1 1 auto;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8px!important;font-size:16px!important}
 .secp button{position:relative;height:38px;padding:0 2px;font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:.01em;color:var(--muted);white-space:nowrap;transition:color .2s,transform .15s}
 .secp button::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--gold);transform:scaleX(0);transition:transform .3s var(--spring)}
 .secp button[aria-pressed="true"]{color:var(--gold2)}.secp button[aria-pressed="true"]::after{transform:none;box-shadow:0 0 10px var(--gold)}
@@ -502,6 +503,32 @@ a.lnk{display:flex;align-items:center;justify-content:center;gap:6px;min-height:
 .hero .cdl{align-items:center;gap:10px}.hero .cdl .cdd{margin:0}
 /* la grande carte se touche : chevron en haut à droite */
 .w22.hero .hmeta::after{content:"›";flex:none;display:grid;place-items:center;width:26px;height:26px;margin-left:8px;border-radius:50%;background:rgba(5,11,24,.45);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:17px;font-weight:700;line-height:1}
+/* ce soir : un match joué se lit comme un résultat (vainqueur en avant, perdant estompé, prono ✓ ou ✗) */
+.wrow.res time{font-size:11px;font-family:var(--body);font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.4px}
+.wrow.res .mt span{display:inline-flex;align-items:center;gap:5px;min-width:0}
+.wrow.res .mt .lo{opacity:.42}.wrow.res .mt .wi{color:#fff}
+.wrow.res .mt i.sc{color:var(--gold2);font-family:var(--disp);font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.wrow.res .rb{display:inline-flex;align-items:center;gap:4px}
+.pkr{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:800;color:#fff;background:var(--dim)}
+.wrow.res.ok .pkr{background:#0AC8B9;color:#04201E}.wrow.res.ko .pkr{background:#E84057}
+.grid.first .wrow{animation:wIn .45s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 180ms)}
+.grid.first .wrow:nth-child(2){animation-delay:calc(var(--k,0) * 45ms + 250ms)}.grid.first .wrow:nth-child(3){animation-delay:calc(var(--k,0) * 45ms + 320ms)}
+.grid.first .pkr{animation:pkPop .5s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 520ms)}
+@keyframes pkPop{from{transform:scale(0)}70%{transform:scale(1.25)}}
+/* widget agrandi pour remplir l'écran : le contenu respire (affiche au centre, pied en bas) */
+.w.grow.hero .vs{margin-top:auto;margin-bottom:auto}
+.w.grow.hero .side .ti,.w.grow.hero .side img{transition:transform .3s}
+.weve .rgrid{margin-top:auto;margin-bottom:auto}.weve .wb{flex:none;margin-top:0}
+/* prochaine étape (jour sans affiche) : titre, qualifiés, pancartes */
+.nday .ndw{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;gap:34px;text-align:center}   /* le faisceau passe entre le titre et les qualifiés */
+.nday .ndq small{flex-basis:100%;font-size:11px;font-weight:600;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.6px}
+.nday .ndt{font-family:var(--disp);font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1.02;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+.nday .ndq{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:300px}
+.nday .ndq span{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(5,11,24,.5);border:1px solid rgba(255,255,255,.12);animation:wIn .5s var(--ease) backwards;animation-delay:calc(var(--i,0) * 70ms + 200ms)}
+.nday .ws{color:rgba(255,255,255,.7)}
+.nday .hfoot{margin-top:0}.nday .cdl{justify-content:center}
+@media (prefers-reduced-motion:reduce){.grid.first .wrow,.grid.first .pkr,.nday .ndq span{animation:none}}
+.hom-ob .mic{width:13px;height:13px;vertical-align:-2px}.hom-ob .mic.br{width:15px;height:15px}
 /* match.css — fiche de match, direct, duel de deux joueurs (module match). Style de B : blocs arrondis, or, sarcelle. */
 /* étiquette « à surveiller » / « en cours » (la classe .w est celle des widgets de l'accueil : pas de collision) */
 .mat-tgo{position:relative;font:inherit;font-size:10.5px;font-weight:700;text-transform:none;letter-spacing:0;border:0;cursor:pointer}.mat-tgo::after{content:"";position:absolute;inset:-12px -6px}.mat-tgo:active{transform:scale(.95)}
@@ -779,6 +806,20 @@ dl.mat-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.mat-kv3 dd{
 .gcn{margin:20px 0 0;font-size:11.5px;color:var(--muted);line-height:1.35}
 .mat-brd .ls-b{margin-top:8px;gap:2px}
 .mat-brd .ls-r{height:46px}
+
+/* v14.7 : icônes d'objectifs en couleur (tour, inhibiteur, Baron Nashor violet), pulsation quand un objectif tombe, tableau des joueurs du direct */
+.mic{flex:none}.mic.tw{color:#E9E1CC}.mic.ih{color:#F27DBE}.mic.br{color:#A66CFF;filter:drop-shadow(0 0 3px rgba(166,108,255,.55))}
+.ob .mic{opacity:1;width:14px;height:14px}.ob .mic.br{width:16px;height:16px}
+.ob.z{opacity:.45}.ob.z .mic.br{filter:none}
+.dg.eld{box-shadow:0 0 0 1.5px rgba(240,230,210,.4),0 0 6px rgba(240,230,210,.8)}
+.mat-pop{animation:matPop .9s cubic-bezier(.3,1.35,.5,1)}
+@keyframes matPop{0%{transform:scale(1)}30%{transform:scale(1.45);filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}100%{transform:scale(1)}}
+.kfr .mic{flex:none}
+.mat-lsc{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;height:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.mat-lsc:active{opacity:.55}
+.mat-lsb .ls-b{margin-top:8px}.mat-lsb .ls-r{height:46px}
+.mat-lsb .ls-bar,.mat-brd .ls-bar{transition:width .7s cubic-bezier(.2,.9,.25,1)}
+@media (prefers-reduced-motion:reduce){.mat-pop{animation:none}.mat-lsb .ls-bar,.mat-brd .ls-bar{transition:none}}
 /* players.css — joueurs (grille, carte, classement, Spécial Worlds, fiche joueur, comparaison) et équipes (liste, fiche : .tea-*) */
 .faces{display:flex;margin-top:auto}
 .faces .ava,.faces .mono{border:2px solid var(--card);margin-left:-8px;border-radius:50%!important}
@@ -1092,6 +1133,15 @@ dl.ply-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.ply-kv3 dd{
 .scr.ply-fit2 .ply-gl,.scr.ply-fit2 .ply-sr{min-height:36px}.scr.ply-fit3 .ply-mch .chi{width:26px!important;height:26px!important}.scr.ply-fit3 .ply-c2c{gap:4px}
 .scr.ply-fit3 .ply-cs .ava{width:42px!important;height:42px!important}.scr.ply-fit3 .ply-cs b{font-size:18px}
 @media (prefers-reduced-motion:reduce){.ply-wm .flow,.ply-wm .hostring{display:none}}
+
+/* Joueurs + Par poste */
+.ply-seg{width:100%}
+.ply-seg button{transition:color .2s,background .25s}
+.ply-res .ply-rkr{animation:plyIn .4s var(--ease) backwards}
+.ply-res .ply-rkr:nth-child(n+2){animation-delay:.03s}.ply-res .ply-rkr:nth-child(n+4){animation-delay:.06s}.ply-res .ply-rkr:nth-child(n+7){animation-delay:.09s}.ply-res .ply-rkr:nth-child(n+10){animation-delay:.12s}
+.ply-pod .pl{animation:plyIn .5s var(--ease) backwards}.ply-pod .pl:nth-child(1){animation-delay:.08s}.ply-pod .pl:nth-child(3){animation-delay:.14s}
+@keyframes plyIn{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.ply-res .ply-rkr,.ply-pod .pl{animation:none}}
 /* team.css — équipes, fiche équipe (module team, porté par l'agent suisse) */
 /* swiss.css — phase suisse, calendrier, qui va gagner, fiabilité du robot (module swiss, préfixe .swi-) */
 /* ---------- barres et cascade (moment animé 2 de v13.5 : une fois, à l'ouverture de l'onglet ou de l'accueil) ---------- */
@@ -1337,6 +1387,40 @@ dl.ply-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.ply-kv3 dd{
 .snug .swi-tr{min-height:46px}
 .snug .swi-ko{gap:6px}
 .snug .swi-ql+.swi-lead{margin-top:6px}
+
+/* chances (fusion bilans + qui va gagner) */
+.swi-pod{display:grid;grid-template-columns:1fr 1.2fr 1fr;align-items:end;gap:8px;margin:2px 0 12px}
+.swi-pp{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px 10px;border-radius:var(--r3);background:var(--card);border:1px solid var(--line);min-width:0}
+.swi-pp.p1{order:2;padding-top:16px;border-color:var(--gold3);background:linear-gradient(180deg,rgba(200,170,110,.18),var(--card))}.swi-pp.p2{order:1}.swi-pp.p3{order:3}
+.swi-pp .swi-cup{position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:20px;height:20px;color:var(--gold2)}.swi-pp .swi-cup svg{width:100%;height:100%}
+.swi-pp b{font-size:14px;color:var(--text);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.swi-pp strong{font-family:var(--disp);font-weight:800;font-size:22px;line-height:1;color:var(--gold2);font-variant-numeric:tabular-nums}.swi-pp.p1 strong{font-size:27px}
+.swi-pp .swi-bar{width:80%;height:4px;margin-top:3px}
+.swi-pp:active{transform:scale(.97)}
+.cas .swi-pp{animation:swiRise .55s var(--ease) backwards}.cas .swi-pp.p1{animation-delay:.12s}.cas .swi-pp.p3{animation-delay:.2s}
+.swi-chs{padding:6px 10px 10px}
+.swi-ch,.swi-cr{display:grid;grid-template-columns:minmax(64px,1fr) 46px minmax(64px,.9fr) minmax(70px,1fr);align-items:center;gap:8px;width:100%}
+.swi-ch{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);padding:4px 4px 0}
+.swi-ch span:nth-child(2){text-align:center}.swi-ch span:nth-child(n+3){text-align:right}
+.swi-chs .swi-gh{margin:12px 2px 4px}
+.swi-cr{min-height:44px;padding:0 4px;border-top:1px solid var(--line2);text-align:left}
+.swi-cr:active{background:var(--card2)}
+.swi-cr .tn{display:flex;align-items:center;gap:7px;min-width:0}.swi-cr .tn b{font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swi-cr .rc{display:flex;flex-direction:column;align-items:center;gap:3px}
+.swi-cr .rc b{font-family:var(--disp);font-weight:800;font-size:16px;line-height:1;color:var(--gold2);font-variant-numeric:tabular-nums}
+.swi-cq,.swi-cg{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
+.swi-cq b,.swi-cg b{font-family:var(--disp);font-weight:800;font-size:14px;line-height:1;font-variant-numeric:tabular-nums;color:#D9DEE5}
+.swi-cg b{color:var(--gold2)}
+.swi-cq .swi-bar,.swi-cg .swi-bar{width:100%;height:4px}
+.swi-bar.t i{background:linear-gradient(90deg,#1E7A74,var(--teal))}
+.swi-cq.ok,.swi-cq.ko{align-items:flex-end}.swi-cq.ok svg,.swi-cq.ko svg{width:18px;height:18px}
+.swi-cq.ok{color:var(--teal)}.swi-cq.ko{color:#F28B9B}
+.swi-cr.me{background:rgba(200,170,110,.1);border-radius:10px;box-shadow:inset 3px 0 0 var(--gold)}
+.swi-cr.out{opacity:.5}
+.cas .swi-cr{animation:swiRise .45s var(--ease) backwards;animation-delay:calc(var(--k,0) * 28ms)}
+.swi-tochs{margin-top:10px}
+@keyframes swiRise{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.cas .swi-pp,.cas .swi-cr{animation:none}}
 /* stats.css — stats du tournoi, faits (module stats). Composants du socle (.blk .bh .i .keys .key .rowb .list .chip .split .btn) composés, classes propres en .sta-* */
 /* ---------- tuiles et côtés (Tournoi) ---------- */
 .sta-tl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
@@ -1710,7 +1794,8 @@ div.sta-wp{grid-template-columns:minmax(0,1fr) auto}
 .lea-due{color:var(--red)}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:6px;z-index:999;background:#E84057;color:#fff;font:800 8px/1 sans-serif;letter-spacing:.06em;padding:2px 5px;border-radius:0 0 5px 5px;pointer-events:none;opacity:.85">PRÉPROD v2</div>
+<body>
+<div style="position:fixed;top:0;right:6px;z-index:999;background:#E84057;color:#fff;font:800 8px/1 sans-serif;letter-spacing:.06em;padding:2px 5px;border-radius:0 0 5px 5px;pointer-events:none;opacity:.85">PRÉPROD v2</div>
 <div id="intro" aria-hidden="true"><div class="burst"></div><div class="stage">
   <svg class="rings" viewBox="0 0 200 200"><circle class="r1" cx="100" cy="100" r="94" pathLength="1"/><circle class="r2" cx="100" cy="100" r="80" pathLength="1"/><circle class="r3" cx="100" cy="100" r="66" pathLength="1"/><path d="M100 20 169 60v80l-69 40-69-40V60z" pathLength="1"/></svg>
   <svg class="cup" viewBox="0 0 120 160"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#785A28"/><stop offset=".5" stop-color="#F0E6D2"/><stop offset="1" stop-color="#785A28"/></linearGradient></defs>
@@ -3496,7 +3581,7 @@ async function timed(label,fn){const t=performance.now();try{const d=await fn();
    prend la hauteur restante, sans min-height en vh) ; un écran dont le contenu tient reçoit .fit (défilement coupé : rien ne
    bouge, ni « mini défilement » ni rebond) ; html et body ne défilent jamais (overscroll-behavior:none).
    ===================================================================================== */
-const APP_VERSION="v14.6, 26/10/2026 (préprod v2)";
+const APP_VERSION="v14.7, 26/10/2026 (préprod v2)";
 const BASE="https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/";
 const QS=new URLSearchParams(location.search),FORCE_MO=QS.get("mo");
 /* état propre à la refonte (MATCHES, SOURCE, lastSync, picks, manual, fav, celebrated, ui : legacy « état » ;
@@ -3846,15 +3931,14 @@ function intro(){const el=$("#intro");if(!el)return;let seen=false;try{seen=sess
   const end=()=>{if(!el.isConnected)return;el.classList.add("out");setTimeout(()=>el.remove(),650)};el.addEventListener("click",end);setTimeout(end,2300)}
 /* comptes à rebours : seulement sur l'écran du dessus */
 /* ===================== barre d'onglets (Thomas, 26/10 : collée en bas, toujours visible) =====================
-   Accueil · Matchs · Paris · Joueurs · Stats. Un onglet repart de son écran racine (la pile d'écrans est vidée) ;
+   Accueil · Matchs · Paris · Stats (27/10 : Joueurs rangés dans Stats). Un onglet repart de son écran racine (la pile d'écrans est vidée) ;
    toucher l'onglet où l'on est remonte à sa racine, puis en haut de page. Pastille rouge sur Paris = matchs à parier. */
 const TABH=56;
 const TABS=[["home","Accueil",`<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-6h4v6h4.5V9.5"/>`],
   ["cal","Matchs",`<path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/>`],
   ["bets","Paris",`<path d="M4 7h16v3.2a1.8 1.8 0 0 0 0 3.6V17H4v-3.2a1.8 1.8 0 0 0 0-3.6z"/><path d="M14.5 7v10" stroke-dasharray="1.6 1.8"/>`],
-  ["pl","Joueurs",`<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.4.3 4.2 2 4.9 4.9"/>`],
   ["st","Stats",`<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`]];
-const TAB_OF={cal:"cal",sui:"cal",sim:"cal",bets:"bets",lg:"bets",lgu:"bets",lgf:"bets",pl:"pl",p:"pl",rk:"pl",cmp:"pl",spe:"pl",teams:"pl",t:"pl",d:"pl",st:"st",fx:"st",fxl:"st"};
+const TAB_OF={cal:"cal",sui:"cal",sim:"cal",bets:"bets",lg:"bets",lgu:"bets",lgf:"bets",pl:"st",p:"st",rk:"st",cmp:"st",spe:"st",teams:"st",t:"st",d:"st",st:"st",fx:"st",fxl:"st"};
 let NAVQ=null;
 const tabCur=()=>NAV.length?(TAB_OF[NAV[0].d.v]||"home"):"home";
 function mountTabs(){if($("#tabbar"))return;const nv=document.createElement("nav");nv.id="tabbar";nv.setAttribute("aria-label","Sections");
@@ -3869,11 +3953,12 @@ function tabGo(k){vib(8);if(SHEET.open){closeSheet();setTimeout(()=>tabGo(k),320
   if(cur===k&&NAV.length){if(NAV.length>1){NAVQ=null;history.go(-(NAV.length-1))}else NAV[0].el.scrollTo({top:0,behavior:RM?"auto":"smooth"});return}
   if(NAV.length){NAVQ=k;history.go(-NAV.length);return}
   tabOpen(k)}
-function tabOpen(k){const d=parseRoute(k);if(!d)return;openScr(d,null,true);const el=NAV[NAV.length-1].el;
+const TAB_HOME={st:"pl"};/* l'onglet Stats s'ouvre sur Joueurs, la 1re de ses rubriques */
+function tabOpen(k){const d=parseRoute(TAB_HOME[k]||k);if(!d)return;openScr(d,null,true);const el=NAV[NAV.length-1].el;
   if(!RM){const c=el.querySelector(".scrin");if(c&&c.animate)c.animate([{opacity:0,transform:"translateY(10px)"},{opacity:1,transform:"none"}],{duration:260,easing:"cubic-bezier(.2,.9,.25,1)"})}paintTabs()}
 onAct("[data-tabk]",b=>tabGo(b.dataset.tabk));
 /* écrans frères d'une section (pastilles sous le titre de l'écran racine) : on remplace l'écran, au même niveau */
-const SECS={cal:[["cal","Calendrier"],["sui","Phase suisse"],["sim","Qui va gagner ?"]],pl:[["pl","Joueurs"],["rk","Par poste"],["teams","Équipes"]],st:[["st","Stats"],["fxl","Le saviez-vous ?"]]};
+const SECS={cal:[["cal","Calendrier"],["sui","Phase suisse"]],st:[["pl","Joueurs"],["teams","Équipes"],["st","Stats"],["fxl","Le saviez-vous ?"]]};
 function secOf(v){for(const k in SECS)if(SECS[k].some(x=>x[0]===v))return k;return null}
 const secPills=(s,v)=>`<div class="secw"><div class="secp" role="tablist" aria-label="Rubriques">${SECS[s].map(([x,l])=>`<button data-sec="${x}" aria-pressed="${x===v}">${l}</button>`).join("")}</div></div>`;
 function secSwap(el,v){if(!el||!el._d||el._d.v===v)return;const x=NAV.find(n=>n.el===el),d=parseRoute(v);if(!x||!d)return;vib(6);x.d=d;el.scrollTop=0;renderScreen(el,d);fitSoon(el);
@@ -4209,18 +4294,30 @@ function boardRows(A,B){const best=S=>S.reduce((b,x)=>x&&x.ds!=null&&(!b||x.ds>b
     return `<div class="ls-r">${cell(a,0,bA,bA&&bA.ds)}<span class="ls-m${gd==null||Math.abs(gd)<150?"":gd>0?" a":" b"}"><small>${r==="BOT"?"ADC":r}</small>${gd==null?"":Math.abs(gd)<150?"=":l2k(Math.abs(gd))}</span>${cell(b,1,bB,bB&&bB.ds)}</div>`}).join("")}</div>`}
 /* rangée d'objectifs : tours, dragons (couleur du type), Barons, inhibiteurs, des deux côtés */
 function homObj(S){const dr=x=>(x.dragons||[]).slice(0,5).map(t=>`<i class="hom-dg" style="background:${typeof DRAG!=="undefined"&&DRAG[t]||"var(--gold)"}" title="${esc(t)}"></i>`).join("")||`<i class="hom-dg no"></i>`;
-  const sd=(x,r)=>`<span class="hom-ob${r?" r":""}"><span>${ITOW}${x.towers||0}</span><span class="hom-dgs">${dr(x)}</span><span>${IBAR}${x.barons||0}</span><span>${IINH}${x.inhibitors||0}</span></span>`;
+  const sd=(x,r)=>`<span class="hom-ob${r?" r":""}"><span>${typeof MIC!=="undefined"?MIC.tw:ITOW}${x.towers||0}</span><span class="hom-dgs">${dr(x)}</span><span>${typeof MIC!=="undefined"?MIC.br:IBAR}${x.barons||0}</span><span>${typeof MIC!=="undefined"?MIC.ih:IINH}${x.inhibitors||0}</span></span>`;
   return `<div class="hom-obj">${sd(S.A)}${sd(S.B,1)}</div>`}
 
 /* ===================== listes et prochain match ===================== */
+/* un match joué n'est jamais « ensuite » : vainqueur en avant, perdant estompé, ton prono juste (✓) ou faux (✗) ;
+   titre selon le contenu (Thomas, 26/10) : tout joué = résultats, mélange = ce soir, rien de joué = le titre demandé */
 function wTonight(list,k,title="Ce soir"){
-  const rows=list.slice(0,3).map(x=>{const f=seriesFav(x),st=new Date(x.start),pk=picks[x.key],fv=fav&&(x.t1===fav||x.t2===fav);
-    const dot=x.winner?(pk?`<span class="dotp ${pk===x.winner?"ok":"ko"}"></span>`:`<span class="dotp none"></span>`):pk?`<span class="mypk" title="Ton prono">${logo(pk,16)}</span>`:typeof betOpen==="function"&&betOpen(x)?`<span class="dotp todo" title="À parier"></span>`:`<span class="dotp none"></span>`;
-    return `<div class="wrow${fv?" fav":""}"><time>${x.state==="live"?`<span class="lv">LIVE</span>`:fmtTime(st)}</time><span class="mt">${logo(x.t1,18)}${esc(tid(x.t1))}<i>${x.winner?`${x.s1}-${x.s2}`:"vs"}</i>${esc(tid(x.t2))}${logo(x.t2,18)}</span><span class="rb">${f&&!x.winner?`${esc(tid(f.t))} <b>${P(f.p)}</b> `:""}${dot}</span></div>`}).join("");
+  const L=list.slice(0,3),done=L.filter(x=>x.winner),mine=done.filter(x=>picks[x.key]),good=mine.filter(x=>picks[x.key]===x.winner).length;
+  const ttl=!done.length?title:done.length===L.length?"Résultats de ce soir":"Ce soir";
+  const rows=L.map(x=>{const f=seriesFav(x),st=new Date(x.start),pk=picks[x.key],fv=fav&&(x.t1===fav||x.t2===fav),w=x.winner;
+    if(w){const sd=t=>`<span class="${t===w?"wi":"lo"}">${t===x.t1?logo(t,18)+esc(tid(t)):esc(tid(t))+logo(t,18)}</span>`;
+      return `<div class="wrow res${fv?" fav":""}${pk?(pk===w?" ok":" ko"):""}"><time>${x.s1!=null?"Fini":""}</time><span class="mt">${sd(x.t1)}<i class="sc">${x.s1}-${x.s2}</i>${sd(x.t2)}</span><span class="rb">${pk?`${logo(pk,16)}<span class="pkr">${pk===w?"✓":"✗"}</span>`:`<span class="dotp none"></span>`}</span></div>`}
+    const dot=pk?`<span class="mypk" title="Ton prono">${logo(pk,16)}</span>`:typeof betOpen==="function"&&betOpen(x)?`<span class="dotp todo" title="À parier"></span>`:`<span class="dotp none"></span>`;
+    return `<div class="wrow${fv?" fav":""}"><time>${x.state==="live"?`<span class="lv">LIVE</span>`:fmtTime(st)}</time><span class="mt">${logo(x.t1,18)}${esc(tid(x.t1))}<i>vs</i>${esc(tid(x.t2))}${logo(x.t2,18)}</span><span class="rb">${f?`${esc(tid(f.t))} <b>${P(f.p)}</b> `:""}${dot}</span></div>`}).join("");
   const nx=list.find(x=>x.state==="soon");
-  const em=nx&&new Date(nx.start)-Date.now()<3*3600e3?`dans <span data-cd="${new Date(nx.start).getTime()}"></span>`:list.length>3?`+${list.length-3}`:plur(list.length,"match","matchs");
-  return W("w21","cal",`<div class="wh">${title}<em>${em}</em></div><div class="wb" style="justify-content:center;gap:2px">${rows}</div>`,k,"",title);
+  const em=nx&&new Date(nx.start)-Date.now()<3*3600e3?`dans <span data-cd="${new Date(nx.start).getTime()}"></span>`:!nx&&mine.length?`tes paris <b>${good}/${mine.length}</b>`:list.length>3?`+${list.length-3}`:plur(list.length,"match","matchs");
+  return W("w21","cal",`<div class="wh">${ttl}<em>${em}</em></div><div class="wb" style="justify-content:center;gap:2px">${rows}</div>`,k,"",ttl);
 }
+/* jour sans affiche connue (tirage à venir) : la prochaine étape en grand, avec les pancartes du compte à rebours */
+function wNextDayBig(k){const d=homNextDay();if(!d)return"";const R=records();
+  const tq=Object.keys(T).filter(t=>{try{return R[t]&&status(t,R).k==="ko"}catch(e){return false}}).slice(0,8);
+  return W("w22 hero tall nday","cal",`${heroBg({})}<div class="hin"><div class="hmeta"><span>${esc(fmtDay(evDate(d.dt)))}</span><span class="badge">${esc(fmtTime(d.dt))}</span></div>
+    <div class="ndw"><div class="ndt">${esc(d.d.what.split(",")[0])}</div>${tq.length?`<div class="ndq">${tq.map((t,i)=>`<span style="--i:${i}">${logo(t,30)}</span>`).join("")}<small>${tq.length>1?"qualifiés":"qualifié"} pour les quarts</small></div>`:`<div class="ws">affiches au tirage</div>`}</div>
+    <div class="hfoot"><div class="cdl"><span class="cdp" data-cdp="${d.dt.getTime()}"></span></div></div></div>`,k,"--c1:#1B3766;--c2:#6B4A18",`Prochaine étape : ${d.d.what}, ${fmtDay(evDate(d.dt))}`)}
 function wNextWide(m,k){
   if(!m){const d=homNextDay();if(!d)return"";
     return W("w21","cal",`<div class="wh">Prochain match<em>${esc(fmtDay(evDate(d.dt)))}</em></div><div class="wb"><div class="wn" style="font-size:24px;line-height:1.1">${esc(d.d.what)}</div><div class="ws">Premier match à ${esc(fmtTime(d.dt))} · affiches au tirage</div></div>`,k,"","Prochain match")}
@@ -4291,21 +4388,24 @@ const HOM_W={bets:k=>widget("bets",k),league:k=>widget("league",k),rank:k=>widge
   simbig:k=>widget("sim",k,true),swiss:k=>widget("swiss",k),myteam:k=>homTeam(k),cal:k=>wCal(k)};
 /* ordre et priorité de chaque moment : « nom:priorité » (plus le chiffre est grand, plus le widget part tôt quand la place manque ;
    0 = jamais retiré). Les carrés (w11) vont par deux dans l'ordre ; réserve (HOM_SPARE) pour compléter un carré seul. */
+/* « nom:F » = bouche-trou : ajouté seulement s'il tient en entier sans faire défiler ; puis la place qui reste va au
+   premier widget extensible (héros, bilan, prochaine étape) : l'accueil sans direct remplit l'écran (Thomas, 26/10) */
 const HOM_ORDER={
   live:"hero:0 lsb:1 paris:1 next:2",
-  soon:"hero:0 paris:1 next:1 evemini:3",
-  day:"hero:0 paris:1 next:1 evemini:3",
-  after:"eve:0 paris:1 next:1",
-  rest:"next:0 paris:1 simbig:2 evemini:3",
-  final:"champ:0 paris:1 eve:2"},HOM_SPARE="";   // accueil épuré (Thomas, 26/10) : le reste est rangé dans les onglets
+  soon:"hero:0 paris:1 next:1 evemini:3 swiss:F fact:F",
+  day:"hero:0 paris:1 next:1 evemini:3 swiss:F fact:F",
+  after:"eve:0 paris:1 next:1 swiss:F fact:F",
+  rest:"nbig:0 paris:1 evemini:3 swiss:F fact:F simbig:F",
+  final:"champ:0 paris:1 eve:2"},HOM_SPARE="",HOM_GROW=["hero","eve","nbig","champ"];   // accueil épuré (Thomas, 26/10) : le reste est rangé dans les onglets
 function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES.filter(x=>ok(x)&&dayKeyL(new Date(x.start))===dk);
   const fin=M.champ&&!M.live&&!M.next,hm=M.k==="live"?(M.live||M.next):M.next,yday=M.recent&&M.recent!==dk?M.recent:null;
   const rest=(()=>{const o=today.filter(x=>x!==hm),up=o.filter(x=>x.state!=="done");return [...up,...o.filter(x=>x.state==="done").reverse()].slice(0,3).sort((a,b)=>new Date(a.start)-new Date(b.start))})(),other=MATCHES.find(x=>x.state==="soon"&&x!==hm&&ok(x));
   const F={...HOM_W,
     hero:k=>hm?wHeroMatch(hm,k):"",lsb:k=>M.k==="live"&&hm?wLiveBoard(hm,k):"",paris:k=>typeof wParis==="function"?wParis(k,hm):"",livebets:k=>hm?widget("livebets",hm,k):"",
     next:k=>M.k==="after"||M.k==="rest"?wNextWide(M.next,k):rest.length?wTonight(rest,k,M.k==="day"?"Ce soir":"Ensuite"):wNextWide(other,k),
+    nbig:k=>M.next?wHeroMatch(M.next,k):wNextDayBig(k)||wNextWide(null,k),
     eve:k=>M.recent||M.last?wEve(M.recent||M.last,k):"",evemini:k=>(M.k==="rest"?M.recent:yday)?wEveMini(M.k==="rest"?M.recent:yday,k):"",champ:k=>M.champ?wChampion(M.champ,k):""};
-  const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return {n,f:F[n],pr:+p}});
+  const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return p==="F"?{n,f:F[n],pr:9,fill:true}:{n,f:F[n],pr:+p}});
   /* équipe suivie (w26_fav) : son widget passe juste après « Mes paris » et n'est retiré qu'en dernier recours */
   if(fav&&T[fav]){const i=I.findIndex(x=>x.n==="myteam");if(i>=0){const it=I.splice(i,1)[0];it.pr=Math.min(it.pr,2);const j=I.findIndex(x=>x.n==="bets");I.splice(j>=0?j+1:I.length,0,it)}}
   return {I,spares:HOM_SPARE.split(" ").map(n=>[n,F[n]])};
@@ -4313,24 +4413,35 @@ function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES
 /* rangées : un widget large, ou deux carrés côte à côte (un carré seul est complété par un widget de réserve, sinon élargi) */
 function homRows(M){const {I,spares}=homItems(M),used=new Set(),rows=[];let k=0,pend=null;
   const take=(n,f)=>{const h=safe(f,k)||"";if(!h)return null;used.add(n);return {n,h,sz:homSz(h),k:k++}};
-  for(const it of I){const x=take(it.n,it.f);if(!x)continue;x.pr=it.pr;
+  for(const it of I){const x=take(it.n,it.f);if(!x)continue;x.pr=it.pr;x.fill=!!it.fill;
     /* une paire reste tant que l'un des deux compte (priorité la plus forte des deux) */
-    if(x.sz==="w11"){if(pend){rows.push({h:HOM_H.w11,html:pend.h+x.h,pr:Math.min(pend.pr,x.pr),n:pend.n+"+"+x.n});pend=null}else pend=x;continue}
-    rows.push({h:HOM_H[x.sz],html:x.h,pr:x.pr,n:x.n,fixed:x.pr===0})}
+    if(x.sz==="w11"){if(pend){rows.push({h:HOM_H.w11,html:pend.h+x.h,pr:Math.min(pend.pr,x.pr),n:pend.n+"+"+x.n,fill:pend.fill&&x.fill});pend=null}else pend=x;continue}
+    /* bilan : hauteur selon le nombre de matchs (2 par rangée), au lieu des 284 px d'un bilan de 8 matchs */
+    const h=x.n==="eve"?(n=>Math.min(HOM_H.w22,128+Math.ceil(n/2)*42))((homEve(M.recent||M.last)||{L:[]}).L.slice(0,8).length):HOM_H[x.sz];
+    rows.push({h,hx:h!==HOM_H[x.sz],html:x.h,pr:x.pr,n:x.n,fixed:x.pr===0,fill:x.fill,grow:HOM_GROW.includes(x.n)})}
   if(pend){let sp=null;for(const [n,f] of spares){if(used.has(n))continue;const x=take(n,f);if(x&&x.sz==="w11"){sp=x;break}}
-    rows.push(sp?{h:HOM_H.w11,html:pend.h+sp.h,pr:pend.pr,n:pend.n+"+"+sp.n}:{h:HOM_H.w11,html:pend.h.replace('class="w w11','class="w w11 solo'),pr:pend.pr,n:pend.n})}
+    rows.push(sp?{h:HOM_H.w11,html:pend.h+sp.h,pr:pend.pr,n:pend.n+"+"+sp.n}:{h:HOM_H.w11,html:pend.h.replace('class="w w11','class="w w11 solo'),pr:pend.pr,n:pend.n,fill:pend.fill})}
   return rows;
 }
 /* ≤ 1,5 écran, et jamais un dépassement de moins de 120 px (Thomas : « bien tout cadrer ») */
 function homFit(rows,el){const H=el.clientHeight||innerHeight,bar=el.querySelector(".bar"),chrome=(bar?bar.offsetHeight:54)+6+8+(parseFloat(getComputedStyle(el).paddingBottom)||28);
-  const tot=rs=>chrome+rs.reduce((s,r)=>s+r.h,0)+HOM_GAP*Math.max(0,rs.length-1);let rs=rows.slice();
+  const tot=rs=>chrome+rs.reduce((s,r)=>s+r.h,0)+HOM_GAP*Math.max(0,rs.length-1);let rs=rows.filter(r=>!r.fill);
   const drop=()=>{let j=-1;rs.forEach((r,i)=>{if(!r.fixed&&(j<0||r.pr>=rs[j].pr))j=i});if(j<0)return false;rs.splice(j,1);return true};
   while(tot(rs)>1.5*H&&drop());
   while(tot(rs)>H&&tot(rs)-H<120&&drop());
+  /* l'écran tient : bouche-trous qui entrent en entier (à leur place dans l'ordre), puis le reste au widget extensible */
+  if(tot(rs)<=H){for(const f of rows.filter(r=>r.fill)){const t=rows.filter(r=>rs.includes(r)||r===f);if(tot(t)<=H)rs=t}
+    const g=rs.find(r=>r.grow),ex=Math.min(Math.floor(H-tot(rs)),260);
+    rs=rs.map(r=>r===g&&ex>6?{...r,h:r.h+ex,hx:true,html:r.html.replace('class="w ','class="w grow ')}:r)}
+  rs=rs.map(r=>r.hx?{...r,html:r.html.replace('style="--k:',`style="height:${r.h}px;--k:`)}:r);
   HM.rows=rs.map(r=>r.n);HM.est=tot(rs);return rs}
+/* chiffres qui défilent jusqu'à leur valeur à l'arrivée sur l'accueil (nombres entiers seuls dans leur texte) */
+function homRoll(g){g.querySelectorAll(".pw-v,.wn,.rres em,.wrow .sc").forEach(e=>{[...e.childNodes].forEach(t=>{if(t.nodeType!==3)return;const m=/^(\d{1,3})(-(\d{1,2}))?$/.exec(t.nodeValue.trim());if(!m)return;
+  const a=+m[1],b=m[3]!=null?+m[3]:null,fin=t.nodeValue,t0=performance.now(),D=800;
+  const st=n=>{const p=Math.min(1,(n-t0)/D),q=1-Math.pow(1-p,3);t.nodeValue=p>=1?fin:String(Math.round(a*q))+(b!=null?"-"+Math.round(b*q):"");if(p<1)requestAnimationFrame(st)};requestAnimationFrame(st)})})}
 function renderHome(el=HOME){if(!el)return;
   const M=homeMoment();HM=M;const rows=homFit(homRows(M),el),h=rows.map(r=>r.html).join("");
-  const g=el.querySelector(".grid");if(g._h!==h){const first=!g._h;g._h=h;g.innerHTML=h;if(first&&!RM){g.classList.add("first");setTimeout(()=>g.classList.remove("first"),1400)}startBeam(g.querySelector(".hero .beam"))}
+  const g=el.querySelector(".grid");if(g._h!==h){const first=!g._h;g._h=h;g.innerHTML=h;if(first&&!RM){g.classList.add("first");setTimeout(()=>g.classList.remove("first"),1400);homRoll(g)}startBeam(g.querySelector(".hero .beam"))}
   tickCd(el);const wl=g.querySelector("#wlive");if(wl){const m=MATCHES.find(x=>x.key===wl.dataset.k);if(m){const lh=safe(liveMini,m);if(wl._h!==lh){wl._h=lh;wl.innerHTML=lh}}}
   const wb=g.querySelector("#wlsb");if(wb){const m=MATCHES.find(x=>x.key===wb.dataset.k);if(m){const bh=safe(homLsb,m);if(bh&&wb._h!==bh){wb._h=bh;wb.innerHTML=bh}}}
   paintPill();if(typeof paintTabs==="function")paintTabs();
@@ -4437,13 +4548,13 @@ function scrMatch(d){
   if(!m.t1||!m.t2)return {...base,info:"prono",head:matHead(m),headKey:"tbd"+m.start,body:`<p class="empty">Affiche pas encore connue : elle dépend du tirage.</p>`};
   if(kind==="soon")return {...base,info:"prono",head:matHead(m),headKey:"soon"+m.start+m.t1+m.t2,tabs:[["ov","Aperçu"],["pl","Joueurs"],["dr","Draft"],["eq","Équipes"]],
     render:t=>{const x=fresh();return t==="pl"?matTabRoles(x):t==="dr"?matTabDraftSoon(x):t==="eq"?matTabTeams(x):matTabOverview(x)},needs:[loadFJ(),loadDJ()]};
-  if(kind==="live"){if(LV.watch!==m.id)watchLive(m);
-    const tabs=[["di","Direct"],["pl","Joueurs"],["dr","Draft"]];if(matN(m)>0&&matMid(m))tabs.push(["gm","Parties"]);tabs.push(["av","Avant"]);
+  if(kind==="live"){if(LV.watch!==m.id)watchLive(m);if(d.tab==="pl")d.tab="di";
+    const tabs=[["di","Direct"],["dr","Draft"]];if(matN(m)>0&&matMid(m))tabs.push(["gm","Parties"]);tabs.push(["av","Avant"]);
     return {...base,info:"direct",head:hudHTML(m),tabs,
-      render:t=>{const x=fresh();return t==="pl"?matTabLivePlayers(x):t==="dr"?matTabLiveDraft(x):t==="gm"?matTabGames(x,d):t==="av"?matTabBefore(x):matTabDirect(x)},needs:[loadDJ(),loadFJ(),champMap()]}}
-  const G=matGames(m),tabs=[["ov","Résumé"]];if(G.length>1||(m.bo===1&&G.length))tabs.push(["gm",G.length>1?"Parties":"Partie"]);tabs.push(["pl","Joueurs"],["dr","Draft"],["av","Avant"]);
+      render:t=>{const x=fresh();return t==="dr"?matTabLiveDraft(x):t==="gm"?matTabGames(x,d):t==="av"?matTabBefore(x):matTabDirect(x)},needs:[loadDJ(),loadFJ(),champMap()]}}
+  const G=matGames(m),tabs=[["ov","Résumé"]];if(G.length>1||(m.bo===1&&G.length))tabs.push(["gm",G.length>1?"Parties":"Partie"]);tabs.push(["dr","Draft"],["av","Avant"]);if(d.tab==="pl")d.tab=tabs.some(x=>x[0]==="gm")?"gm":"ov";
   return {...base,info:"termine",head:resultHead(m),headKey:"done"+m.s1+m.s2+m.winner,tabs,
-    render:t=>{const x=fresh();return t==="gm"?matTabGames(x,d):t==="pl"?matTabDonePlayers(x,d):t==="dr"?matTabDraftDone(x,d):t==="av"?matTabBefore(x):matTabSummary(x,d)},needs:[loadDJ()]};
+    render:t=>{const x=fresh();return t==="gm"?matTabGames(x,d):t==="dr"?matTabDraftDone(x,d):t==="av"?matTabBefore(x):matTabSummary(x,d)},needs:[loadDJ()]};
 }
 function recTxt(t,R){const r=R[t];if(!r)return"";const s=r.sw.w+r.sw.l;return s?`suisse ${r.sw.w}-${r.sw.l}`:(T[t]&&T[t].seed)||""}
 const matSide=(t,sub,dim)=>t?`<button class="side" data-t="${esc(t)}" aria-label="Fiche ${esc(T[t].name)}"${dim?` style="opacity:.5"`:""}>${logo(t,64)}<span class="code">${esc(tid(t))}</span><span class="mat-rec">${sub}</span></button>`
@@ -4495,7 +4606,7 @@ function matRobotBlk(m,past){const F=fiabW26();let f,c,lab="Le robot",tg="";
     <div style="margin-top:10px">${splitBar(f.p1,cA(m),cB(m))}</div></div>`}
 function matPronoBlk(m){const me=picks[m.key],lv=m.state!=="soon"||Date.now()>=new Date(m.start).getTime();
   return `<div class="blk" data-pk="prono"><div class="bh">Ton prono<span class="mat-bhr">${lv?"jusqu’à 2 min après le lancement":me?"modifiable jusqu’au coup d’envoi":"avant "+fmtTime(new Date(m.start))}</span></div>
-    <div class="pk2">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${me===t}">${logo(t,26)}${esc(tid(t))}</button>`).join("")}</div>${matLea("score",m)}${typeof leaSideHTML==="function"?leaSideHTML(m):""}</div>${matLea("bets",m)}`}
+    <div class="pk2">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${me===t}">${logo(t,26)}${esc(tid(t))}</button>`).join("")}</div>${matLea("score",m)}</div>${matLea("bets",m)}`}
 /* une clé = un grand chiffre et une ligne ; la phrase complète et son taux réel au toucher (keyLine de v13.5) */
 function matKey1(k,row){const t=k[0],A=row[1],B=row[2];
   if(t==="poste"){const [,r,ka,kb,dd,pts]=k,aw=dd>0,w=aw?ka:kb,l=aw?kb:ka;return {n:"+"+fx1(Math.abs(pts)),u:"pts",h:`<b>${pnm(w)}</b> mieux noté que ${pnm(l)}`,s:`${ROLES[r]} · chances pour ${tnm(aw?A:B)}`,w:3+Math.abs(pts)}}
@@ -4656,8 +4767,8 @@ function paintLive(m){if(!m)return;
     const L=LV.games[m.key],st=L&&L.status;
     if(matPre(st)&&!matPre(el._lst)&&!x.d._t0&&x.d.tab==="di"&&!matOver(m,L)&&o.tabs&&o.tabs.some(t=>t[0]==="dr")){setTab(el,"dr");el._adr=1}
     else if(st==="live"&&el._adr&&x.d.tab==="dr"){setTab(el,"di");el._adr=0}el._lst=st;
-    const hs=el.querySelector(".headslot");if(hs)matPatchHud(hs,hudHTML(m));
-    const c=el.querySelector(".tabc");if(c&&o.render){matPatch(c,safe(o.render,x.d.tab)||"");tickCd(c)}
+    const hs=el.querySelector(".headslot");if(hs){const z=matSnap(hs);matPatchHud(hs,hudHTML(m));matAnim(hs,z)}
+    const c=el.querySelector(".tabc");if(c&&o.render){const z=matSnap(c);matPatch(c,safe(o.render,x.d.tab)||"");tickCd(c);matAnim(c,z)}
     matBar(el)});
   matSheetRefresh();BUS.emit("live",m)}
 /* tête du direct : seules les parties qui changent sont remplacées ; la barre des chances glisse, les kills « claquent » */
@@ -4676,6 +4787,23 @@ function matBar(el){const d=el._d;if(!d||d.v!=="m"||d._k!=="live")return;const m
   if(on){const S=sideFrame(L,m),p=liveP(L,m),gd=S.A.totalGold-S.B.totalGold,h=`<span class="mh">${logo(m.t1,18)}${S.A.totalKills}–${S.B.totalKills}${logo(m.t2,18)}</span><small>${gtime(L)} · ${Math.abs(gd)<100?"or =":esc(tid(gd>=0?m.t1:m.t2))+" +"+kf1(gd)} · ${esc(tid(p>=.5?m.t1:m.t2))} ${P(Math.max(p,1-p))}</small>`;
     if(bt._mh!==h){bt._mh=h;bt.innerHTML=h}if(!bt.classList.contains("mat-mini")){bt.classList.add("mat-mini");bt.setAttribute("role","button");bt.setAttribute("aria-label","Revenir au direct")}}
   else if(bt.classList.contains("mat-mini")){bt.classList.remove("mat-mini");bt._mh=null;bt.removeAttribute("role");bt.removeAttribute("aria-label");const o=el._o;if(o){bt._h=o.title;bt.innerHTML=o.title}}}
+
+/* icônes d'objectifs (Thomas, 26/10 : « le nash pourrait être en violet avec une mini forme de nash ») : tour, inhibiteur (cristal), Baron Nashor (tête à cornes) */
+const MIC={tw:`<svg class="mic tw" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5 1h6v2.2l-1 1V5h1.6v2H10v6h1.6v2H4.4v-2H6V7H4.4V5H6v-.8l-1-1z"/></svg>`,
+  ih:`<svg class="mic ih" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1l3.6 5L8 11.2 4.4 6zM3 12.6h10V15H3z"/></svg>`,
+  br:`<svg class="mic br" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1.8 1.2 5.5 4.3C6.2 3.9 7.1 3.7 8 3.7s1.8.2 2.5.6l3.7-3.1-1.3 4.6c.7.9 1.1 2 1.1 3.2C14 12.4 11.3 15 8 15s-6-2.6-6-6c0-1.2.4-2.3 1.1-3.2zM4.6 8.4l2.5 1-.5 1.3-2.2-.8zm6.8 0-2.5 1 .5 1.3 2.2-.8zM6.2 12.3h3.6l-.6 1H6.8z"/></svg>`};
+/* chiffres qui défilent : <span data-rk data-rv data-rf> ; avant un repeint matSnap note les valeurs, après matAnim anime ce qui a bougé */
+const matFmt=(f,v)=>f==="k"?kf1(v):f==="g"?l2k(v):f==="pc"?l2pc(v):String(Math.round(v));
+const matRk=(k,v,f)=>`<span data-rk="${k}" data-rv="${v}" data-rf="${f}">${matFmt(f,v)}</span>`;
+function matSnap(r){const s=new Map();if(!r||RM)return s;
+  r.querySelectorAll("[data-rk]").forEach(e=>s.set("r"+e.dataset.rk,+e.dataset.rv));r.querySelectorAll("[data-bk]").forEach(e=>s.set("b"+e.dataset.bk,e.style.width));
+  r.querySelectorAll("[data-ok]").forEach(e=>s.set("o"+e.dataset.ok,+e.dataset.rv));return s}
+function matRoll(e,a,b,f){const fin=e.textContent,t0=performance.now(),D=650;e._rl=b;
+  const st=now=>{if(e._rl!==b||!e.isConnected)return;const q=Math.min(1,(now-t0)/D),k=1-Math.pow(1-q,3);if(q>=1){e.textContent=fin;return}e.textContent=matFmt(f,a+(b-a)*k);requestAnimationFrame(st)};requestAnimationFrame(st)}
+function matAnim(r,s){if(!r||!s.size||RM)return;
+  r.querySelectorAll("[data-rk]").forEach(e=>{const a=s.get("r"+e.dataset.rk),b=+e.dataset.rv;if(a==null||isNaN(a)||isNaN(b)||a===b||e._rl===b)return;matRoll(e,a,b,e.dataset.rf)});
+  r.querySelectorAll("[data-bk]").forEach(e=>{const a=s.get("b"+e.dataset.bk),b=e.style.width;if(!a||a===b||!e.animate)return;e.animate([{width:a},{width:b}],{duration:700,easing:"cubic-bezier(.2,.9,.25,1)"})});
+  r.querySelectorAll("[data-ok]").forEach(e=>{const a=s.get("o"+e.dataset.ok),b=+e.dataset.rv;if(a==null||!(b>a))return;e.classList.remove("mat-pop");void e.offsetWidth;e.classList.add("mat-pop")})}
 
 /* ===================== 7. direct : HUD ===================== */
 function matSeries(m,L){const w=t=>{const x=L&&L.teams&&L.teams.find(z=>z.our===t);return x&&x.w!=null?x.w:null};const a=w(m.t1),b=w(m.t2);return [a!=null?Math.max(a,m.s1||0):(m.s1||0),b!=null?Math.max(b,m.s2||0):(m.s2||0)]}
@@ -4699,18 +4827,19 @@ function hudHTML(m){
       <div class="huds" data-h="s">${tm(m.t1,0,"")}<div class="hudc"><div class="hudk">${m.bo>1||s[0]+s[1]?`${s[0]}<i>–</i>${s[1]}`:`<i style="margin:0">VS</i>`}</div><div class="hudclk">${m.bo>1?"série":"Bo1"}</div></div>${tm(m.t2,1,"")}</div>
       <div class="hudg" data-h="g">${matLiveMsg(m,L)}</div>${f?`<div data-h="w">${splitBar(f.p1,cA(m),cB(m))}</div><div class="wpl" data-h="p"><b>${P(f.p1)}</b><span>prono du robot${m.bo>1&&s[0]+s[1]?", score compris":""}</span><b>${P(1-f.p1)}</b></div>`:""}</div>`}
   const S=sideFrame(L,m),p=liveP(L,m),gd=S.A.totalGold-S.B.totalGold,tr=trend(L,m);
-  const obj=(t,o,rev)=>{const dr=(t.dragons||[]).filter(x=>x!=="elder"),so=kfSoul(t.dragons),free=so||kfSoul(o.dragons)?0:Math.max(0,4-dr.length),ed=(t.dragons||[]).filter(x=>x==="elder").length;
+  const obj=(t,o,rev,sk)=>{const dr=(t.dragons||[]).filter(x=>x!=="elder"),so=kfSoul(t.dragons),free=so||kfSoul(o.dragons)?0:Math.max(0,4-dr.length),ed=(t.dragons||[]).filter(x=>x==="elder").length;
     const nm=(t.dragons||[]).map(x=>KF_DR[x]||x).join(", "),ti=`Dragons : ${(t.dragons||[]).length}${nm?" ("+nm+")":""}${so?", âme "+(KF_DR[so]||so):""}`;
-    const dots=dr.map(x=>`<i class="dg" style="background:${DRAG[x]||"#888"}"></i>`).join("")+`<i class="dg e"></i>`.repeat(free)+`<i class="dg" style="background:${DRAG.elder}"></i>`.repeat(ed);
-    const it=[`<span class="ob" title="Tours détruites" aria-label="Tours détruites : ${t.towers||0}">${ITOW}${t.towers||0}</span>`,`<span class="mat-dr" title="${esc(ti)}" aria-label="${esc(ti)}">${dots}${so?`<b class="soul" style="--c:${DRAG[so]}">âme</b>`:""}</span>`,`<span class="ob" title="Barons" aria-label="Barons : ${t.barons||0}">${IBAR}${t.barons||0}</span>`,`<span class="ob" title="Inhibiteurs détruits" aria-label="Inhibiteurs détruits : ${t.inhibitors||0}">${IINH}${t.inhibitors||0}</span>`];
+    const dots=dr.map(x=>`<i class="dg" style="background:${DRAG[x]||"#888"}"></i>`).join("")+`<i class="dg e"></i>`.repeat(free)+`<i class="dg eld" style="background:${DRAG.elder}"></i>`.repeat(ed);
+    const ob=(k,n,lab)=>`<span class="ob ${k}${n?"":" z"}" data-ok="${sk+k}" data-rv="${n}" title="${lab}" aria-label="${lab} : ${n}">${MIC[k]}${n}</span>`;
+    const it=[ob("tw",t.towers||0,"Tours détruites"),`<span class="mat-dr" data-ok="${sk}dr" data-rv="${(t.dragons||[]).length}" title="${esc(ti)}" aria-label="${esc(ti)}">${dots}${so?`<b class="soul" style="--c:${DRAG[so]}">âme</b>`:""}</span>`,ob("br",t.barons||0,"Barons Nashor"),ob("ih",t.inhibitors||0,"Inhibiteurs détruits")];
     return `<span>${(rev?it.reverse():it).join("")}</span>`};
   const ended=L.status==="ended";
   return `<div class="hud${ended?" done":""}" data-hk="f" style="${c}" id="hud">
     <div class="hudt" data-h="t"><span class="badge live">Partie ${L.num||""}</span><span>${m.bo>1?`Série ${s[0]}-${s[1]} · `:""}${ended?"Partie terminée":"≈ 30 s de décalage"}</span></div>
-    <div class="huds" data-h="s">${tm(m.t1,0,`${S.aBlue?"bleu":"rouge"} · ${kf1(S.A.totalGold)}`)}<div class="hudc"><div class="hudk">${S.A.totalKills}<i>–</i>${S.B.totalKills}</div><div class="hudclk">${gtime(L)}</div></div>${tm(m.t2,1,`${kf1(S.B.totalGold)} · ${S.aBlue?"rouge":"bleu"}`)}</div>
-    <div class="hudg" data-h="g">${Math.abs(gd)<100?"<b>Or à égalité</b>":`<b>${esc(tid(gd>=0?m.t1:m.t2))} +${kf1(gd)}</b> d’or`}${tr?`${spark(tr,56,18,m)}<small>${tr.txt}</small>`:""}</div>
+    <div class="huds" data-h="s">${tm(m.t1,0,`${S.aBlue?"bleu":"rouge"} · ${matRk("ga",S.A.totalGold,"k")}`)}<div class="hudc"><div class="hudk">${S.A.totalKills}<i>–</i>${S.B.totalKills}</div><div class="hudclk">${gtime(L)}</div></div>${tm(m.t2,1,`${matRk("gb",S.B.totalGold,"k")} · ${S.aBlue?"rouge":"bleu"}`)}</div>
+    <div class="hudg" data-h="g">${Math.abs(gd)<100?"<b>Or à égalité</b>":`<b>${esc(tid(gd>=0?m.t1:m.t2))} +${matRk(gd>=0?"da":"db",Math.abs(gd),"k")}</b> d’or`}${tr?`${spark(tr,56,18,m)}<small>${tr.txt}</small>`:""}</div>
     <div data-h="w">${splitBar(p,cA(m),cB(m))}</div><div class="wpl" data-h="p"><b>${P(p)}</b><span>chances de victoire <button class="i mat-i20" data-info="wp" aria-label="Comment c’est estimé">i</button></span><b>${P(1-p)}</b></div>
-    <div class="hudo" data-h="o">${obj(S.A,S.B,false)}${obj(S.B,S.A,true)}</div></div>`}
+    <div class="hudo" data-h="o">${obj(S.A,S.B,false,"A")}${obj(S.B,S.A,true,"B")}</div></div>`}
 /* écart d'or vu de t1, à partir des images du flux (rattrapées depuis le début de la partie) */
 function goldPts(L,m){const K=L.kf;if(!K||!K.fr)return [];const flip=L.blue===m.t2?-1:1,out=[];
   K.fr.forEach(x=>{if(!x.g||x.gd==null)return;const c=kfClock(L,x.t);if(c==null)return;const t=c/60;const l=out[out.length-1];if(!l||t-l.t>=.2)out.push({t,gd:x.gd*flip})});return out}
@@ -4742,9 +4871,9 @@ function evLine(L,e,short){
     return `${champ(k.c,22)}<b>${esc(k.n)}</b><span style="color:var(--gold3)">›</span>${champ(v.c,22)}<b class="vi">${esc(v.n)}</b>${e.as.length&&!short?`<small>+${e.as.length}</small>`:""}${e.fb?`<em>1er sang</em>`:""}`}
   if(e.k==="drag")return `<i class="dg" style="background:${DRAG[e.ty]||"#888"};width:12px;height:12px"></i><b>${tn(e.s)}</b><span>dragon ${esc((KF_DR[e.ty]||e.ty).toLowerCase())}</span>`;
   if(e.k==="soul")return `<i class="dg" style="background:${DRAG[e.ty]||"#888"};width:12px;height:12px"></i><b>${tn(e.s)}</b><span>âme ${esc(KF_DR[e.ty]||e.ty)}</span>`;
-  if(e.k==="tower")return `${ITOW.replace("<svg",'<svg width="14" height="14"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" tours":"tour"}</span>`;
-  if(e.k==="inhib")return `${IINH.replace("<svg",'<svg width="14" height="14"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" inhibiteurs":"inhibiteur"}</span>`;
-  if(e.k==="baron")return `${IBAR.replace("<svg",'<svg width="14" height="14"')}<b>${tn(e.s)}</b><span>Baron Nashor</span>`;
+  if(e.k==="tower")return `${MIC.tw.replace("<svg",'<svg width="15" height="15"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" tours":"tour"}</span>`;
+  if(e.k==="inhib")return `${MIC.ih.replace("<svg",'<svg width="15" height="15"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" inhibiteurs":"inhibiteur"}</span>`;
+  if(e.k==="baron")return `${MIC.br.replace("<svg",'<svg width="17" height="17"')}<b>${tn(e.s)}</b><span>Baron Nashor</span>`;
   const p=[];if(e.kl&&e.kl[0]+e.kl[1])p.push(`${plur(e.kl[0]+e.kl[1],"kill")}`);[0,1].forEach(s=>{const o=[];if(e.nd&&e.nd[s].length)o.push(e.nd[s].map(x=>"dragon "+(KF_DR[x]||x).toLowerCase()).join(", "));if(e.no&&e.no[3*s])o.push(plur(e.no[3*s],"tour"));if(e.no&&e.no[3*s+2])o.push("Baron");if(o.length)p.push(tn(s)+" : "+o.join(", "))});
   return `<small>jusqu’à ${kfMS(e.t1)} · ${p.join(" · ")}${L.kf&&L.kf.err<3?" (lecture en cours)":""}</small>`}
 const matEvKey=e=>e.k+e.ms+"|"+(e.v??e.s)+(e.ty||"");
@@ -4806,15 +4935,13 @@ function matTabDirect(m){const L=LV.games[m.key];let h="";const man=m.state==="w
     return h+matWatch()}
   h+=man;const f=L.frame,fin=f.gameState==="finished",t=gameMins(L);l2St(L);l2Det(L,m);const R=l2Rows(L);
   const hot=matBascule(L,m,t,fin,f)+matRecRow(m);
-  h+=matFil(L,m)+matCurveBlk(L,m);
-  h+=`<div class="blk mat-rows" data-pk="l2">${hot}${R?matFights(L,m,f)+matDuels(L,m,R,t,fin)+matPog(L,m,R,f,fin,t):matRow("Pendant la partie","Lecture des joueurs en cours…","")}</div>`;
+  h+=matLiveBoard(m,L,R)+matCurveBlk(L,m)+matFil(L,m);
+  const more=hot+(R?matFights(L,m,f)+matPog(L,m,R,f,fin,t):"");if(more)h+=`<div class="blk mat-rows" data-pk="l2">${more}</div>`;
   return h+matWatch()}
 
-/* ===================== 9. direct : onglet Joueurs (tableau du match fusionné) ===================== */
-function matTabLivePlayers(m){const L=LV.games[m.key];if(!matOn(L))return matLiveWaitTab(m,L);
-  l2St(L);l2Det(L,m);const R=l2Rows(L),f=L.frame,t=gameMins(L);if(!R)return `<div class="blk" data-pk="w"><p class="mat-sub" style="margin:0">Lecture des joueurs en cours…</p></div>`;
-  const sa=L.blue===m.t2?1:0,D=L.l2d&&L.l2d.gid===L.gid&&L.l2d.f,tk=[f.blueTeam.totalKills||0,f.redTeam.totalKills||0];
-  const top=D?R.filter(x=>x.dd&&typeof x.dd.championDamageShare==="number").sort((p,q)=>q.dd.championDamageShare-p.dd.championDamageShare)[0]:null,jg=l2Jg(L,R);
+/* ===================== 9. direct : tableau des joueurs (dans Direct ; même tableau que l'accueil, chaque joueur ouvre sa fiche) ===================== */
+function matLiveBoard(m,L,R){if(!R)return `<div class="blk" data-pk="brd"><div class="bh">Les joueurs</div>${skel(42,5)}</div>`;
+  const sa=L.blue===m.t2?1:0;
   const ver=(()=>{const pv=/^(\d+)\.(\d+)/.exec((L.meta||{}).patchVersion||"");return pv?pv[1]+"."+pv[2]+".1":(CH&&CH.v)||""})(),fb=CH&&CH.v&&CH.v!==ver?CH.v:"";
   const ico=i=>`<img class="mat-it" src="https://ddragon.leagueoflegends.com/cdn/${ver}/img/item/${i}.png" alt="" loading="lazy" width="28" height="28"${fb?` onerror="this.onerror=null;this.src='https://ddragon.leagueoflegends.com/cdn/${fb}/img/item/${i}.png'"`:""}>`;
   const det=x=>()=>{const Lx=LV.games[m.key];if(!Lx||Lx.gid!==L.gid)return"";const Rx=l2Rows(Lx);if(!Rx)return"";const y=Rx.find(z=>z.pid===x.pid);if(!y)return"";const s=y.s,d=y.dd,fx=Lx.frame,tx=gameMins(Lx),tkx=[fx.blueTeam.totalKills||0,fx.redTeam.totalKills||0],kp=tkx[y.side]?Math.round(((s.kills||0)+(s.assists||0))/tkx[y.side]*100):0,it=d&&d.items?d.items.filter(i=>i>0):[];
@@ -4823,13 +4950,13 @@ function matTabLivePlayers(m){const L=LV.games[m.key];if(!matOn(L))return matLiv
       ${d?`${typeof d.championDamageShare==="number"?`<dt>Part des dégâts</dt><dd>${l2pc(d.championDamageShare)} de ${l2sd(y.team)}</dd>`:""}<dt>Balises</dt><dd>${d.wardsPlaced||0} posées, ${d.wardsDestroyed||0} détruites</dd>`:""}</dl>
       ${d?(it.length?`<div class="mat-its">${it.map(ico).join("")}</div>`:""):`<p class="mat-mu">Dégâts, balises et objets : en attente du flux détaillé (lu toutes les 30 s).</p>`}
       ${y.pl?`<button class="btn" data-matgo="p/${esc(y.pl.key)}">Fiche de ${esc(y.pl.id)} ›</button>`:""}`};
-  const cell=(x,rev)=>{const s=x.s,d=x.dd,ds=d&&typeof d.championDamageShare==="number"?l2pc(d.championDamageShare):"";
-    return `<button class="lps mat-lps${rev?" r":""}" data-info="${matSheet("pl|"+L.gid+"|"+x.pid,x.n,det(x),true)}"><span class="fc${kfDead(s)?" dead":""}">${champ(x.c,36)}${s.level?`<i>${s.level}</i>`:""}</span><span class="txt"><b>${esc(x.n)}${x.pl?rankChip(x.pl):""}</b><small>${l2Kda(s)} · ${s.creepScore||0} CS</small><small>${l2k(s.totalGold||0)}${ds?" · "+ds:""}</small></span></button>`};
-  const rows=ROLE_ORDER.map(r=>{const a=R.find(x=>x.side===sa&&x.role===r),b=R.find(x=>x.side!==sa&&x.role===r);if(!a||!b)return"";const gd=(a.s.totalGold||0)-(b.s.totalGold||0);
-    return `<div class="lp mat-lp">${cell(a,0)}<span class="lgd${Math.abs(gd)<150?"":gd>0?" a":" b"}"><small>${ROLE_S[r]}</small>${Math.abs(gd)<150?"=":(gd>0?"◀ ":"")+l2k(Math.abs(gd))+(gd<0?" ▶":"")}</span>${cell(b,1)}</div>`}).join("");
-  const sum=[top?`Le plus de dégâts : <b>${esc(top.n)}</b>, ${l2pc(top.dd.championDamageShare)} de ${l2sd(top.team)}`:"",jg?`Kills avec le jungler avant 15 min${t<15?" (jusqu’ici)":""} : <b>${esc(tid(m.t1))} ${jg[sa]}</b> · <b>${esc(tid(m.t2))} ${jg[1-sa]}</b>`:""].filter(Boolean);
-  return `<div class="blk" data-pk="tab"><div class="bh">Tableau du match<button class="i" data-info="lplayers" aria-label="Lire ce tableau">i</button></div>${sum.length?`<div class="mat-sum">${sum.map(x=>`<p>${x}</p>`).join("")}</div>`:""}<div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}<small class="mat-sd">${sa?"rouge":"bleu"}</small></span><span><small class="mat-sd">${sa?"bleu":"rouge"}</small>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div>${rows}</div>`}
-function matLiveWaitTab(m,L){return `<div class="blk mat-msg" data-pk="msg"><span class="mat-dot"></span><span>${matLiveMsg(m,L)}. Les joueurs arrivent au lancement de la partie.</span></div>`+`<div data-pk="r">${matRolesList(m,true)}</div>`}
+  const one=x=>x?{x,c:x.c,n:x.n,kda:l2Kda(x.s),ds:x.dd&&typeof x.dd.championDamageShare==="number"?x.dd.championDamageShare:null,gold:x.s.totalGold||0,dead:kfDead(x.s)}:null;
+  const A=ROLE_ORDER.map(r=>one(R.find(x=>x.side===sa&&x.role===r))),B=ROLE_ORDER.map(r=>one(R.find(x=>x.side!==sa&&x.role===r)));
+  const best=S=>S.reduce((b,y)=>y&&y.ds!=null&&(!b||y.ds>b.ds)?y:b,null),bA=best(A),bB=best(B),nods=!bA&&!bB;
+  const cell=(y,rev,top)=>`<button class="ls-c mat-lsc${rev?" r":""}" data-info="${matSheet("pl|"+L.gid+"|"+y.x.pid,y.n,det(y.x),true)}" aria-label="${esc(y.n)}, ${esc(y.kda)}"><span class="ls-f${y.dead?" dead":""}">${champ(y.c,28)}</span><span class="ls-t"><b>${esc(y.n)}</b><small>${esc(y.kda)}</small></span><b class="ls-d${y===top?" top":""}"${y.ds!=null?` data-rk="d${y.x.pid}" data-rv="${y.ds}" data-rf="pc"`:""}>${y.ds==null?"–":l2pc(y.ds)}</b><i class="ls-bar" data-bk="${y.x.pid}" style="width:${y.ds!=null&&top&&top.ds?Math.round(y.ds/top.ds*100):0}%"></i></button>`;
+  const rows=ROLE_ORDER.map((r,i)=>{const a=A[i],b=B[i];if(!a||!b)return"";const gd=a.gold-b.gold,k=gd>0?"a":"b";
+    return `<div class="ls-r">${cell(a,0,bA)}<span class="ls-m${Math.abs(gd)<150?"":" "+k}"><small>${r==="BOT"?"ADC":r}</small>${Math.abs(gd)<150?"=":matRk("g"+r+k,Math.abs(gd),"g")}</span>${cell(b,1,bB)}</div>`}).join("");
+  return `<div class="blk mat-brd mat-lsb" data-pk="brd" data-gk="lv${esc(L.gid||"")}" style="--c1:${cA(m)};--c2:${cB(m)}"><div class="bh">Les joueurs<span class="mat-bhr">${nods?"dégâts dans 30 s":"part des dégâts"}</span><button class="i" data-info="lplayers" aria-label="Lire ce tableau">i</button></div><div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}<small class="mat-sd">${sa?"rouge":"bleu"}</small></span><span><small class="mat-sd">${sa?"bleu":"rouge"}</small>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div><div class="ls-b">${rows}</div></div>`}
 
 /* ===================== 10. direct : onglet Draft ===================== */
 function matLiveDraft(m,L){const D=L.amd;if(!D)return `<div class="blk" data-pk="w"><div class="bh">Draft de la partie ${L.num||""}</div>${skel(48,3)}</div>`;
@@ -4941,7 +5068,7 @@ function matGameCard(m,g,short){const w=matGameWin(g),mins=matGameMins(g),f=g.f,
 /* partie terminée : le même tableau que le direct (Thomas, 26/10 : « si on a raté le match ») */
 function matBoardDone(m,g){const P2=matGamePlayers(g);if(!P2||P2.length<10)return"";const one=x=>x?{c:x.c,n:x.n,kda:`${x.k}/${x.d}/${x.a}`,ds:x.ds,gold:x.gold}:null;
   const A=ROLE_ORDER.map(r=>one(P2.find(x=>x.team===m.t1&&x.role===r))),B=ROLE_ORDER.map(r=>one(P2.find(x=>x.team===m.t2&&x.role===r)));if(A.some(x=>!x)||B.some(x=>!x))return"";
-  return `<div class="blk mat-brd" data-pk="brd${g.n}" style="--c1:${cA(m)};--c2:${cB(m)}"><div class="bh">Les joueurs${m.bo>1?` · partie ${g.n}`:""}<span class="mat-bhr">K/D/A · part des dégâts</span></div><div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}</span><span>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div>${boardRows(A,B)}</div>`}
+  return `<div class="blk mat-brd" data-pk="brd${g.n}" data-gk="g${g.n}" style="--c1:${cA(m)};--c2:${cB(m)}"><div class="bh">Les joueurs${m.bo>1?` · partie ${g.n}`:""}<span class="mat-bhr">K/D/A · part des dégâts</span></div><div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}</span><span>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div>${boardRows(A,B)}</div>`}
 function matTabGames(m,d){const live=matKind(m)==="live",G=matGames(m).filter(g=>!live||g.n<=matN(m));const F=matFeedGames(m);
   if(!G.length)return F===undefined?skel(160,2):F===null?matErr("games_"+m.key+"_"+matN(m)):`<p class="empty">Pas encore de partie terminée.</p>`;
   const n=+(d.g||G[G.length-1].n),g=G.find(x=>x.n===n)||G[G.length-1];
@@ -5050,7 +5177,10 @@ function matAnimRobot(el){const b=el.querySelector(".mat-robot .wpb i");if(!b||!
 function matMotion(el){const done=el._mp||(el._mp=new Set());
   const run=()=>el.querySelectorAll(".mat-pips[data-pp]").forEach((p,ri)=>{const k=p.dataset.pp;if(done.has(k))return;done.add(k);
     p.querySelectorAll("i").forEach((i,j)=>{if(i.animate)i.animate([{opacity:0,transform:"scale(.3)"},{opacity:1,transform:"none"}],{duration:300,delay:120+ri*45+j*70,easing:"cubic-bezier(.3,1.35,.5,1)",fill:"backwards"})})});
-  run();if(window.MutationObserver){const o=new MutationObserver(run);o.observe(el,{childList:true,subtree:true});el._mpo=o}}
+  const brd=()=>el.querySelectorAll(".mat-brd[data-gk]").forEach(B=>{const k="b"+B.dataset.gk;if(done.has(k))return;done.add(k);
+    B.querySelectorAll(".ls-r").forEach((r,i)=>{if(r.animate)r.animate([{opacity:0,transform:"translateY(6px)"},{opacity:1,transform:"none"}],{duration:320,delay:60+i*55,easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"})});
+    B.querySelectorAll(".ls-bar").forEach((b,i)=>{if(b.animate)b.animate([{width:"0%"},{width:b.style.width}],{duration:800,delay:200+(i>>1)*55,easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"})})});
+  run();brd();if(window.MutationObserver){const o=new MutationObserver(()=>{run();brd()});o.observe(el,{childList:true,subtree:true});el._mpo=o}}
 
 /* ===================== 16. feuilles « i » ===================== */
 INFO.prono=()=>["Ce match","Aperçu : le prono du robot, ton prono, les clés du match et où le regarder. Joueurs : un duel par poste (touche-le pour le détail). Draft : bans attendus, picks probables et champions déjà joués dans la série. Équipes : face-à-face, forme, saison 2026. Reviens d’un glissement depuis le bord gauche."];
@@ -5106,7 +5236,7 @@ BUS.on("league",()=>NAV.forEach(x=>{if(x.d.v==="m"&&x.el.isConnected)rerender(x.
    ===================================================================================== */
 
 /* ---------- état du module (mémoire de la session, rien dans localStorage) ---------- */
-const PLY={role:"all",nat:null,q:"",live:false,leg:false,map:false,svg:null,mapP:null,mapAnim:true,st:"imp",rkLeg:false,qt:0};
+const PLY={role:"all",nat:null,q:"",live:false,leg:false,map:false,svg:null,mapP:null,mapAnim:true,st:"imp",qt:0};
 const PLY_ISR=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>`;
 const plyRoles=()=>[["all","Tous"],...ROLE_ORDER.map(r=>[r,ROLE_S[r]])];
 const plyY=()=>{const R=RKX();return R&&R.y?R.y:"2026"};
@@ -5115,7 +5245,8 @@ function plyAfter(fn){
   if(SHEET.open&&history.state&&history.state.sheet){addEventListener("popstate",()=>setTimeout(fn,0),{once:true});closeSheet()}
   else{if(SHEET.open)hideSheet();fn()}}
 /* écran du dessus s'il est de ce type */
-const plyTop=v=>{const el=topScreen();return el&&el._d&&el._d.v===v?el:null};
+const PLY_SCR=v=>v==="pl"||v==="rk";   // « Par poste » (rk) est désormais l'écran Joueurs filtré sur un poste
+const plyTop=v=>{const el=topScreen();return el&&el._d&&(el._d.v===v||PLY_SCR(v)&&PLY_SCR(el._d.v))?el:null};
 /* ligne « libellé | réponse | › » (En bref, style de jeu, robot en bref) */
 const plyLn=(lab,txt,attr)=>`<button class="ply-ln" ${attr}><b>${lab}</b><span>${txt}</span><i class="chev" aria-hidden="true">›</i></button>`;
 const plyPct=v=>Math.round(v*100)+NB+"%";
@@ -5171,11 +5302,12 @@ function wRank(k){const R=RKX();if(!R)return"";const top=ROLE_ORDER.map(r=>R.P[r
    1. JOUEURS (pl) : recherche, poste, en lice, champions du monde, pays, carte du monde, grille de cartes holo
    ===================================================================================== */
 function plyNats(){const n={};PLAYERS.forEach(p=>n[p.cc]=(n[p.cc]||0)+1);return Object.entries(n).sort((a,b)=>b[1]-a[1]||cname(a[0]).localeCompare(cname(b[0]),"fr"))}
-function plyList(){const q=norm(PLY.q),R=PLY.live?records():null;
-  return PLAYERS.filter(p=>(PLY.role==="all"||p.role===PLY.role)&&(!PLY.leg||p.titles.length)&&(!PLY.nat||p.cc===PLY.nat)&&(!PLY.live||status(p.team,R).k!=="out")
+function plyList(role){const q=norm(PLY.q),R=PLY.live?records():null;
+  return PLAYERS.filter(p=>(role==="all"||p.role===role)&&(!PLY.leg||p.titles.length)&&(!PLY.nat||p.cc===PLY.nat)&&(!PLY.live||status(p.team,R).k!=="out")
     &&(!q||norm(p.id).includes(q)||norm(p.realName).includes(q)||T[p.team].al.some(a=>a.includes(q))))}
-function plyResults(){
-  const L=plyList(),f=[PLY.role!=="all"?ROLE_S[PLY.role]:null,PLY.live?"en lice":null,PLY.leg?"champions du monde":null,PLY.nat?cname(PLY.nat):null,PLY.q?"« "+PLY.q.trim()+" »":null].filter(Boolean);
+function plyRes(d){const r=d&&d.role||"all";return r!=="all"&&!PLY.q&&!PLY.nat&&RKX()?plyRankTab(r):plyResults(r)}
+function plyResults(role){
+  const L=plyList(role),f=[role!=="all"?ROLE_S[role]:null,PLY.live?"en lice":null,PLY.leg?"champions du monde":null,PLY.nat?cname(PLY.nat):null,PLY.q?"« "+PLY.q.trim()+" »":null].filter(Boolean);
   return `<div class="ply-n"><span><b>${L.length}</b> joueur${L.length>1?"s":""}${f.length?" · "+esc(f.join(", ")):""}</span>${f.length?`<button class="chip" data-plyclear>Tout effacer</button>`:""}</div>`
     +(L.length?`<div class="ply-grid">${L.slice(0,PLY_FIRST).map(plyCardHTML).join("")}${L.length>PLY_FIRST?plyLater(L.slice(PLY_FIRST)):""}</div>`
       :`<p class="empty">Aucun joueur ne correspond.</p>`)}
@@ -5188,18 +5320,17 @@ function plyLater(rest){const tk=PLY.tk=(PLY.tk||0)+1;
 function plyMapHTML(){
   if(!PLY.map)return"";if(!PLY.svg)return `<div class="sk" style="height:168px;margin-top:6px"></div>`;
   let s=PLY.svg;if(PLY.nat)s=s.split(`data-plynat="${PLY.nat}" class="`).join(`data-plynat="${PLY.nat}" class="sel `);return s}
-function plyBody(){
+function plyBody(d){
   const N=plyNats(),an=PLY.mapAnim&&PLY.svg&&!RM;if(an)PLY.mapAnim=false;
   return `<div class="ply-tools">
     <label class="ply-q">${PLY_ISR}<input class="ply-qi" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Pseudo, vrai nom ou équipe" aria-label="Chercher un joueur" value="${esc(PLY.q)}"></label>
-    <div class="ply-seg" role="group" aria-label="Poste">${plyRoles().map(([k,l])=>`<button data-plyrole="${k}" aria-pressed="${PLY.role===k}">${l}</button>`).join("")}</div>
+    <div class="ply-seg" role="group" aria-label="Poste : tous les joueurs ou le classement d’un poste">${plyRoles().map(([k,l])=>`<button data-plyrole="${k}" aria-pressed="${(d.role||"all")===k}">${l}</button>`).join("")}</div>
     <div class="ply-chips"><button class="chip" data-plytog="live" aria-pressed="${PLY.live}">En lice</button><button class="chip" data-plytog="leg" aria-pressed="${PLY.leg}">${ICUP}Champions du monde</button>${PLY.nat?`<button class="chip" data-plynat="${esc(PLY.nat)}" aria-pressed="true" aria-label="Retirer le filtre ${esc(cname(PLY.nat))}">${flag(PLY.nat)}${esc(cname(PLY.nat))} ×</button>`:`<button class="chip" data-plynats>Pays ›</button>`}</div>
   </div>
-  <div class="ply-go"><button class="ply-gt" data-go="rk/TOP"><b>Classement 2026</b><small>le meilleur à chaque poste</small></button><button class="ply-gt" data-go="spe"><b>Spécial Worlds</b><small>qui se transforme ?</small></button></div>
-  <details class="blk ply-map"${PLY.map?" open":""}><summary><span><b>Tous les chemins mènent à Allen</b><small>${N.length} nationalités · touche un pays pour filtrer</small></span><i class="chev" aria-hidden="true">›</i></summary><div class="ply-wm${an?" anim":""}">${plyMapHTML()}</div></details>
-  <div class="ply-res">${plyResults()}</div>`}
-function scrPlayers(){return {title:`Joueurs<small>${PLAYERS.length} titulaires des Worlds</small>`,info:"pl",render:()=>plyBody(),
-  opened:el=>{if(PLY.map&&!PLY.svg)plyMapLoad(el)}}}
+  ${(d.role||"all")==="all"?`<details class="blk ply-map"${PLY.map?" open":""}><summary><span><b>Tous les chemins mènent à Allen</b><small>${N.length} nationalités · touche un pays pour filtrer</small></span><i class="chev" aria-hidden="true">›</i></summary><div class="ply-wm${an?" anim":""}">${plyMapHTML()}</div></details>`:""}
+  <div class="ply-res">${plyRes(d)}</div>`}
+function scrPlayers(d){if(d.role==null)d.role="all";return {title:`Joueurs<small>${PLAYERS.length} titulaires · classement par poste</small>`,info:"pl",render:()=>plyBody(d),
+  needs:RKX()?[]:[plyNeedSJ()],opened:el=>{if(PLY.map&&!PLY.svg)plyMapLoad(el)}}}
 /* carte du monde (d3 + topojson chargés à la demande, comme v13.5) : pays colorés selon l'effectif, arcs vers Allen, points */
 function plyMapLoad(el){
   if(!PLY.mapP)PLY.mapP=(async()=>{try{
@@ -5219,52 +5350,48 @@ function plyMapLoad(el){
    catch(e){PLY.svg=`<p class="note" style="margin:6px 0 4px">Carte indisponible (réseau).</p><div class="ply-nats">${plyNats().map(([cc,n])=>`<button class="chip" data-plynat="${cc}" aria-pressed="${PLY.nat===cc}">${flag(cc)}${esc(cname(cc))}<b>${n}</b></button>`).join("")}</div>`}})();
   PLY.mapP.then(()=>{const e=plyTop("pl")||el;if(e&&e.isConnected)refreshTab(e,0)});
 }
-function plyRefresh(){NAV.forEach(x=>{if(x.d.v==="pl"&&x.el.isConnected)refreshTab(x.el,0)})}
+function plyRefresh(){NAV.forEach(x=>{if(PLY_SCR(x.d.v)&&x.el.isConnected)refreshTab(x.el,0)})}
 function plyNatSheet(){showSheet("Nationalités",`<p>${PLAYERS.length} titulaires, ${plyNats().length} pays. Touche un pays pour filtrer les joueurs.</p><div class="ply-nats">${plyNats().map(([cc,n])=>`<button class="chip" data-plynat="${cc}" aria-pressed="${PLY.nat===cc}">${flag(cc)}${esc(cname(cc))}<b>${n}</b></button>`).join("")}</div>`,true)}
-onAct("[data-plyrole]",b=>{PLY.role=b.dataset.plyrole;vib(6);plyRefresh()});
+onAct("[data-plyrole]",b=>{const el=b.closest(".scr");if(!el||!el._d)return;el._d.role=b.dataset.plyrole;vib(6);refreshTab(el,0)});
 onAct("[data-plytog]",b=>{const k=b.dataset.plytog;PLY[k]=!PLY[k];vib(6);plyRefresh()});
 onAct("[data-plynats]",()=>plyNatSheet());
 onAct("[data-plynat]",b=>{const cc=b.dataset.plynat;PLY.nat=PLY.nat===cc?null:cc;vib(8);plyAfter(()=>{plyRefresh();const el=plyTop("pl"),r=el&&el.querySelector(".ply-res");if(PLY.nat&&r&&!RM)r.scrollIntoView({behavior:"smooth",block:"start"})})});
-onAct("[data-plyclear]",()=>{Object.assign(PLY,{role:"all",nat:null,q:"",live:false,leg:false});vib(6);plyRefresh()});
+onAct("[data-plyclear]",b=>{Object.assign(PLY,{nat:null,q:"",live:false,leg:false});const el=b.closest(".scr");if(el&&el._d)el._d.role="all";vib(6);plyRefresh()});
 /* frappe dans la recherche : seule la liste est redessinée (le champ garde le clavier) */
 document.addEventListener("input",e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains("ply-qi"))return;PLY.q=t.value;clearTimeout(PLY.qt);
-  PLY.qt=setTimeout(()=>{const el=t.closest(".scr"),r=el&&el.querySelector(".ply-res");if(!r)return;r.innerHTML=plyResults();const c=el.querySelector(".tabc");if(c&&el._o&&el._o.render)c._h=safe(el._o.render,el._d.tab)},120)});
+  PLY.qt=setTimeout(()=>{const el=t.closest(".scr"),r=el&&el.querySelector(".ply-res");if(!r)return;r.innerHTML=plyRes(el._d);const c=el.querySelector(".tabc");if(c&&el._o&&el._o.render)c._h=safe(el._o.render,el._d.tab)},120)});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.classList&&e.target.classList.contains("ply-qi"))e.target.blur()});
 /* carte : chargée à la première ouverture du repli */
 document.addEventListener("toggle",e=>{const d=e.target;if(!d||!d.classList||!d.classList.contains("ply-map"))return;PLY.map=d.open;
   const el=d.closest(".scr"),c=el&&el.querySelector(".tabc");if(PLY.map&&!PLY.svg)plyMapLoad(el);else if(c&&el._o)c._h=safe(el._o.render,el._d.tab)},true);
-INFO.pl=()=>["Joueurs","Les 95 titulaires des 19 équipes. Cherche par pseudo, vrai nom ou équipe ; filtre par poste, équipes encore en lice, champions du monde ou pays (aussi en touchant la carte). Touche une carte pour la fiche du joueur."];
+INFO.pl=()=>["Joueurs",`<p>Les 95 titulaires des 19 équipes. « Tous » : toutes les cartes, avec la recherche (pseudo, vrai nom, équipe) et les filtres. Un poste (TOP, JGL, MID, ADC, SUP) : le classement du robot à ce poste ; touche une ligne pour le pourquoi.</p>${rkMethod()}`,true];
 
 /* =====================================================================================
    2. CLASSEMENT PAR POSTE (rk/<poste>) : phrase-réponse, podium, lignes avec fourchette et raisons ; tri par stat brute
    ===================================================================================== */
-function scrRank(d){
-  const R=RKX();if(!R)return {title:"Classement par poste",render:()=>plyWaitSJ(52,8),needs:[plyNeedSJ()]};
-  if(!ROLE_ORDER.includes(d.id))d.id="TOP";d.tab=d.id;
-  return {title:`Classement par poste<small>${PLY.st==="imp"?"note d’impact, ligues comprises":"stat brute, ligues mélangées"}</small>`,info:"classement",tabs:ROLE_ORDER.map(r=>[r,ROLE_S[r]]),tab:d.id,render:r=>{d.id=r;return plyRankTab(r)}};
-}
+function scrRank(d){if(d.role==null)d.role=ROLE_ORDER.includes(d.id)?d.id:"TOP";return scrPlayers(d)}
 function plyRkRow(x){const p=pkey(x.key);if(!p)return"";const rg=x.lo!=null&&x.lo!==x.hi?`${x.lo}–${x.hi}e`:"";
   return `<button class="ply-rkr${x.i<=3?" top3":""}" data-info="why:${esc(x.key)}" aria-label="${esc(p.id)}, ${ordi(x.i)}, pourquoi ce rang"><span class="n">${x.i}${rg?`<small>${rg}</small>`:""}</span>${photo(p,"ava",38)}<span class="tx"><b>${esc(p.id)}${p.titles.length?`<i class="ply-cup" title="Champion du monde">${ICUP}</i>`:""}</b><small>${logo(p.team,13)}${esc(tid(p.team))} · ${rkLine(x)}</small></span><em class="${x.note<0?"neg":""}">${fxs(x.note)}</em></button>`}
 function plyRankTab(role){
   const R=RKX(),st=PSTAT.find(z=>z[0]===PLY.st)||PSTAT[0];
-  const ctl=`<div class="ply-sort"><button class="chip gold" data-info="plysort">Trier : ${esc(st[1])} ▾</button><button class="chip" data-plyrkleg aria-pressed="${PLY.rkLeg}">${ICUP}Champions</button></div>`;
+  const ctl=`<div class="ply-sort"><button class="chip gold" data-info="plysort">Trier : ${esc(st[1])} ▾</button><button class="chip" data-info="classement">Comment c’est calculé ›</button></div>`;
   const tail=`<button class="rowb ply-more" data-go="spe"><span class="grow"><b class="nm">Spécial Worlds</b><small>qui se transforme aux grands tournois ?</small></span><i class="chev">›</i></button>`;
   if(st[0]!=="imp")return ctl+plyRawList(role,st)+tail;
-  let L=R.P[role].r.map(z=>rkFind(z[0])).filter(Boolean);
-  if(PLY.rkLeg){L=L.filter(x=>{const p=pkey(x.key);return p&&p.titles.length});
-    return ctl+`<p class="ply-ans">Les champions du monde parmi les ${R.P[role].r.length} ${RK_ROLEN[role]}, et leur rang à leur poste.</p>`+(L.length?`<div class="list ply-rkl">${L.map(plyRkRow).join("")}</div>`:`<p class="empty">Aucun champion du monde à ce poste.</p>`)+tail}
+  let L=R.P[role].r.map(z=>rkFind(z[0])).filter(Boolean);const Rr=PLY.live?records():null;
+  if(PLY.live)L=L.filter(x=>{const p=pkey(x.key);return p&&status(p.team,Rr).k!=="out"});
+  if(PLY.leg||PLY.live){if(PLY.leg)L=L.filter(x=>{const p=pkey(x.key);return p&&p.titles.length});
+    return ctl+(L.length?`<div class="list ply-rkl">${L.map(plyRkRow).join("")}</div>`:`<p class="empty">Aucun joueur ne correspond à ce poste.</p>`)+tail}
   const top=L.slice(0,3).map(x=>{const p=pkey(x.key);return p?`<div class="pl" data-go="p/${esc(p.key)}" role="button" aria-label="${esc(p.id)}, ${ordi(x.i)}">${hcard(p,"mini")}<b>${ordi(x.i)}</b><small>${x.lo!==x.hi?`${x.lo}–${x.hi}e · `:""}${fxs(x.note)}</small></div>`:""}).join("");
-  return ctl+`<p class="ply-ans">${rkBest1(role)}</p><div class="podium">${top}</div><div class="list ply-rkl">${L.slice(3).map(plyRkRow).join("")}</div>${tail}`;
+  return ctl+`<div class="podium ply-pod">${top}</div><div class="list ply-rkl">${L.slice(3).map(plyRkRow).join("")}</div>${tail}`;
 }
 function plyRawList(role,d){
-  const inF=p=>p.role===role&&(!PLY.rkLeg||p.titles.length),r=ranking(d[0],inF),out=PLAYERS.filter(p=>inF(p)&&!r.some(x=>x.p===p));
+  const inF=p=>p.role===role&&(!PLY.leg||p.titles.length),r=ranking(d[0],inF),out=PLAYERS.filter(p=>inF(p)&&!r.some(x=>x.p===p));
   const lab=/^[A-Z]{2}/.test(d[1])?d[1]:d[1].charAt(0).toLowerCase()+d[1].slice(1);
   return `<p class="ply-ans">Classement <b>brut</b> : ${esc(lab)} sur la saison, ligues mélangées. Un même chiffre ne vaut pas autant en LCK qu’en CBLOL ; la note d’impact, elle, en tient compte.</p>
     <div class="list ply-rkl">${r.map((x,i)=>`<button class="ply-rkr" data-go="p/${esc(x.p.key)}"><span class="n">${i+1}</span>${photo(x.p,"ava",38)}<span class="tx"><b>${esc(x.p.id)}</b><small>${logo(x.p.team,13)}${esc(tid(x.p.team))} · ${seasonOf(x.p).g} parties</small></span><em>${d[3](x.v)}</em></button>`).join("")||`<p class="empty">Aucun joueur.</p>`}</div>
     <p class="note">Rang brut, ${MINR} parties minimum${out.length?`. Pas assez de parties : ${out.map(p=>esc(p.id)).join(", ")}`:""}.</p>`}
 INFO.plysort=()=>["Trier le classement",`<p>La note d’impact compare les joueurs ligues comprises. Les autres stats sont brutes, ligues mélangées.</p><div class="ply-nats">${PSTAT.map(([k,l])=>`<button class="chip" data-plyst="${k}" aria-pressed="${PLY.st===k}">${esc(l)}</button>`).join("")}</div>`,true];
-onAct("[data-plyst]",b=>{PLY.st=b.dataset.plyst;vib(6);plyAfter(()=>{const el=plyTop("rk");if(el)rerender(el)})});
-onAct("[data-plyrkleg]",()=>{PLY.rkLeg=!PLY.rkLeg;vib(6);const el=plyTop("rk");if(el)refreshTab(el,0)});
+onAct("[data-plyst]",b=>{PLY.st=b.dataset.plyst;vib(6);plyAfter(()=>{if(SHEET.open)closeSheet();plyRefresh()})});
 INFO.classement=()=>{const R=RKX();return ["Classement par poste",`${rkMethod()}<p>Entre parenthèses, sous chaque nom : rang parmi les 19 titulaires du poste sur la stat brute de la saison${R?" "+esc(R.y):""}, ligues mélangées. Sous le rang : les places possibles vu l’incertitude (1–3e : entre 1er et 3e). Touche une ligne pour le pourquoi.</p>`,true]};
 /* « Pourquoi ce rang » : la note décomposée en 6 barres, la saison avec les rangs bruts, la fiche et le voisin à comparer */
 INFOP.why=(key,self)=>{const x=rkFind(key),R=RKX();if(!x)return null;
@@ -5737,25 +5864,6 @@ function swiHead(S){
   const seg=[1,2,3,4,5].map(i=>{const d=S.over||i<S.r||(!S.drawn&&i<=S.played),c=!S.over&&i===S.r&&!d;return `<i class="${d?"d":c?"c":""}"></i>`}).join("");
   return `<div class="swi-hd"><div class="swi-hl"><b>${S.over?"Terminée":`Ronde ${S.r}<small> sur 5</small>`}</b><div class="swi-sg">${seg}</div></div><div class="swi-ct"><span class="cq"><b>${S.q}</b>en quarts</span>${S.over?"":`<span><b>${S.teams.length-S.q-S.x}</b>en lice</span>`}<span class="cx"><b>${S.x}</b>dehors</span></div></div>`;
 }
-function swiGroups(S,round){
-  const L=S.sw.filter(m=>m.round===round);if(!L.length)return "";
-  const pre=id=>{const p=S.P[id]||[[0,0]];return (p[round-1]||p[p.length-1]).join("-")},G={};
-  L.forEach(m=>{const k=pre(m.t1);(G[k]=G[k]||[]).push(m)});
-  return Object.keys(G).sort(swiRecSort).map(k=>{const g=G[k].sort((a,b)=>a.start.localeCompare(b.start)),bo=g.some(m=>m.bo>1);
-    return `<div class="swi-gh${swiStakeCls(k)}"><b>${k}</b><span>${esc(swiStake(k))}</span>${bo?`<em>Bo3</em>`:""}</div><div class="list">${g.map(mrow).join("")}</div>`}).join("");
-}
-function swiTabRound(S){
-  let h=swiMine(S);
-  if(S.over){const R=records(),Q=S.teams.filter(t=>swiRec(S.P,t.id)[0]>=3).map(t=>t.id);
-    return h+`<div class="blk"><div class="bh">Phase suisse terminée</div><p class="swi-lead">${Q.length} équipes en quarts de finale.</p><div class="swi-ql">${Q.map(id=>swiQT(id,S)).join("")}</div><button class="btn" data-tab="fn">Voir la phase finale</button></div>`}
-  const rr=S.drawn?S.r:S.played;
-  if(S.drawn)h+=`<div class="swi-tt">Ronde ${rr}<small>${plur(S.open.length,"match à jouer","matchs à jouer")}</small></div>`;
-  else if(rr)h+=`<div class="swi-tt">Ronde ${rr}<small>résultats</small></div>`;
-  h+=swiGroups(S,rr);
-  if(!S.drawn){const nd=swiNextDraw(S.r),tb=MATCHES.filter(m=>m.stage==="sw"&&!(m.t1&&m.t2)&&!m.winner).length;
-    h+=`<div class="blk swi-nx"><div class="bh">Ronde ${S.r}</div><p class="swi-lead">${nd?`${esc(nd.tir.charAt(0).toUpperCase()+nd.tir.slice(1))}.`:"Affiches publiées au tirage."}</p><p class="small">${tb?`${plur(tb,"match annoncé","matchs annoncés")}, affiches au tirage. `:""}${nd?`Premiers matchs ${esc(fmtDay(evDate(nd.dt)).toLowerCase())} à ${esc(fmtTime(nd.dt))}.`:""}</p></div>`}
-  return h;
-}
 /* l'arbre suisse, repensé en vertical : une rangée par ronde, une case par bilan, aucune largeur fixe */
 const SWI_CAP={"0-0":16,"1-0":8,"0-1":8,"2-0":4,"1-1":8,"0-2":4,"3-0":2,"2-1":6,"1-2":6,"0-3":2,"3-1":3,"2-2":6,"1-3":3,"3-2":3,"2-3":3};
 const SWI_ROWS=[[[0,0]],[[1,0],[0,1]],[[2,0],[1,1],[0,2]],[[3,0],[2,1],[1,2],[0,3]],[[3,1],[2,2],[1,3]],[[3,2],[2,3]]];
@@ -5799,15 +5907,25 @@ INFOP.swn=k=>{const S=swiState(),R=records(),[w,l]=String(k).split("-").map(Numb
   const lead=w===3?"Trois victoires : qualifiées pour les quarts de finale.":l===3?"Trois défaites : éliminées de ces Worlds.":`Prochain match en ${w===2||l===2?"Bo3":"Bo1"} : ${swiStake(k)}.`;
   return [t,`<p>${esc(lead)}</p>${here.length?`<h4 class="swi-sh">${w===3||l===3?"Les équipes":"Ici maintenant"}</h4><div class="list">${here.map(id=>swiSheetRow(id,R,S,false)).join("")}</div>`:`<p class="small">${past.length?"Plus personne ici : toutes ont avancé.":"Personne pour l’instant."}</p>`}${past.length?`<h4 class="swi-sh">Passées par là</h4><div class="list">${past.map(id=>swiSheetRow(id,R,S,true)).join("")}</div>`:""}`,true]};
 /* bilans : qualifiées, en lice (sursis), éliminées */
-function swiTabBilans(S){
-  const R=records(),key=id=>{const [w,l]=swiRec(S.P,id);return [w,l]};const e=id=>SJ&&SJ.sim&&SJ.sim.eq&&SJ.sim.eq[id];
+function swiTabChances(S,cas){
+  /* bilans et chances du robot réunis : une ligne par équipe, groupées en quarts / en lice / éliminées ; podium du titre en tête */
+  const R=records(),SIM=SJ&&SJ.sim,E=SIM&&SIM.eq||null,e=id=>E&&E[id],key=id=>swiRec(S.P,id),fin=MATCHES.find(m=>m.stage==="f"&&m.winner);
   const ids=S.teams.map(t=>t.id).sort((a,b)=>{const [wa,la]=key(a),[wb,lb]=key(b);return wb-wa||la-lb||((e(b)||[])[10]||0)-((e(a)||[])[10]||0)});
+  const mx=Math.max(.01,...ids.map(id=>(e(id)||[])[10]||0));let k=0,h="";
+  if(fin)h+=`<div class="blk swi-champ" data-t="${esc(fin.winner)}" role="button" tabindex="0"><span class="swi-cup">${ICUP}</span>${logo(fin.winner,64)}<b>${esc(T[fin.winner]?T[fin.winner].name:fin.winner)}</b><small>Champion du monde 2026</small></div>`;
+  else if(E){const top=Object.entries(E).sort((a,b)=>b[1][10]-a[1][10]).slice(0,3);
+    h+=`<div class="swi-pod${cas?" cas":""}">${top.map(([t,v],i)=>`<button class="swi-pp p${i+1}" data-info="swt:${esc(t)}" aria-label="${esc(tid(t))} : ${rkPct(v[10])} % de chances de titre">${i?"":`<span class="swi-cup">${ICUP}</span>`}${logo(t,i?38:50)}<b>${esc(tid(t))}</b><strong>${rkPct(v[10])}${NB}%</strong><span class="swi-bar"><i style="width:${Math.max(2,v[10]/top[0][1][10]*100).toFixed(1)}%;--k:${i}"></i></span></button>`).join("")}</div>`}
+  const row=id=>{const [w,l]=key(id),L=lives(id,R),x=e(id),i=k++,q=w>=3,o=l>=3;
+    const qc=q?`<span class="swi-cq ok" aria-label="en quarts">${SWI_OK}</span>`:o?`<span class="swi-cq ko" aria-label="éliminée">${SWI_KO}</span>`
+      :x?`<span class="swi-cq"><b>${rkPct(x[7])}${NB}%</b><span class="swi-bar t"><i style="width:${Math.max(2,x[7]*100).toFixed(1)}%;--k:${i}"></i></span></span>`:`<span class="swi-cq"></span>`;
+    const tc=x&&!o?`<span class="swi-cg"><b>${rkPct(x[10])}${NB}%</b><span class="swi-bar"><i style="width:${Math.max(2,x[10]/mx*100).toFixed(1)}%;--k:${i}"></i></span></span>`:`<span class="swi-cg"></span>`;
+    return `<button class="swi-cr${id===fav?" me":""}${o?" out":""}" ${x?`data-info="swt:${esc(id)}"`:`data-t="${esc(id)}"`} style="--k:${i}"><span class="tn">${logo(id,26)}<b>${esc(tid(id))}</b></span><span class="rc"><b>${w}-${l}</b>${w<3&&l<3?swiPips(L):""}</span>${qc}${tc}</button>`};
   const grp=[["bq","En quarts",ids.filter(id=>key(id)[0]>=3)],["bin","En lice",ids.filter(id=>key(id)[0]<3&&key(id)[1]<3)],["bx","Éliminées",ids.filter(id=>key(id)[1]>=3)]];
-  const row=id=>{const [w,l]=key(id),L=lives(id,R);
-    return `<button class="rowb swi-br${id===fav?" me":""}${l>=3?" out":""}" data-t="${esc(id)}">${logo(id,30)}<span class="grow"><b class="nm">${esc(tid(id))}${swiFull(id)}</b><small>${swiSubHTML(id,R)}</small></span><span class="swi-bv"><b>${w}-${l}</b>${w<3&&l<3?swiPips(L):""}</span></button>`};
+  h+=`<div class="blk swi-chs${cas?" cas":""}"><div class="swi-ch"><span></span><span>Bilan</span><span>Quarts</span><span>Titre</span></div>`
+    +grp.filter(g=>g[2].length).map(([c,lab,L])=>`<div class="swi-gh ${c}"><b>${lab}</b><span>${L.length}</span></div>${L.map(row).join("")}`).join("")+`</div>`;
   const pi=TEAMS.filter(t=>!S.teams.some(x=>x.id===t.id));
-  return grp.filter(g=>g[2].length).map(([k,lab,L])=>`<div class="swi-gh ${k}"><b>${lab}</b><span>${L.length}</span></div><div class="list">${L.map(row).join("")}</div>`).join("")
-    +(pi.length?`<div class="swi-gh bx"><b>Éliminées au Play-In</b><span>${pi.length}</span></div><div class="swi-pig">${pi.map(t=>`<button class="swi-qt out" data-t="${t.id}">${logo(t.id,26)}<b>${esc(t.id)}</b></button>`).join("")}</div>`:"");
+  if(pi.length)h+=`<div class="swi-gh bx"><b>Éliminées au Play-In</b><span>${pi.length}</span></div><div class="swi-pig">${pi.map(t=>`<button class="swi-qt out" data-t="${t.id}">${logo(t.id,26)}<b>${esc(t.id)}</b></button>`).join("")}</div>`;
+  return h+(SIM?`<p class="note">${(SIM.n||20000).toLocaleString("fr-FR")} tournois simulés · ${esc(simMaj(SIM))}</p>`:"");
 }
 /* sous-ligne d'une équipe avec « EN DIRECT » en pastille */
 function swiSubHTML(id,R){const nx=nextOf(id);if(nx&&nx.state==="live")return `${esc(swiSub(id,R,false))} · <span class="lv">LIVE</span> contre ${esc(tid(swiOpp(nx,id)))}`;return esc(swiSub(id,R))}
@@ -5824,11 +5942,10 @@ function swiTabKO(S){
   const fin=MATCHES.find(m=>m.stage==="f"&&m.winner);let h="";
   if(fin)h+=`<div class="blk swi-champ" data-t="${esc(fin.winner)}" role="button" tabindex="0"><span class="swi-cup">${ICUP}</span>${logo(fin.winner,64)}<b>${esc(T[fin.winner]?T[fin.winner].name:fin.winner)}</b><small>Champion du monde 2026</small></div>`;
   const Q=S.teams.filter(t=>swiRec(S.P,t.id)[0]>=3).map(t=>t.id),qfKnown=MATCHES.some(m=>m.stage==="qf"&&m.t1&&m.t2);
-  if(!fin&&!qfKnown){const e=SJ&&SJ.sim&&SJ.sim.eq,left=8-Q.length,cand=e&&left>0?S.teams.map(t=>t.id).filter(id=>{const [w,l]=swiRec(S.P,id);return w<3&&l<3&&e[id]}).sort((a,b)=>e[b][7]-e[a][7]).slice(0,Math.min(8,left+2)):[];
-    h+=`<div class="blk"><div class="bh">${Q.length?"Déjà en quarts":"Les mieux placées pour les quarts"}<button class="i swi-i" data-info="swfin" aria-label="Comment se fait le tirage">i</button></div>
+  if(!fin&&!qfKnown){
+    h+=`<div class="blk"><div class="bh">${Q.length?`En quarts<span class="swi-bhs">${Q.length}/8</span>`:"Phase finale"}<button class="i swi-i" data-info="swfin" aria-label="Comment se fait le tirage">i</button></div>
       ${Q.length?`<div class="swi-ql">${Q.map(id=>swiQT(id,S)).join("")}</div>`:""}
-      ${cand.length?`${Q.length?`<p class="swi-lead">Encore ${plur(left,"place")}. Les mieux placées selon le robot :</p>`:""}<div class="swi-ql">${cand.map(id=>`<button class="swi-qt" data-info="swt:${esc(id)}">${logo(id,26)}<b>${esc(tid(id))}</b><small>${rkPct(e[id][7])}${NB}%</small></button>`).join("")}</div>`:""}
-      <p class="small" style="margin:8px 0 0">${Q.length?"":"Chances d’aller en quarts selon le robot. "}Tirage des quarts le 31 octobre.</p></div>`}
+      <p class="small" style="margin:8px 0 0">Tirage des quarts le 31 octobre.</p><button class="chip swi-tochs" data-tab="ch">Chances de chaque équipe ›</button></div>`}
   [["qf","Quarts de finale",4],["sf","Demi-finales",2],["f","Finale",1]].forEach(([s,lab,n])=>{
     const L0=MATCHES.filter(m=>m.stage===s).sort((a,b)=>a.start.localeCompare(b.start)),kn=L0.filter(m=>m.t1||m.t2),L=kn.length>=n?kn:L0,cov=new Set(L.map(m=>dayKeyL(new Date(m.start))));
     const ph=DAYS.filter(d=>d.stage===s).map(d=>({dt:new Date(d.d+"T"+d.t+":00Z"),lab:d.what.replace(/^Quart de finale/,"Quart").replace(/^Demi-finale/,"Demie").replace(/^Grande finale/,"Finale")})).filter(x=>!cov.has(dayKeyL(x.dt)));
@@ -5838,12 +5955,13 @@ function swiTabKO(S){
   return h||`<p class="empty">Phase finale pas encore programmée.</p>`;
 }
 function scrSui(d){
-  const S=swiState();if(!d.tab)d.tab=S.over?"fn":"rd";
-  return {title:`Phase suisse<small>${S.over?"terminée":`ronde ${S.r} sur 5${S.drawn?"":" · tirage à venir"}`}</small>`,info:"sui",head:swiHead(S),tabs:[["rd","Ronde"],["tb","Tableau"],["bl","Bilans"],["fn","Finale"]],
-    render:t=>t==="tb"?swiTree(S):t==="bl"?swiTabBilans(S):t==="fn"?swiTabKO(S):swiTabRound(S)};
+  const S=swiState();if(!d.tab||!["tb","ch","fn","rob"].includes(d.tab))d.tab=S.over?"fn":"tb";
+  return {title:`Phase suisse<small>${S.over?"terminée":`ronde ${S.r} sur 5${S.drawn?"":" · tirage à venir"}`}</small>`,info:"sui",head:swiHead(S),tabs:[["tb","Tableau"],["ch","Chances"],["fn","Finale"],["rob","Robot"]],
+    needs:SJ?[]:[loadSJ()],
+    render:t=>{const cas=swiAnimOn(d);return t==="ch"?swiTabChances(S,cas):t==="fn"?swiTabKO(S):t==="rob"?swiFiab():swiTree(S)+(fav&&T[fav]?swiMine(S):"")}};
 }
 INFO.sui=()=>["Phase suisse",`<p>16 équipes, 5 rondes : 3 victoires pour les quarts, 3 défaites pour la sortie. On affronte une équipe au même bilan. Matchs décisifs (qualification ou élimination) en Bo3, les autres en Bo1.</p>
-  <p><b>Ronde</b> : les affiches de la ronde, groupées par bilan, avec l’enjeu. <b>Tableau</b> : le chemin de chaque équipe. <b>Bilans</b> : qui est qualifié, en lice, éliminé, et le sursis (pastilles : défaites encore permises). <b>Finale</b> : le tableau à élimination directe.</p>`,true];
+  <p><b>Tableau</b> : le chemin de chaque équipe. <b>Chances</b> : bilan, défaites encore permises (pastilles) et chances du robot pour les quarts et le titre. <b>Finale</b> : le tableau à élimination directe. <b>Robot</b> : ses pronos match par match. Les matchs eux-mêmes sont dans le Calendrier.</p>`,true];
 INFO.swtree=()=>["Le tableau suisse",`<p>Une rangée par ronde, une case par bilan (victoires-défaites). Logos vifs : les équipes qui y sont maintenant ; pâles : celles qui y sont passées.</p>
   <p>Trait sarcelle : la victoire mène à la case de gauche ; trait rouge : la défaite, à celle de droite. Cases sarcelle : qualifiées pour les quarts ; rouges : éliminées.${fav?` En or : le parcours de ${esc(tid(fav))}.`:""}</p><p>Touche une case pour voir ses équipes.</p>`,true];
 INFO.swfin=()=>["Phase finale",`<p>Tirage des quarts le 31 octobre. Les deux équipes à 3-0 seront placées dans des moitiés de tableau opposées, face à des équipes à 3-2. Quarts du 3 au 6 novembre, demies les 7 et 8, finale le 14 au Barclays Center (Brooklyn, New York). Tout en Bo5.</p>`,true];
@@ -5851,25 +5969,6 @@ INFO.swfin=()=>["Phase finale",`<p>Tirage des quarts le 31 octobre. Les deux éq
 /* ===================== QUI VA GAGNER (sim) ===================== */
 const simMaj=S=>S.maj?"mis à jour "+new Date(S.maj).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"}):"";
 function swiWho(){const R=RKX(),W2=R&&R.W;if(!W2||!W2.fav)return [];return [["fav",W2.fav],...(W2.ch||[]).map(x=>["ch",x]),...(W2.out?[["out",W2.out]]:[])]}
-function swiSimTitle(S,cas){
-  const fin=MATCHES.find(m=>m.stage==="f"&&m.winner),L=swiWho();let h="";
-  if(fin)h+=`<div class="blk swi-champ" data-t="${esc(fin.winner)}" role="button" tabindex="0"><span class="swi-cup">${ICUP}</span>${logo(fin.winner,64)}<b>${esc(T[fin.winner]?T[fin.winner].name:fin.winner)}</b><small>Champion du monde 2026</small></div>`;
-  if(L.length&&!fin){const mx=Math.max(...L.map(([,x])=>x.p[0]))||1,[k0,f0]=L[0];
-    const bar=(v,i)=>`<span class="swi-bar"><i style="width:${Math.max(2,v/mx*100).toFixed(1)}%;--k:${i}"></i></span>`;
-    h+=`<div class="blk swi-who${cas?" cas":""}"><p class="swi-ans">${rkWho1()}</p>
-      <button class="swi-fav" data-info="swt:${esc(f0.t)}">${logo(f0.t,50)}<span class="grow"><b>${esc(tid(f0.t))}<span class="swi-kd">${RK_KIND[k0]}</span></b><small>${esc(rkTeamShort(f0))}</small></span><strong>${rkPct(f0.p[0])}${NB}%</strong>${bar(f0.p[0],0)}</button>
-      ${L.slice(1).map(([k,x],i)=>`<button class="swi-tr" data-info="swt:${esc(x.t)}">${logo(x.t,28)}<span class="grow"><b>${esc(tid(x.t))}<span class="swi-kd${k==="out"?" o":""}">${RK_KIND[k]}</span></b><small>${esc(rkTeamShort(x))}</small></span><em>${rkPct(x.p[0])}${NB}%</em>${bar(x.p[0],i+1)}</button>`).join("")}</div>`}
-  else if(!fin){const rows=Object.entries(S.eq).sort((a,b)=>b[1][10]-a[1][10]).slice(0,5),mx=rows[0][1][10]||1;
-    h+=`<div class="blk swi-who${cas?" cas":""}">${rows.map(([t,v],i)=>`<button class="swi-tr" data-info="swt:${esc(t)}">${logo(t,28)}<span class="grow"><b>${esc(tid(t))}</b><small>bilan ${esc(v[0])} · quarts ${rkPct(v[7])}${NB}%</small></span><em>${rkPct(v[10])}${NB}%</em><span class="swi-bar"><i style="width:${Math.max(2,v[10]/mx*100).toFixed(1)}%;--k:${i}"></i></span></button>`).join("")}</div>`}
-  h+=`<button class="rowb swi-spe" data-go="spe"><span class="grow"><b class="nm">Spécial Worlds</b><small>qui se transforme aux grands tournois ?</small></span><span class="chev">›</span></button>`;
-  return h+`<p class="note">${(S.n||20000).toLocaleString("fr-FR")} tournois simulés · ${esc(simMaj(S))}</p>`;
-}
-function swiSimTable(S,cas){
-  const rows=Object.entries(S.eq).sort((a,b)=>b[1][10]-a[1][10]||b[1][7]-a[1][7]);
-  return `<div class="blk swi-tbl${cas?" cas":""}"><div class="swi-th"><span></span><span>Bilan</span><span>Quarts</span><span>Demies</span><span>Titre</span></div>
-    ${rows.map(([t,v],i)=>{const [w,l]=String(v[0]).split("-").map(Number);return `<button class="swi-td${t===fav?" me":""}${l>=3?" out":""}" data-info="swt:${esc(t)}"><span class="tn">${logo(t,22)}<b>${esc(tid(t))}</b></span><span>${esc(v[0])}</span><span>${rkPct(v[7])}${NB}%</span><span>${rkPct(v[8])}${NB}%</span><span class="ti"><span class="swi-bar"><i style="width:${Math.min(100,v[10]*200).toFixed(1)}%;--k:${i}"></i></span><b>${rkPct(v[10])}${NB}%</b></span></button>`}).join("")}</div>
-    `;
-}
 /* le robot a-t-il vu juste ? (fiabHTML de v13.5 : même décompte, mis en page façon B) */
 function swiFiab(){
   const F=SJ&&SJ.fiab;if(!F||!F.w26||!F.w26.m||!F.w26.m.length)return `<p class="empty">Pas encore de match joué : le bilan du robot arrive avec le premier résultat.</p>`;
@@ -5906,12 +6005,8 @@ INFOP.swt=a=>{const S=SJ&&SJ.sim,e=S&&S.eq&&S.eq[a];const W2=RKX()&&RKX().W;let 
     h+=`<h4 class="swi-sh">Évolution de ses chances de titre</h4><div class="swi-evo"><svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}"/></svg><span>${rkPct(hs[0])}${NB}%</span><b>${rkPct(hs[n])}${NB}%</b></div>`}
   h+=`<div class="swi-sb"><button class="btn" data-t="${esc(a)}">Fiche ${esc(tid(a))}</button>${nx?`<button class="btn" data-m="${esc(nx.id)}">Son prochain match</button>`:""}</div>`;
   return [`${tid(a)}${kind?" · "+RK_KIND[kind]:""}`,h,true]};
-function scrSim(d){const S=SJ&&SJ.sim;
-  if(!S||!S.eq)return {title:"Qui va gagner ?",info:"sim",body:SJ?`<p class="empty">Simulation pas encore publiée par le robot.</p>`:skel(56,7),needs:SJ?[]:[loadSJ()]};
-  const fin=MATCHES.some(m=>m.stage==="f"&&m.winner);
-  return {title:`Qui va gagner ?<small>${fin?"le verdict":"chances de titre selon le robot"}</small>`,info:"sim",tabs:[["ti","Titre"],["tb","Tableau"],["rob","Robot"]],
-    render:t=>{const cas=swiAnimOn(d);return t==="tb"?swiSimTable(S,cas):t==="rob"?swiFiab():swiSimTitle(S,cas)}};
-}
+/* « Qui va gagner ? » vit maintenant dans la phase suisse (onglets Chances et Robot) : l'ancienne route y mène */
+function scrSim(d){if(!d._sim){d._sim=1;d.tab=d.tab==="rob"?"rob":"ch"}return scrSui(d)}
 INFO.sim=()=>{const s=SJ&&SJ.sim,W2=RKX()&&RKX().W;return ["Qui va gagner ?",(s?rkSimInfo(s,W2):"")+`<p>Probabilités du robot, pas des certitudes.${s&&s.modele&&/secours/.test(s.modele)?" Modèle de secours utilisé cette fois.":""}${s&&s.maj?` Mis à jour ${esc(new Date(s.maj).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"}))}.`:""}</p>`,true]};
 
 /* ===================== CALENDRIER (cal) ===================== */
@@ -6056,14 +6151,22 @@ onAct("[data-leadph]",b=>{ui.leadPh=b.dataset.leadph;vib(6);refreshTab(b.closest
 /* ---------- onglet Champions : présence, bannis, joués (metaHTML, 2356 ; draft.json, meta gol.gg) ---------- */
 const STA_CF={pres:x=>x[1]+x[3],ban:x=>x[3],pick:x=>x[1]},STA_CL={pres:"choisi ou banni",ban:"banni",pick:"joué"};
 /* M.c : [champion, picks, victoires, bans, bans de la 1re rotation, premier choix, …, [[joueur, équipe, victoire], …]] */
-function staMetaRows(kind){const M=DJ.meta,f=STA_CF[kind]||STA_CF.pres;return M.c.filter(x=>f(x)>0).sort((a,b)=>f(b)-f(a)||b[3]-a[3]||a[0]-b[0])}
+/* gol.gg publie les drafts avec du retard : tant qu'il lui manque des parties, picks et victoires des champions du robot
+   (SJ.tourney.champs, API LoL Esports, 15 premiers) remplacent les siens. Mêmes chiffres que « Le saviez-vous ? » ; bans : gol.gg. */
+function staMC(){const M=DJ.meta,T=staT(),sig=(SJ&&SJ.built)+"|"+M.maj+"|"+M.n;if(STA.mc&&STA.mc.sig===sig&&STA.mc.dj===DJ)return STA.mc;
+  let c=M.c,n=M.n,lag=0;
+  if(T&&Array.isArray(T.champs)&&T.n>M.n){lag=T.n-M.n;n=T.n;const by=new Map(T.champs.map(t=>[norm(t.c),t])),seen=new Set();
+    c=M.c.map(x=>{const t=by.get(norm(DJ.ch[x[0]]||""));if(!t)return x;seen.add(t);const y=x.slice();y[1]=t.p;y[2]=t.w;return y});
+    T.champs.forEach(t=>{if(seen.has(t))return;const i=DJ.ch.findIndex(h=>norm(h)===norm(t.c));if(i>=0)c.push([i,t.p,t.w,0,0,0,0,[]])})}
+  return STA.mc={sig,dj:DJ,c,n,lag}}
+function staMetaRows(kind){const f=STA_CF[kind]||STA_CF.pres;return staMC().c.filter(x=>f(x)>0).sort((a,b)=>f(b)-f(a)||b[3]-a[3]||a[0]-b[0])}
 function staChamps(){
-  const D=DJ,M=D.meta,N=M.n,kind=STA_CF[STA.ck]?STA.ck:"pres",f=STA_CF[kind],rows=staMetaRows(kind),top=rows[0],fs=M.fs||[0,0,0];
+  const D=DJ,M=D.meta,MC=staMC(),N=MC.n,kind=STA_CF[STA.ck]?STA.ck:"pres",f=STA_CF[kind],rows=staMetaRows(kind),top=rows[0],fs=M.fs||[0,0,0];
   if(!top)return `<div class="blk"><p class="empty">Pas encore de draft publiée.</p></div>`;
   const nm=i=>D.ch[i]||"?",L=STA.chAll?rows:rows.slice(0,5);
   const row=x=>`<button class="sta-cr" data-info="sta:c:${x[0]}">${champ(nm(x[0]),34)}<span class="g"><b>${esc(nm(x[0]))}</b><small>${djS(x[3],"ban","bans")}, ${djS(x[1],"pick","picks")}${x[1]>=5?`, ${djS(x[2],"victoire","victoires")}`:""}</small></span><span class="cw"><i style="width:${Math.min(100,f(x)/N*100).toFixed(1)}%"></i></span><em>${Math.round(f(x)/N*100)}${NB}%</em></button>`;
   return `<div class="blk"><div class="bh">Champions des Worlds${staI("ch","Sources et méthode")}</div>
-    <p class="sta-ph"><b>${esc(nm(top[0]))}</b> : ${STA_CL[kind]} dans ${f(top)} parties sur ${N}.${fs[0]?` L’équipe du 1<sup>er</sup> pick a gagné ${fs[1]} parties sur ${fs[0]}.`:""}</p>
+    <p class="sta-ph"><b>${esc(nm(top[0]))}</b> : ${STA_CL[kind]} dans ${f(top)} parties sur ${N}.${fs[0]?` L’équipe du 1<sup>er</sup> pick a gagné ${fs[1]} parties sur ${fs[0]}.`:""}${MC.lag?` <small>Bans : ${M.n} parties sur ${N} publiées par gol.gg.</small>`:""}</p>
     <div class="sta-seg" style="--n:3">${[["pres","Présence"],["ban","Bannis"],["pick","Joués"]].map(([v,l])=>`<button data-sta-ck="${v}" aria-pressed="${kind===v}">${l}</button>`).join("")}</div>
     <div class="sta-cl">${L.map(row).join("")}</div>
     ${rows.length>5?`<button class="btn sta-more" data-sta-chall>${STA.chAll?"Seulement les 5 premiers":`Voir les ${rows.length-5} autres`}</button>`:""}</div>`;
@@ -6077,7 +6180,7 @@ onAct("[data-sta-ck]",b=>{STA.ck=b.dataset.staCk;vib(6);refreshTab(b.closest(".s
 onAct("[data-sta-chall]",b=>{STA.chAll=STA.chAll?0:1;const el=b.closest(".scr"),y=el.scrollTop;refreshTab(el,0);if(!STA.chAll)el.scrollTop=Math.min(y,el.scrollHeight)});
 /* détail d'un champion (feuille) : bans, picks, qui l'a joué (det et who de metaHTML, 2361-2364) */
 function staChSheet(i){
-  const D=DJ,M=D&&D.meta;if(!M)return null;const x=M.c.find(y=>y[0]===+i);if(!x)return null;const N=M.n,c=D.ch[x[0]]||"?";
+  const D=DJ,M=D&&D.meta;if(!M)return null;const MC=staMC(),x=MC.c.find(y=>y[0]===+i);if(!x)return null;const N=MC.n,c=D.ch[x[0]]||"?";
   const g=new Map();(x[7]||[]).forEach(([p,t,w])=>{const k=p+"|"+t,o=g.get(k)||{p,t,w:0,l:0};w?o.w++:o.l++;g.set(k,o)});
   const who=[...g.values()].sort((a,b)=>b.w+b.l-a.w-a.l||b.w-a.w);
   const tl=(v,l)=>`<div class="sta-t"><b>${v}</b><span>${l}</span></div>`;
@@ -6147,7 +6250,7 @@ INFOP.sta=(k,a)=>{
     <p>KDA : (kills + assists) ÷ morts. CS/min : sbires et monstres tués par minute. Dégâts : part des dégâts infligés aux champions par son équipe. Participation : part des kills de son équipe où il a tué ou aidé.</p><p>${src}.</p>`,true];
   if(k==="ch"){const M=DJ&&DJ.meta;if(!M)return null;const fs=M.fs||[0,0,0],bl=M.bl||[0,0];
     const links=(M.tn||[]).map(t=>`<a href="https://gol.gg/tournament/tournament-picksandbans/${encodeURIComponent(t)}/" target="_blank" rel="noopener">${esc(t)}</a>`).join(" et ");
-    return ["Champions des Worlds",`<p>Sur les ${djS(M.n,"partie","parties")} dont la draft est publiée par gol.gg${M.att?` (${M.att} en attente de publication)`:""}. Bans : gol.gg ; picks et vainqueurs : API LoL Esports, identiques à gol.gg sur ces parties. Victoires affichées à partir de 5 picks.</p>
+    return ["Champions des Worlds",`<p>Sur les ${djS(M.n,"partie","parties")} dont la draft est publiée par gol.gg${M.att?` (${M.att} en attente de publication)`:""}. Bans : gol.gg ; picks et vainqueurs : API LoL Esports, identiques à gol.gg sur ces parties. Quand gol.gg a du retard, les picks des 15 champions les plus joués viennent du robot (toutes les parties terminées, comme « Le saviez-vous ? »). Victoires affichées à partir de 5 picks.</p>
       <p>Présence : parties où le champion a été choisi ou banni. Toucher un champion : ses bans, ses picks et qui l’a joué.</p>
       ${fs[0]?`<p>Premier choix : depuis 2026 (« First Selection »), l’équipe prioritaire choisit soit son côté, soit le premier pick. Sur ${fs[0]} parties où l’ordre des picks est connu, l’équipe qui a choisi en premier a gagné ${fs[1]} fois ; elle était côté rouge ${fs[2]} fois.</p>`:""}
       ${bl[0]?`<p>Côté bleu : ${bl[1]} victoires sur ${bl[0]} parties.</p>`:""}${links?`<p>À vérifier sur gol.gg : ${links}.</p>`:""}`,true]}
@@ -6163,6 +6266,22 @@ INFOP.sta=(k,a)=>{
 };
 /* une puce dans une feuille (joueur de « Joué par ») : fermer la feuille, puis ouvrir l'écran (une seule entrée d'historique) */
 onAct("#shB [data-sta-go]",b=>{const r=b.dataset.staGo;if(SHEET.open&&history.state&&history.state.sheet){addEventListener("popstate",()=>setTimeout(()=>go(r),0),{once:true});history.back()}else{hideSheet();go(r)}});
+
+/* ---------- fraîcheur : à chaque synchro du planning (1 à 5 min), stats.json et draft.json sont rechargés s'ils ont plus de 10 min
+   (le robot publie toutes les 15 min) ; un nouveau fichier redessine aussitôt l'accueil et les écrans ouverts ---------- */
+const STA_FRESH=10*60e3;
+/* draft.json (DJ) et fiche.json (FJ) : chargés une fois par loadDJ / loadFJ, rechargés ici ; remplacés seulement si valides et différents */
+const STA_AUX=[["draft",()=>DJ,d=>Array.isArray(d.ch)&&d.meta,d=>{DJ=d}],["fiche",()=>FJ,d=>Array.isArray(d.gm),d=>{FJ=d}]];
+function staFresh(){if(document.hidden||!started)return;const now=Date.now();STA.at=STA.at||{};
+  if(SJ&&now-SJt>=STA_FRESH)loadSJ();
+  STA_AUX.forEach(([k,get,ok,set])=>{if(!get())return;if(!STA.at[k]){STA.at[k]=now;return}if(now-STA.at[k]<STA_FRESH||STA["p"+k])return;STA.at[k]=now;
+    STA["p"+k]=fetch(BASE+k+".json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(d=>{
+      if(!(d&&d.v===1&&ok(d))||JSON.stringify(d)===JSON.stringify(get()))return;if(AUX[k])AUX[k].d=d;set(d);STA.mc=null;staRepaint()})
+      .catch(()=>{}).finally(()=>{STA["p"+k]=null})})}
+function staRepaint(){if(started&&MATCHES.length)onData()}
+BUS.on("data",()=>safe(staFresh));
+BUS.on("sj",()=>{if(STA.sjb&&SJ&&SJ.built!==STA.sjb)staRepaint();STA.sjb=SJ&&SJ.built});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)safe(staFresh)});
 
 /* ===================== le saviez-vous ? (SJ.fx, v13.5 1736-1797) =====================
    SJ.fx : [[id, famille, texte, calcul, n, intérêt, clés, nouveau], …]. Les faits nés au dernier passage du robot d'abord ;
@@ -6285,7 +6404,9 @@ function leaDecSide(str){const o={};String(str||"").split(".").forEach(x=>{const
 /* résultat des paris bonus : partie 1 lue par le robot (fl.w : [1er sang, 1re tour, 1er dragon…]), la même sur tous les téléphones */
 function leaSideRes(m){const g=typeof gamesOf==="function"?gamesOf(m).find(x=>x.n===1):null;if(!g||!g.ob)return null;const [fb,,fd]=g.ob,tm=s=>s===0?g.bc:s===1?g.rc:null;
   return {fb:fb?tm(fb[1]>=0?Math.floor(fb[1]/5):1-Math.floor(fb[2]/5)):null,fd:fd?tm(fd[1]):null}}
-function leaSidePts(all){const M=MATCHES.filter(m=>m.t1&&m.t2&&m.state!=="soon");
+/* paris bonus retirés le 27/10 (il fallait voir la draft) : plus aucun point, les anciens choix sont ignorés */
+function leaSidePts(all){all.forEach(u=>{u.sp=0})}
+function leaSidePtsOld(all){const M=MATCHES.filter(m=>m.t1&&m.t2&&m.state!=="soon");
   all.forEach(u=>{u.sp=0;const S=u.s;if(!S)return;M.forEach(m=>{const b=S[m.key];if(!b)return;const r=leaSideRes(m);if(!r)return;if(b.fb&&b.fb===r.fb)u.sp++;if(b.fd&&b.fd===r.fd)u.sp++});u.pts+=u.sp})}
 /* pari oublié : le robot parie pour toi (son prono figé avant le match, vainqueur seul) sur les matchs joués après ton premier pari ;
    marqué robot:true ; mêmes données sur tous les téléphones, donc même classement */
@@ -6296,7 +6417,8 @@ function leaRobotFill(L){const F=leaRobotFrozen();if(!F)return;const t=m=>Date.p
   L.forEach(u=>{if(u.bot)return;let f0=Infinity;MATCHES.forEach(m=>{if(u.p[m.key])f0=Math.min(f0,t(m))});if(f0===Infinity)return;let add=null;
     D.forEach(m=>{if(!u.p[m.key]&&t(m)>f0)(add||(add=Object.assign({},u.p)))[m.key]={w:F[m.key],sc:null,robot:true}});if(add)u.p=add})}
 /* chips des paris bonus (fiche du match, Mes paris) */
-function leaSideHTML(m){if(!m||!m.t1||!m.t2||typeof betOpen!=="function"||!betOpen(m,true))return"";const s=LSIDE[m.key]||{};
+function leaSideHTML(m){return""}
+function leaSideHTMLOld(m){if(!m||!m.t1||!m.t2||typeof betOpen!=="function"||!betOpen(m,true))return"";const s=LSIDE[m.key]||{};
   const row=(k,lab)=>`<div class="lea-sc"><span class="lea-scl">${lab}<b>+1 point</b></span><div class="lea-scc" style="--n:2">${[m.t1,m.t2].map(t=>`<button class="chip" data-side="${k}" data-t="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${s[k]===t}">${logo(t,16)} ${esc(tid(t))}</button>`).join("")}</div></div>`;
   return row("fb","1er sang")+row("fd","1er dragon")}
 onAct("[data-side]",b=>{const k=b.dataset.mk,kind=b.dataset.side,t=b.dataset.t,m=MATCHES.find(x=>x.key===k);
@@ -6317,10 +6439,10 @@ function wParis(k,hm){const {open}=betStats(),nx=leaNextDue(open),S=leaStand(),m
       :betOpen(hm)?`<span class="pw-v ko">À parier</span><small>${vs}</small>`:`<span class="pw-v" style="color:var(--muted)">Pas parié</span><small>${vs}</small>`}
   const c2=nx?`<span class="pw-v ko">${nx.n}</span><small>à parier ${nx.when}</small>`:`<span class="pw-v ok">${LEA_OK.replace("<svg",'<svg width="22" height="22"')}</span><small>tout est parié</small>`;
   const c3=solo?`<span class="pw-v">${me.pts}<small>–</small>${bot?bot.pts:0}</span><small>toi contre le robot</small>`:`<span class="pw-v">${ordS(me.rank)}<small>/${S.length}</small></span><small>ligue · ${plur(me.pts,"pt")}</small>`;
-  return W("w21 hom-pw",nx?"bets/todo":"bets/mine",`<div class="wh">Paris</div><div class="pw"><div class="pw-c">${c1||c3}</div><div class="pw-c">${c2}</div><div class="pw-c">${c1?c3:`<span class="pw-v">${plur(me.pts,"pt")}</span><small>tes points</small>`}</div></div>`,k,"","Paris : ton prono, les matchs à parier, ta place")}
+  return W("w21 hom-pw",nx?"bets/todo":"bets/mine",`<div class="wh">Paris</div><div class="pw"><div class="pw-c">${c1||c3}</div><div class="pw-c">${c2}</div><div class="pw-c">${c1?c3:solo?`<span class="pw-v">${Object.keys(picks).length}</span><small>paris faits</small>`:`<span class="pw-v">${plur(me.pts,"pt")}</span><small>tes points</small>`}</div></div>`,k,"","Paris : ton prono, les matchs à parier, ta place")}
 /* une ligne de pari : jour et heure, le match, ton choix (score exact, bonus, vote du robot), le résultat */
 function leaBetRow(m,b){const st=new Date(m.start),s=b&&b.s||null,p=b&&b.w&&m.winner&&!m.manual?pts(b.w,b.sc,m):null;
-  const bon=s?[s.fb?`1er sang ${esc(tid(s.fb))}`:"",s.fd?`1er dragon ${esc(tid(s.fd))}`:""].filter(Boolean).join(" · "):"";
+  const bon=""&&s?[s.fb?`1er sang ${esc(tid(s.fb))}`:"",s.fd?`1er dragon ${esc(tid(s.fd))}`:""].filter(Boolean).join(" · "):"";
   return `<button class="rowb lea-hr" data-go="m/${esc(m.id)}"><span class="d">${esc(evDate(st).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric"}))}<small>${fmtTime(st)}</small></span><span class="grow"><b class="nm">${esc(tid(m.t1))} – ${esc(tid(m.t2))}</b>
     <small>${b&&b.w?`${logo(b.w,14)} ${esc(tid(b.w))}${b.sc?" "+esc(b.sc):""}${b.robot?` <span class="lea-rbv">vote robot</span>`:""}`:`<span style="color:var(--muted)">pas de vainqueur choisi</span>`}${bon?` · ${bon}`:""}</small></span>
     ${p==null?`<em class="lea-st">${betOpen(m)?"modifiable":m.state==="soon"?"à venir":"en cours"}</em>`:`<em class="lea-st ${p?"ok":"ko"}">${p?"+"+p:"0"}</em>`}</button>`}
@@ -6364,7 +6486,7 @@ function leaEveBest(dk){if(!lg||!leaOthers())return"";const D=MATCHES.filter(x=>
 
 /* ===================== MES PARIS (bets/<onglet>) ===================== */
 function scrBets(d){const S=leaStand(),me=S.find(u=>u.me)||{pts:0,rank:1},solo=!lg||!leaOthers();if(d.tab==="run"||d.tab==="done")d.tab="mine";
-  const tabs=[["todo","À parier"],["mine","Mes paris"],["rk","Classement"]];if(lg&&leaOthers())tabs.push(["lgb","Les autres"]);
+  const tabs=[["rk","Classement"],["todo","À parier"],["mine","Mes paris"]];if(lg&&leaOthers())tabs.push(["lgb","Les autres"]);
   return {title:`Paris<small>${plur(me.pts,"point")}${solo?"":` · ${me.rank}${me.rank===1?"er":"e"} sur ${S.length}`}</small>`,info:"paris",tabs,
     render:t=>{const h=t==="mine"?leaMine():t==="rk"?leaRankTab():t==="lgb"?leaLgBets():leaTodo();requestAnimationFrame(()=>{leaSegCount();if(t==="mine")leaRingMotion()});return h}}}
 /* nombre de matchs dans les onglets (À parier 3, En attente 2), recalculé à chaque rendu */
@@ -6378,7 +6500,7 @@ function leaTodo(){const {open:o0}=betStats(),now=Date.now(),open=MATCHES.filter
   if(!open.length)return `<div class="lea-empty"><span class="lea-eic">${LEA_OK}</span><b>Tous les matchs connus sont pronostiqués</b><span>Les affiches suivantes arrivent au tirage de la ronde.</span><button class="btn" data-go="cal">Voir le calendrier</button></div>`;
   let h="",dk0=null,grp=[];const flush=()=>{if(grp.length)h+=`<div class="day">${esc(leaDayLab(grp[0]))}<small>${plur(grp.length,"match","matchs")}</small></div><div class="blk lea-qbk">${grp.map(x=>leaQb(x)+(picks[x.key]?leaScoreHTML(x)+leaSideHTML(x):"")).join("")}</div>`;grp=[]};
   open.forEach(x=>{const dk=dayKeyL(new Date(x.start));if(dk!==dk0){flush();dk0=dk}grp.push(x)});flush();
-  return h+`<p class="lea-foot">Touche l’équipe que tu vois gagner. Ensuite, sous le match : score exact (Bo3, Bo5), 1er sang et 1er dragon, +1 point chacun.</p>`}
+  return h+`<p class="lea-foot">Touche l’équipe que tu vois gagner. Ensuite, sous le match : le score exact d’un Bo3 ou d’un Bo5, +1 point.</p>`}
 /* score exact (M-04) : une fois l'équipe choisie, Bo3 et Bo5, avant le coup d'envoi ; écrit w26_scores */
 function leaScoreHTML(m){if(!m||!betOpen(m)||!(m.bo>1)||!picks[m.key]||!T[picks[m.key]])return"";const w=picks[m.key];
   return `<div class="lea-sc"><span class="lea-scl">Score exact<b>+1 point</b></span><div class="lea-scc" style="--n:${scoreOpts(m.bo).length}">${scoreOpts(m.bo).map(s=>`<button class="chip" data-score="${s}" data-mk="${esc(m.key)}" aria-pressed="${scores[m.key]===s}">${esc(tid(w))} ${s}</button>`).join("")}</div></div>`}
@@ -6572,14 +6694,13 @@ function leaMatchHTML(m){if(!m||!m.t1||!m.t2||!lg||!leaOthers())return"";
 /* ===================== feuilles « i » ===================== */
 INFO.paris=()=>["Mes paris",`<p>Touche l’équipe que tu vois gagner : c’est parié. Touche-la encore pour annuler. Les paris restent ouverts pendant la draft et jusqu’à 2 min après le lancement de la partie 1.</p>
   <p><b>1 point</b> par bon vainqueur, <b>+1</b> pour le score exact d’un Bo3 ou d’un Bo5 (il apparaît sous le match, une fois l’équipe choisie).</p>
-  <p><b>Paris bonus</b> : 1er sang et 1er dragon de la partie 1, <b>+1</b> chacun, jusqu’au lancement de la partie.</p>
   <p><b>Oubli</b> : le robot parie pour toi (son prono d’avant-match), marqué « vote robot ».</p>
   <p>Le petit pourcentage sur un bouton : l’équipe favorite du robot et ses chances. Le robot joue aussi : son prono figé avant chaque match.</p>
   <p>Dans une ligue, tes potes voient ton choix à la fermeture des paris, pas avant.</p>`,true];
 INFO.leaRules=()=>["La ligue de paris",`<p>Un code de 4 caractères, autant de joueurs que vous voulez. Chacun publie ses paris sur un relais (ntfy.sh) : ça marche en 4G comme en Wi-Fi, sans compte. Chaque téléphone garde les derniers paris connus de chacun.</p>
   <p><b>Points</b> : 1 par bon vainqueur, +1 pour le score exact d’un Bo3 ou d’un Bo5. Égalité : les scores exacts, puis les bons paris départagent. Un résultat saisi à la main ne compte pas.</p>
   <p><b>Rattrapage</b> : tu arrives en cours de route ? Les matchs joués avant ton premier pari te rapportent les points du dernier de la ligue sur ces matchs. Ensuite, tes paris comptent comme pour tout le monde.</p>
-  <p><b>Fenêtre</b> : paris ouverts pendant la draft et jusqu’à 2 min après le lancement de la partie 1. Paris bonus (1er sang, 1er dragon de la partie 1, +1 chacun) : jusqu’au lancement.</p>
+  <p><b>Fenêtre</b> : paris ouverts pendant la draft et jusqu’à 2 min après le lancement de la partie 1.</p>
   <p><b>Vote robot</b> : un match oublié après ton premier pari compte avec le prono d’avant-match du robot (vainqueur seul), marqué « vote robot ».</p>
   <p><b>Paris cachés</b> jusqu’à la fermeture : avant, tu vois seulement qui a parié.</p>
   <p><b>Le robot</b> joue sur ce téléphone seulement : son prono figé avant chaque match joué, son prono du moment sinon. Il ne compte que les matchs pariés par quelqu’un.</p>

@@ -9,7 +9,7 @@
    prend la hauteur restante, sans min-height en vh) ; un écran dont le contenu tient reçoit .fit (défilement coupé : rien ne
    bouge, ni « mini défilement » ni rebond) ; html et body ne défilent jamais (overscroll-behavior:none).
    ===================================================================================== */
-const APP_VERSION="v14.6, 26/10/2026";
+const APP_VERSION="v14.7, 26/10/2026";
 const BASE="https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/";
 const QS=new URLSearchParams(location.search),FORCE_MO=QS.get("mo");
 /* état propre à la refonte (MATCHES, SOURCE, lastSync, picks, manual, fav, celebrated, ui : legacy « état » ;
@@ -359,15 +359,14 @@ function intro(){const el=$("#intro");if(!el)return;let seen=false;try{seen=sess
   const end=()=>{if(!el.isConnected)return;el.classList.add("out");setTimeout(()=>el.remove(),650)};el.addEventListener("click",end);setTimeout(end,2300)}
 /* comptes à rebours : seulement sur l'écran du dessus */
 /* ===================== barre d'onglets (Thomas, 26/10 : collée en bas, toujours visible) =====================
-   Accueil · Matchs · Paris · Joueurs · Stats. Un onglet repart de son écran racine (la pile d'écrans est vidée) ;
+   Accueil · Matchs · Paris · Stats (27/10 : Joueurs rangés dans Stats). Un onglet repart de son écran racine (la pile d'écrans est vidée) ;
    toucher l'onglet où l'on est remonte à sa racine, puis en haut de page. Pastille rouge sur Paris = matchs à parier. */
 const TABH=56;
 const TABS=[["home","Accueil",`<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-6h4v6h4.5V9.5"/>`],
   ["cal","Matchs",`<path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/>`],
   ["bets","Paris",`<path d="M4 7h16v3.2a1.8 1.8 0 0 0 0 3.6V17H4v-3.2a1.8 1.8 0 0 0 0-3.6z"/><path d="M14.5 7v10" stroke-dasharray="1.6 1.8"/>`],
-  ["pl","Joueurs",`<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.4.3 4.2 2 4.9 4.9"/>`],
   ["st","Stats",`<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`]];
-const TAB_OF={cal:"cal",sui:"cal",sim:"cal",bets:"bets",lg:"bets",lgu:"bets",lgf:"bets",pl:"pl",p:"pl",rk:"pl",cmp:"pl",spe:"pl",teams:"pl",t:"pl",d:"pl",st:"st",fx:"st",fxl:"st"};
+const TAB_OF={cal:"cal",sui:"cal",sim:"cal",bets:"bets",lg:"bets",lgu:"bets",lgf:"bets",pl:"st",p:"st",rk:"st",cmp:"st",spe:"st",teams:"st",t:"st",d:"st",st:"st",fx:"st",fxl:"st"};
 let NAVQ=null;
 const tabCur=()=>NAV.length?(TAB_OF[NAV[0].d.v]||"home"):"home";
 function mountTabs(){if($("#tabbar"))return;const nv=document.createElement("nav");nv.id="tabbar";nv.setAttribute("aria-label","Sections");
@@ -382,11 +381,12 @@ function tabGo(k){vib(8);if(SHEET.open){closeSheet();setTimeout(()=>tabGo(k),320
   if(cur===k&&NAV.length){if(NAV.length>1){NAVQ=null;history.go(-(NAV.length-1))}else NAV[0].el.scrollTo({top:0,behavior:RM?"auto":"smooth"});return}
   if(NAV.length){NAVQ=k;history.go(-NAV.length);return}
   tabOpen(k)}
-function tabOpen(k){const d=parseRoute(k);if(!d)return;openScr(d,null,true);const el=NAV[NAV.length-1].el;
+const TAB_HOME={st:"pl"};/* l'onglet Stats s'ouvre sur Joueurs, la 1re de ses rubriques */
+function tabOpen(k){const d=parseRoute(TAB_HOME[k]||k);if(!d)return;openScr(d,null,true);const el=NAV[NAV.length-1].el;
   if(!RM){const c=el.querySelector(".scrin");if(c&&c.animate)c.animate([{opacity:0,transform:"translateY(10px)"},{opacity:1,transform:"none"}],{duration:260,easing:"cubic-bezier(.2,.9,.25,1)"})}paintTabs()}
 onAct("[data-tabk]",b=>tabGo(b.dataset.tabk));
 /* écrans frères d'une section (pastilles sous le titre de l'écran racine) : on remplace l'écran, au même niveau */
-const SECS={cal:[["cal","Calendrier"],["sui","Phase suisse"],["sim","Qui va gagner ?"]],pl:[["pl","Joueurs"],["rk","Par poste"],["teams","Équipes"]],st:[["st","Stats"],["fxl","Le saviez-vous ?"]]};
+const SECS={cal:[["cal","Calendrier"],["sui","Phase suisse"]],st:[["pl","Joueurs"],["teams","Équipes"],["st","Stats"],["fxl","Le saviez-vous ?"]]};
 function secOf(v){for(const k in SECS)if(SECS[k].some(x=>x[0]===v))return k;return null}
 const secPills=(s,v)=>`<div class="secw"><div class="secp" role="tablist" aria-label="Rubriques">${SECS[s].map(([x,l])=>`<button data-sec="${x}" aria-pressed="${x===v}">${l}</button>`).join("")}</div></div>`;
 function secSwap(el,v){if(!el||!el._d||el._d.v===v)return;const x=NAV.find(n=>n.el===el),d=parseRoute(v);if(!x||!d)return;vib(6);x.d=d;el.scrollTop=0;renderScreen(el,d);fitSoon(el);

@@ -52,7 +52,9 @@ function leaDecSide(str){const o={};String(str||"").split(".").forEach(x=>{const
 /* résultat des paris bonus : partie 1 lue par le robot (fl.w : [1er sang, 1re tour, 1er dragon…]), la même sur tous les téléphones */
 function leaSideRes(m){const g=typeof gamesOf==="function"?gamesOf(m).find(x=>x.n===1):null;if(!g||!g.ob)return null;const [fb,,fd]=g.ob,tm=s=>s===0?g.bc:s===1?g.rc:null;
   return {fb:fb?tm(fb[1]>=0?Math.floor(fb[1]/5):1-Math.floor(fb[2]/5)):null,fd:fd?tm(fd[1]):null}}
-function leaSidePts(all){const M=MATCHES.filter(m=>m.t1&&m.t2&&m.state!=="soon");
+/* paris bonus retirés le 27/10 (il fallait voir la draft) : plus aucun point, les anciens choix sont ignorés */
+function leaSidePts(all){all.forEach(u=>{u.sp=0})}
+function leaSidePtsOld(all){const M=MATCHES.filter(m=>m.t1&&m.t2&&m.state!=="soon");
   all.forEach(u=>{u.sp=0;const S=u.s;if(!S)return;M.forEach(m=>{const b=S[m.key];if(!b)return;const r=leaSideRes(m);if(!r)return;if(b.fb&&b.fb===r.fb)u.sp++;if(b.fd&&b.fd===r.fd)u.sp++});u.pts+=u.sp})}
 /* pari oublié : le robot parie pour toi (son prono figé avant le match, vainqueur seul) sur les matchs joués après ton premier pari ;
    marqué robot:true ; mêmes données sur tous les téléphones, donc même classement */
@@ -63,7 +65,8 @@ function leaRobotFill(L){const F=leaRobotFrozen();if(!F)return;const t=m=>Date.p
   L.forEach(u=>{if(u.bot)return;let f0=Infinity;MATCHES.forEach(m=>{if(u.p[m.key])f0=Math.min(f0,t(m))});if(f0===Infinity)return;let add=null;
     D.forEach(m=>{if(!u.p[m.key]&&t(m)>f0)(add||(add=Object.assign({},u.p)))[m.key]={w:F[m.key],sc:null,robot:true}});if(add)u.p=add})}
 /* chips des paris bonus (fiche du match, Mes paris) */
-function leaSideHTML(m){if(!m||!m.t1||!m.t2||typeof betOpen!=="function"||!betOpen(m,true))return"";const s=LSIDE[m.key]||{};
+function leaSideHTML(m){return""}
+function leaSideHTMLOld(m){if(!m||!m.t1||!m.t2||typeof betOpen!=="function"||!betOpen(m,true))return"";const s=LSIDE[m.key]||{};
   const row=(k,lab)=>`<div class="lea-sc"><span class="lea-scl">${lab}<b>+1 point</b></span><div class="lea-scc" style="--n:2">${[m.t1,m.t2].map(t=>`<button class="chip" data-side="${k}" data-t="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${s[k]===t}">${logo(t,16)} ${esc(tid(t))}</button>`).join("")}</div></div>`;
   return row("fb","1er sang")+row("fd","1er dragon")}
 onAct("[data-side]",b=>{const k=b.dataset.mk,kind=b.dataset.side,t=b.dataset.t,m=MATCHES.find(x=>x.key===k);
@@ -84,10 +87,10 @@ function wParis(k,hm){const {open}=betStats(),nx=leaNextDue(open),S=leaStand(),m
       :betOpen(hm)?`<span class="pw-v ko">À parier</span><small>${vs}</small>`:`<span class="pw-v" style="color:var(--muted)">Pas parié</span><small>${vs}</small>`}
   const c2=nx?`<span class="pw-v ko">${nx.n}</span><small>à parier ${nx.when}</small>`:`<span class="pw-v ok">${LEA_OK.replace("<svg",'<svg width="22" height="22"')}</span><small>tout est parié</small>`;
   const c3=solo?`<span class="pw-v">${me.pts}<small>–</small>${bot?bot.pts:0}</span><small>toi contre le robot</small>`:`<span class="pw-v">${ordS(me.rank)}<small>/${S.length}</small></span><small>ligue · ${plur(me.pts,"pt")}</small>`;
-  return W("w21 hom-pw",nx?"bets/todo":"bets/mine",`<div class="wh">Paris</div><div class="pw"><div class="pw-c">${c1||c3}</div><div class="pw-c">${c2}</div><div class="pw-c">${c1?c3:`<span class="pw-v">${plur(me.pts,"pt")}</span><small>tes points</small>`}</div></div>`,k,"","Paris : ton prono, les matchs à parier, ta place")}
+  return W("w21 hom-pw",nx?"bets/todo":"bets/mine",`<div class="wh">Paris</div><div class="pw"><div class="pw-c">${c1||c3}</div><div class="pw-c">${c2}</div><div class="pw-c">${c1?c3:solo?`<span class="pw-v">${Object.keys(picks).length}</span><small>paris faits</small>`:`<span class="pw-v">${plur(me.pts,"pt")}</span><small>tes points</small>`}</div></div>`,k,"","Paris : ton prono, les matchs à parier, ta place")}
 /* une ligne de pari : jour et heure, le match, ton choix (score exact, bonus, vote du robot), le résultat */
 function leaBetRow(m,b){const st=new Date(m.start),s=b&&b.s||null,p=b&&b.w&&m.winner&&!m.manual?pts(b.w,b.sc,m):null;
-  const bon=s?[s.fb?`1er sang ${esc(tid(s.fb))}`:"",s.fd?`1er dragon ${esc(tid(s.fd))}`:""].filter(Boolean).join(" · "):"";
+  const bon=""&&s?[s.fb?`1er sang ${esc(tid(s.fb))}`:"",s.fd?`1er dragon ${esc(tid(s.fd))}`:""].filter(Boolean).join(" · "):"";
   return `<button class="rowb lea-hr" data-go="m/${esc(m.id)}"><span class="d">${esc(evDate(st).toLocaleDateString("fr-FR",{weekday:"short",day:"numeric"}))}<small>${fmtTime(st)}</small></span><span class="grow"><b class="nm">${esc(tid(m.t1))} – ${esc(tid(m.t2))}</b>
     <small>${b&&b.w?`${logo(b.w,14)} ${esc(tid(b.w))}${b.sc?" "+esc(b.sc):""}${b.robot?` <span class="lea-rbv">vote robot</span>`:""}`:`<span style="color:var(--muted)">pas de vainqueur choisi</span>`}${bon?` · ${bon}`:""}</small></span>
     ${p==null?`<em class="lea-st">${betOpen(m)?"modifiable":m.state==="soon"?"à venir":"en cours"}</em>`:`<em class="lea-st ${p?"ok":"ko"}">${p?"+"+p:"0"}</em>`}</button>`}
@@ -131,7 +134,7 @@ function leaEveBest(dk){if(!lg||!leaOthers())return"";const D=MATCHES.filter(x=>
 
 /* ===================== MES PARIS (bets/<onglet>) ===================== */
 function scrBets(d){const S=leaStand(),me=S.find(u=>u.me)||{pts:0,rank:1},solo=!lg||!leaOthers();if(d.tab==="run"||d.tab==="done")d.tab="mine";
-  const tabs=[["todo","À parier"],["mine","Mes paris"],["rk","Classement"]];if(lg&&leaOthers())tabs.push(["lgb","Les autres"]);
+  const tabs=[["rk","Classement"],["todo","À parier"],["mine","Mes paris"]];if(lg&&leaOthers())tabs.push(["lgb","Les autres"]);
   return {title:`Paris<small>${plur(me.pts,"point")}${solo?"":` · ${me.rank}${me.rank===1?"er":"e"} sur ${S.length}`}</small>`,info:"paris",tabs,
     render:t=>{const h=t==="mine"?leaMine():t==="rk"?leaRankTab():t==="lgb"?leaLgBets():leaTodo();requestAnimationFrame(()=>{leaSegCount();if(t==="mine")leaRingMotion()});return h}}}
 /* nombre de matchs dans les onglets (À parier 3, En attente 2), recalculé à chaque rendu */
@@ -145,7 +148,7 @@ function leaTodo(){const {open:o0}=betStats(),now=Date.now(),open=MATCHES.filter
   if(!open.length)return `<div class="lea-empty"><span class="lea-eic">${LEA_OK}</span><b>Tous les matchs connus sont pronostiqués</b><span>Les affiches suivantes arrivent au tirage de la ronde.</span><button class="btn" data-go="cal">Voir le calendrier</button></div>`;
   let h="",dk0=null,grp=[];const flush=()=>{if(grp.length)h+=`<div class="day">${esc(leaDayLab(grp[0]))}<small>${plur(grp.length,"match","matchs")}</small></div><div class="blk lea-qbk">${grp.map(x=>leaQb(x)+(picks[x.key]?leaScoreHTML(x)+leaSideHTML(x):"")).join("")}</div>`;grp=[]};
   open.forEach(x=>{const dk=dayKeyL(new Date(x.start));if(dk!==dk0){flush();dk0=dk}grp.push(x)});flush();
-  return h+`<p class="lea-foot">Touche l’équipe que tu vois gagner. Ensuite, sous le match : score exact (Bo3, Bo5), 1er sang et 1er dragon, +1 point chacun.</p>`}
+  return h+`<p class="lea-foot">Touche l’équipe que tu vois gagner. Ensuite, sous le match : le score exact d’un Bo3 ou d’un Bo5, +1 point.</p>`}
 /* score exact (M-04) : une fois l'équipe choisie, Bo3 et Bo5, avant le coup d'envoi ; écrit w26_scores */
 function leaScoreHTML(m){if(!m||!betOpen(m)||!(m.bo>1)||!picks[m.key]||!T[picks[m.key]])return"";const w=picks[m.key];
   return `<div class="lea-sc"><span class="lea-scl">Score exact<b>+1 point</b></span><div class="lea-scc" style="--n:${scoreOpts(m.bo).length}">${scoreOpts(m.bo).map(s=>`<button class="chip" data-score="${s}" data-mk="${esc(m.key)}" aria-pressed="${scores[m.key]===s}">${esc(tid(w))} ${s}</button>`).join("")}</div></div>`}
@@ -339,14 +342,13 @@ function leaMatchHTML(m){if(!m||!m.t1||!m.t2||!lg||!leaOthers())return"";
 /* ===================== feuilles « i » ===================== */
 INFO.paris=()=>["Mes paris",`<p>Touche l’équipe que tu vois gagner : c’est parié. Touche-la encore pour annuler. Les paris restent ouverts pendant la draft et jusqu’à 2 min après le lancement de la partie 1.</p>
   <p><b>1 point</b> par bon vainqueur, <b>+1</b> pour le score exact d’un Bo3 ou d’un Bo5 (il apparaît sous le match, une fois l’équipe choisie).</p>
-  <p><b>Paris bonus</b> : 1er sang et 1er dragon de la partie 1, <b>+1</b> chacun, jusqu’au lancement de la partie.</p>
   <p><b>Oubli</b> : le robot parie pour toi (son prono d’avant-match), marqué « vote robot ».</p>
   <p>Le petit pourcentage sur un bouton : l’équipe favorite du robot et ses chances. Le robot joue aussi : son prono figé avant chaque match.</p>
   <p>Dans une ligue, tes potes voient ton choix à la fermeture des paris, pas avant.</p>`,true];
 INFO.leaRules=()=>["La ligue de paris",`<p>Un code de 4 caractères, autant de joueurs que vous voulez. Chacun publie ses paris sur un relais (ntfy.sh) : ça marche en 4G comme en Wi-Fi, sans compte. Chaque téléphone garde les derniers paris connus de chacun.</p>
   <p><b>Points</b> : 1 par bon vainqueur, +1 pour le score exact d’un Bo3 ou d’un Bo5. Égalité : les scores exacts, puis les bons paris départagent. Un résultat saisi à la main ne compte pas.</p>
   <p><b>Rattrapage</b> : tu arrives en cours de route ? Les matchs joués avant ton premier pari te rapportent les points du dernier de la ligue sur ces matchs. Ensuite, tes paris comptent comme pour tout le monde.</p>
-  <p><b>Fenêtre</b> : paris ouverts pendant la draft et jusqu’à 2 min après le lancement de la partie 1. Paris bonus (1er sang, 1er dragon de la partie 1, +1 chacun) : jusqu’au lancement.</p>
+  <p><b>Fenêtre</b> : paris ouverts pendant la draft et jusqu’à 2 min après le lancement de la partie 1.</p>
   <p><b>Vote robot</b> : un match oublié après ton premier pari compte avec le prono d’avant-match du robot (vainqueur seul), marqué « vote robot ».</p>
   <p><b>Paris cachés</b> jusqu’à la fermeture : avant, tu vois seulement qui a parié.</p>
   <p><b>Le robot</b> joue sur ce téléphone seulement : son prono figé avant chaque match joué, son prono du moment sinon. Il ne compte que les matchs pariés par quelqu’un.</p>

@@ -71,13 +71,13 @@ function scrMatch(d){
   if(!m.t1||!m.t2)return {...base,info:"prono",head:matHead(m),headKey:"tbd"+m.start,body:`<p class="empty">Affiche pas encore connue : elle dépend du tirage.</p>`};
   if(kind==="soon")return {...base,info:"prono",head:matHead(m),headKey:"soon"+m.start+m.t1+m.t2,tabs:[["ov","Aperçu"],["pl","Joueurs"],["dr","Draft"],["eq","Équipes"]],
     render:t=>{const x=fresh();return t==="pl"?matTabRoles(x):t==="dr"?matTabDraftSoon(x):t==="eq"?matTabTeams(x):matTabOverview(x)},needs:[loadFJ(),loadDJ()]};
-  if(kind==="live"){if(LV.watch!==m.id)watchLive(m);
-    const tabs=[["di","Direct"],["pl","Joueurs"],["dr","Draft"]];if(matN(m)>0&&matMid(m))tabs.push(["gm","Parties"]);tabs.push(["av","Avant"]);
+  if(kind==="live"){if(LV.watch!==m.id)watchLive(m);if(d.tab==="pl")d.tab="di";
+    const tabs=[["di","Direct"],["dr","Draft"]];if(matN(m)>0&&matMid(m))tabs.push(["gm","Parties"]);tabs.push(["av","Avant"]);
     return {...base,info:"direct",head:hudHTML(m),tabs,
-      render:t=>{const x=fresh();return t==="pl"?matTabLivePlayers(x):t==="dr"?matTabLiveDraft(x):t==="gm"?matTabGames(x,d):t==="av"?matTabBefore(x):matTabDirect(x)},needs:[loadDJ(),loadFJ(),champMap()]}}
-  const G=matGames(m),tabs=[["ov","Résumé"]];if(G.length>1||(m.bo===1&&G.length))tabs.push(["gm",G.length>1?"Parties":"Partie"]);tabs.push(["pl","Joueurs"],["dr","Draft"],["av","Avant"]);
+      render:t=>{const x=fresh();return t==="dr"?matTabLiveDraft(x):t==="gm"?matTabGames(x,d):t==="av"?matTabBefore(x):matTabDirect(x)},needs:[loadDJ(),loadFJ(),champMap()]}}
+  const G=matGames(m),tabs=[["ov","Résumé"]];if(G.length>1||(m.bo===1&&G.length))tabs.push(["gm",G.length>1?"Parties":"Partie"]);tabs.push(["dr","Draft"],["av","Avant"]);if(d.tab==="pl")d.tab=tabs.some(x=>x[0]==="gm")?"gm":"ov";
   return {...base,info:"termine",head:resultHead(m),headKey:"done"+m.s1+m.s2+m.winner,tabs,
-    render:t=>{const x=fresh();return t==="gm"?matTabGames(x,d):t==="pl"?matTabDonePlayers(x,d):t==="dr"?matTabDraftDone(x,d):t==="av"?matTabBefore(x):matTabSummary(x,d)},needs:[loadDJ()]};
+    render:t=>{const x=fresh();return t==="gm"?matTabGames(x,d):t==="dr"?matTabDraftDone(x,d):t==="av"?matTabBefore(x):matTabSummary(x,d)},needs:[loadDJ()]};
 }
 function recTxt(t,R){const r=R[t];if(!r)return"";const s=r.sw.w+r.sw.l;return s?`suisse ${r.sw.w}-${r.sw.l}`:(T[t]&&T[t].seed)||""}
 const matSide=(t,sub,dim)=>t?`<button class="side" data-t="${esc(t)}" aria-label="Fiche ${esc(T[t].name)}"${dim?` style="opacity:.5"`:""}>${logo(t,64)}<span class="code">${esc(tid(t))}</span><span class="mat-rec">${sub}</span></button>`
@@ -129,7 +129,7 @@ function matRobotBlk(m,past){const F=fiabW26();let f,c,lab="Le robot",tg="";
     <div style="margin-top:10px">${splitBar(f.p1,cA(m),cB(m))}</div></div>`}
 function matPronoBlk(m){const me=picks[m.key],lv=m.state!=="soon"||Date.now()>=new Date(m.start).getTime();
   return `<div class="blk" data-pk="prono"><div class="bh">Ton prono<span class="mat-bhr">${lv?"jusqu’à 2 min après le lancement":me?"modifiable jusqu’au coup d’envoi":"avant "+fmtTime(new Date(m.start))}</span></div>
-    <div class="pk2">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${me===t}">${logo(t,26)}${esc(tid(t))}</button>`).join("")}</div>${matLea("score",m)}${typeof leaSideHTML==="function"?leaSideHTML(m):""}</div>${matLea("bets",m)}`}
+    <div class="pk2">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${me===t}">${logo(t,26)}${esc(tid(t))}</button>`).join("")}</div>${matLea("score",m)}</div>${matLea("bets",m)}`}
 /* une clé = un grand chiffre et une ligne ; la phrase complète et son taux réel au toucher (keyLine de v13.5) */
 function matKey1(k,row){const t=k[0],A=row[1],B=row[2];
   if(t==="poste"){const [,r,ka,kb,dd,pts]=k,aw=dd>0,w=aw?ka:kb,l=aw?kb:ka;return {n:"+"+fx1(Math.abs(pts)),u:"pts",h:`<b>${pnm(w)}</b> mieux noté que ${pnm(l)}`,s:`${ROLES[r]} · chances pour ${tnm(aw?A:B)}`,w:3+Math.abs(pts)}}
@@ -290,8 +290,8 @@ function paintLive(m){if(!m)return;
     const L=LV.games[m.key],st=L&&L.status;
     if(matPre(st)&&!matPre(el._lst)&&!x.d._t0&&x.d.tab==="di"&&!matOver(m,L)&&o.tabs&&o.tabs.some(t=>t[0]==="dr")){setTab(el,"dr");el._adr=1}
     else if(st==="live"&&el._adr&&x.d.tab==="dr"){setTab(el,"di");el._adr=0}el._lst=st;
-    const hs=el.querySelector(".headslot");if(hs)matPatchHud(hs,hudHTML(m));
-    const c=el.querySelector(".tabc");if(c&&o.render){matPatch(c,safe(o.render,x.d.tab)||"");tickCd(c)}
+    const hs=el.querySelector(".headslot");if(hs){const z=matSnap(hs);matPatchHud(hs,hudHTML(m));matAnim(hs,z)}
+    const c=el.querySelector(".tabc");if(c&&o.render){const z=matSnap(c);matPatch(c,safe(o.render,x.d.tab)||"");tickCd(c);matAnim(c,z)}
     matBar(el)});
   matSheetRefresh();BUS.emit("live",m)}
 /* tête du direct : seules les parties qui changent sont remplacées ; la barre des chances glisse, les kills « claquent » */
@@ -310,6 +310,23 @@ function matBar(el){const d=el._d;if(!d||d.v!=="m"||d._k!=="live")return;const m
   if(on){const S=sideFrame(L,m),p=liveP(L,m),gd=S.A.totalGold-S.B.totalGold,h=`<span class="mh">${logo(m.t1,18)}${S.A.totalKills}–${S.B.totalKills}${logo(m.t2,18)}</span><small>${gtime(L)} · ${Math.abs(gd)<100?"or =":esc(tid(gd>=0?m.t1:m.t2))+" +"+kf1(gd)} · ${esc(tid(p>=.5?m.t1:m.t2))} ${P(Math.max(p,1-p))}</small>`;
     if(bt._mh!==h){bt._mh=h;bt.innerHTML=h}if(!bt.classList.contains("mat-mini")){bt.classList.add("mat-mini");bt.setAttribute("role","button");bt.setAttribute("aria-label","Revenir au direct")}}
   else if(bt.classList.contains("mat-mini")){bt.classList.remove("mat-mini");bt._mh=null;bt.removeAttribute("role");bt.removeAttribute("aria-label");const o=el._o;if(o){bt._h=o.title;bt.innerHTML=o.title}}}
+
+/* icônes d'objectifs (Thomas, 26/10 : « le nash pourrait être en violet avec une mini forme de nash ») : tour, inhibiteur (cristal), Baron Nashor (tête à cornes) */
+const MIC={tw:`<svg class="mic tw" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5 1h6v2.2l-1 1V5h1.6v2H10v6h1.6v2H4.4v-2H6V7H4.4V5H6v-.8l-1-1z"/></svg>`,
+  ih:`<svg class="mic ih" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1l3.6 5L8 11.2 4.4 6zM3 12.6h10V15H3z"/></svg>`,
+  br:`<svg class="mic br" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1.8 1.2 5.5 4.3C6.2 3.9 7.1 3.7 8 3.7s1.8.2 2.5.6l3.7-3.1-1.3 4.6c.7.9 1.1 2 1.1 3.2C14 12.4 11.3 15 8 15s-6-2.6-6-6c0-1.2.4-2.3 1.1-3.2zM4.6 8.4l2.5 1-.5 1.3-2.2-.8zm6.8 0-2.5 1 .5 1.3 2.2-.8zM6.2 12.3h3.6l-.6 1H6.8z"/></svg>`};
+/* chiffres qui défilent : <span data-rk data-rv data-rf> ; avant un repeint matSnap note les valeurs, après matAnim anime ce qui a bougé */
+const matFmt=(f,v)=>f==="k"?kf1(v):f==="g"?l2k(v):f==="pc"?l2pc(v):String(Math.round(v));
+const matRk=(k,v,f)=>`<span data-rk="${k}" data-rv="${v}" data-rf="${f}">${matFmt(f,v)}</span>`;
+function matSnap(r){const s=new Map();if(!r||RM)return s;
+  r.querySelectorAll("[data-rk]").forEach(e=>s.set("r"+e.dataset.rk,+e.dataset.rv));r.querySelectorAll("[data-bk]").forEach(e=>s.set("b"+e.dataset.bk,e.style.width));
+  r.querySelectorAll("[data-ok]").forEach(e=>s.set("o"+e.dataset.ok,+e.dataset.rv));return s}
+function matRoll(e,a,b,f){const fin=e.textContent,t0=performance.now(),D=650;e._rl=b;
+  const st=now=>{if(e._rl!==b||!e.isConnected)return;const q=Math.min(1,(now-t0)/D),k=1-Math.pow(1-q,3);if(q>=1){e.textContent=fin;return}e.textContent=matFmt(f,a+(b-a)*k);requestAnimationFrame(st)};requestAnimationFrame(st)}
+function matAnim(r,s){if(!r||!s.size||RM)return;
+  r.querySelectorAll("[data-rk]").forEach(e=>{const a=s.get("r"+e.dataset.rk),b=+e.dataset.rv;if(a==null||isNaN(a)||isNaN(b)||a===b||e._rl===b)return;matRoll(e,a,b,e.dataset.rf)});
+  r.querySelectorAll("[data-bk]").forEach(e=>{const a=s.get("b"+e.dataset.bk),b=e.style.width;if(!a||a===b||!e.animate)return;e.animate([{width:a},{width:b}],{duration:700,easing:"cubic-bezier(.2,.9,.25,1)"})});
+  r.querySelectorAll("[data-ok]").forEach(e=>{const a=s.get("o"+e.dataset.ok),b=+e.dataset.rv;if(a==null||!(b>a))return;e.classList.remove("mat-pop");void e.offsetWidth;e.classList.add("mat-pop")})}
 
 /* ===================== 7. direct : HUD ===================== */
 function matSeries(m,L){const w=t=>{const x=L&&L.teams&&L.teams.find(z=>z.our===t);return x&&x.w!=null?x.w:null};const a=w(m.t1),b=w(m.t2);return [a!=null?Math.max(a,m.s1||0):(m.s1||0),b!=null?Math.max(b,m.s2||0):(m.s2||0)]}
@@ -333,18 +350,19 @@ function hudHTML(m){
       <div class="huds" data-h="s">${tm(m.t1,0,"")}<div class="hudc"><div class="hudk">${m.bo>1||s[0]+s[1]?`${s[0]}<i>–</i>${s[1]}`:`<i style="margin:0">VS</i>`}</div><div class="hudclk">${m.bo>1?"série":"Bo1"}</div></div>${tm(m.t2,1,"")}</div>
       <div class="hudg" data-h="g">${matLiveMsg(m,L)}</div>${f?`<div data-h="w">${splitBar(f.p1,cA(m),cB(m))}</div><div class="wpl" data-h="p"><b>${P(f.p1)}</b><span>prono du robot${m.bo>1&&s[0]+s[1]?", score compris":""}</span><b>${P(1-f.p1)}</b></div>`:""}</div>`}
   const S=sideFrame(L,m),p=liveP(L,m),gd=S.A.totalGold-S.B.totalGold,tr=trend(L,m);
-  const obj=(t,o,rev)=>{const dr=(t.dragons||[]).filter(x=>x!=="elder"),so=kfSoul(t.dragons),free=so||kfSoul(o.dragons)?0:Math.max(0,4-dr.length),ed=(t.dragons||[]).filter(x=>x==="elder").length;
+  const obj=(t,o,rev,sk)=>{const dr=(t.dragons||[]).filter(x=>x!=="elder"),so=kfSoul(t.dragons),free=so||kfSoul(o.dragons)?0:Math.max(0,4-dr.length),ed=(t.dragons||[]).filter(x=>x==="elder").length;
     const nm=(t.dragons||[]).map(x=>KF_DR[x]||x).join(", "),ti=`Dragons : ${(t.dragons||[]).length}${nm?" ("+nm+")":""}${so?", âme "+(KF_DR[so]||so):""}`;
-    const dots=dr.map(x=>`<i class="dg" style="background:${DRAG[x]||"#888"}"></i>`).join("")+`<i class="dg e"></i>`.repeat(free)+`<i class="dg" style="background:${DRAG.elder}"></i>`.repeat(ed);
-    const it=[`<span class="ob" title="Tours détruites" aria-label="Tours détruites : ${t.towers||0}">${ITOW}${t.towers||0}</span>`,`<span class="mat-dr" title="${esc(ti)}" aria-label="${esc(ti)}">${dots}${so?`<b class="soul" style="--c:${DRAG[so]}">âme</b>`:""}</span>`,`<span class="ob" title="Barons" aria-label="Barons : ${t.barons||0}">${IBAR}${t.barons||0}</span>`,`<span class="ob" title="Inhibiteurs détruits" aria-label="Inhibiteurs détruits : ${t.inhibitors||0}">${IINH}${t.inhibitors||0}</span>`];
+    const dots=dr.map(x=>`<i class="dg" style="background:${DRAG[x]||"#888"}"></i>`).join("")+`<i class="dg e"></i>`.repeat(free)+`<i class="dg eld" style="background:${DRAG.elder}"></i>`.repeat(ed);
+    const ob=(k,n,lab)=>`<span class="ob ${k}${n?"":" z"}" data-ok="${sk+k}" data-rv="${n}" title="${lab}" aria-label="${lab} : ${n}">${MIC[k]}${n}</span>`;
+    const it=[ob("tw",t.towers||0,"Tours détruites"),`<span class="mat-dr" data-ok="${sk}dr" data-rv="${(t.dragons||[]).length}" title="${esc(ti)}" aria-label="${esc(ti)}">${dots}${so?`<b class="soul" style="--c:${DRAG[so]}">âme</b>`:""}</span>`,ob("br",t.barons||0,"Barons Nashor"),ob("ih",t.inhibitors||0,"Inhibiteurs détruits")];
     return `<span>${(rev?it.reverse():it).join("")}</span>`};
   const ended=L.status==="ended";
   return `<div class="hud${ended?" done":""}" data-hk="f" style="${c}" id="hud">
     <div class="hudt" data-h="t"><span class="badge live">Partie ${L.num||""}</span><span>${m.bo>1?`Série ${s[0]}-${s[1]} · `:""}${ended?"Partie terminée":"≈ 30 s de décalage"}</span></div>
-    <div class="huds" data-h="s">${tm(m.t1,0,`${S.aBlue?"bleu":"rouge"} · ${kf1(S.A.totalGold)}`)}<div class="hudc"><div class="hudk">${S.A.totalKills}<i>–</i>${S.B.totalKills}</div><div class="hudclk">${gtime(L)}</div></div>${tm(m.t2,1,`${kf1(S.B.totalGold)} · ${S.aBlue?"rouge":"bleu"}`)}</div>
-    <div class="hudg" data-h="g">${Math.abs(gd)<100?"<b>Or à égalité</b>":`<b>${esc(tid(gd>=0?m.t1:m.t2))} +${kf1(gd)}</b> d’or`}${tr?`${spark(tr,56,18,m)}<small>${tr.txt}</small>`:""}</div>
+    <div class="huds" data-h="s">${tm(m.t1,0,`${S.aBlue?"bleu":"rouge"} · ${matRk("ga",S.A.totalGold,"k")}`)}<div class="hudc"><div class="hudk">${S.A.totalKills}<i>–</i>${S.B.totalKills}</div><div class="hudclk">${gtime(L)}</div></div>${tm(m.t2,1,`${matRk("gb",S.B.totalGold,"k")} · ${S.aBlue?"rouge":"bleu"}`)}</div>
+    <div class="hudg" data-h="g">${Math.abs(gd)<100?"<b>Or à égalité</b>":`<b>${esc(tid(gd>=0?m.t1:m.t2))} +${matRk(gd>=0?"da":"db",Math.abs(gd),"k")}</b> d’or`}${tr?`${spark(tr,56,18,m)}<small>${tr.txt}</small>`:""}</div>
     <div data-h="w">${splitBar(p,cA(m),cB(m))}</div><div class="wpl" data-h="p"><b>${P(p)}</b><span>chances de victoire <button class="i mat-i20" data-info="wp" aria-label="Comment c’est estimé">i</button></span><b>${P(1-p)}</b></div>
-    <div class="hudo" data-h="o">${obj(S.A,S.B,false)}${obj(S.B,S.A,true)}</div></div>`}
+    <div class="hudo" data-h="o">${obj(S.A,S.B,false,"A")}${obj(S.B,S.A,true,"B")}</div></div>`}
 /* écart d'or vu de t1, à partir des images du flux (rattrapées depuis le début de la partie) */
 function goldPts(L,m){const K=L.kf;if(!K||!K.fr)return [];const flip=L.blue===m.t2?-1:1,out=[];
   K.fr.forEach(x=>{if(!x.g||x.gd==null)return;const c=kfClock(L,x.t);if(c==null)return;const t=c/60;const l=out[out.length-1];if(!l||t-l.t>=.2)out.push({t,gd:x.gd*flip})});return out}
@@ -376,9 +394,9 @@ function evLine(L,e,short){
     return `${champ(k.c,22)}<b>${esc(k.n)}</b><span style="color:var(--gold3)">›</span>${champ(v.c,22)}<b class="vi">${esc(v.n)}</b>${e.as.length&&!short?`<small>+${e.as.length}</small>`:""}${e.fb?`<em>1er sang</em>`:""}`}
   if(e.k==="drag")return `<i class="dg" style="background:${DRAG[e.ty]||"#888"};width:12px;height:12px"></i><b>${tn(e.s)}</b><span>dragon ${esc((KF_DR[e.ty]||e.ty).toLowerCase())}</span>`;
   if(e.k==="soul")return `<i class="dg" style="background:${DRAG[e.ty]||"#888"};width:12px;height:12px"></i><b>${tn(e.s)}</b><span>âme ${esc(KF_DR[e.ty]||e.ty)}</span>`;
-  if(e.k==="tower")return `${ITOW.replace("<svg",'<svg width="14" height="14"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" tours":"tour"}</span>`;
-  if(e.k==="inhib")return `${IINH.replace("<svg",'<svg width="14" height="14"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" inhibiteurs":"inhibiteur"}</span>`;
-  if(e.k==="baron")return `${IBAR.replace("<svg",'<svg width="14" height="14"')}<b>${tn(e.s)}</b><span>Baron Nashor</span>`;
+  if(e.k==="tower")return `${MIC.tw.replace("<svg",'<svg width="15" height="15"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" tours":"tour"}</span>`;
+  if(e.k==="inhib")return `${MIC.ih.replace("<svg",'<svg width="15" height="15"')}<b>${tn(e.s)}</b><span>${e.n>1?e.n+" inhibiteurs":"inhibiteur"}</span>`;
+  if(e.k==="baron")return `${MIC.br.replace("<svg",'<svg width="17" height="17"')}<b>${tn(e.s)}</b><span>Baron Nashor</span>`;
   const p=[];if(e.kl&&e.kl[0]+e.kl[1])p.push(`${plur(e.kl[0]+e.kl[1],"kill")}`);[0,1].forEach(s=>{const o=[];if(e.nd&&e.nd[s].length)o.push(e.nd[s].map(x=>"dragon "+(KF_DR[x]||x).toLowerCase()).join(", "));if(e.no&&e.no[3*s])o.push(plur(e.no[3*s],"tour"));if(e.no&&e.no[3*s+2])o.push("Baron");if(o.length)p.push(tn(s)+" : "+o.join(", "))});
   return `<small>jusqu’à ${kfMS(e.t1)} · ${p.join(" · ")}${L.kf&&L.kf.err<3?" (lecture en cours)":""}</small>`}
 const matEvKey=e=>e.k+e.ms+"|"+(e.v??e.s)+(e.ty||"");
@@ -440,15 +458,13 @@ function matTabDirect(m){const L=LV.games[m.key];let h="";const man=m.state==="w
     return h+matWatch()}
   h+=man;const f=L.frame,fin=f.gameState==="finished",t=gameMins(L);l2St(L);l2Det(L,m);const R=l2Rows(L);
   const hot=matBascule(L,m,t,fin,f)+matRecRow(m);
-  h+=matFil(L,m)+matCurveBlk(L,m);
-  h+=`<div class="blk mat-rows" data-pk="l2">${hot}${R?matFights(L,m,f)+matDuels(L,m,R,t,fin)+matPog(L,m,R,f,fin,t):matRow("Pendant la partie","Lecture des joueurs en cours…","")}</div>`;
+  h+=matLiveBoard(m,L,R)+matCurveBlk(L,m)+matFil(L,m);
+  const more=hot+(R?matFights(L,m,f)+matPog(L,m,R,f,fin,t):"");if(more)h+=`<div class="blk mat-rows" data-pk="l2">${more}</div>`;
   return h+matWatch()}
 
-/* ===================== 9. direct : onglet Joueurs (tableau du match fusionné) ===================== */
-function matTabLivePlayers(m){const L=LV.games[m.key];if(!matOn(L))return matLiveWaitTab(m,L);
-  l2St(L);l2Det(L,m);const R=l2Rows(L),f=L.frame,t=gameMins(L);if(!R)return `<div class="blk" data-pk="w"><p class="mat-sub" style="margin:0">Lecture des joueurs en cours…</p></div>`;
-  const sa=L.blue===m.t2?1:0,D=L.l2d&&L.l2d.gid===L.gid&&L.l2d.f,tk=[f.blueTeam.totalKills||0,f.redTeam.totalKills||0];
-  const top=D?R.filter(x=>x.dd&&typeof x.dd.championDamageShare==="number").sort((p,q)=>q.dd.championDamageShare-p.dd.championDamageShare)[0]:null,jg=l2Jg(L,R);
+/* ===================== 9. direct : tableau des joueurs (dans Direct ; même tableau que l'accueil, chaque joueur ouvre sa fiche) ===================== */
+function matLiveBoard(m,L,R){if(!R)return `<div class="blk" data-pk="brd"><div class="bh">Les joueurs</div>${skel(42,5)}</div>`;
+  const sa=L.blue===m.t2?1:0;
   const ver=(()=>{const pv=/^(\d+)\.(\d+)/.exec((L.meta||{}).patchVersion||"");return pv?pv[1]+"."+pv[2]+".1":(CH&&CH.v)||""})(),fb=CH&&CH.v&&CH.v!==ver?CH.v:"";
   const ico=i=>`<img class="mat-it" src="https://ddragon.leagueoflegends.com/cdn/${ver}/img/item/${i}.png" alt="" loading="lazy" width="28" height="28"${fb?` onerror="this.onerror=null;this.src='https://ddragon.leagueoflegends.com/cdn/${fb}/img/item/${i}.png'"`:""}>`;
   const det=x=>()=>{const Lx=LV.games[m.key];if(!Lx||Lx.gid!==L.gid)return"";const Rx=l2Rows(Lx);if(!Rx)return"";const y=Rx.find(z=>z.pid===x.pid);if(!y)return"";const s=y.s,d=y.dd,fx=Lx.frame,tx=gameMins(Lx),tkx=[fx.blueTeam.totalKills||0,fx.redTeam.totalKills||0],kp=tkx[y.side]?Math.round(((s.kills||0)+(s.assists||0))/tkx[y.side]*100):0,it=d&&d.items?d.items.filter(i=>i>0):[];
@@ -457,13 +473,13 @@ function matTabLivePlayers(m){const L=LV.games[m.key];if(!matOn(L))return matLiv
       ${d?`${typeof d.championDamageShare==="number"?`<dt>Part des dégâts</dt><dd>${l2pc(d.championDamageShare)} de ${l2sd(y.team)}</dd>`:""}<dt>Balises</dt><dd>${d.wardsPlaced||0} posées, ${d.wardsDestroyed||0} détruites</dd>`:""}</dl>
       ${d?(it.length?`<div class="mat-its">${it.map(ico).join("")}</div>`:""):`<p class="mat-mu">Dégâts, balises et objets : en attente du flux détaillé (lu toutes les 30 s).</p>`}
       ${y.pl?`<button class="btn" data-matgo="p/${esc(y.pl.key)}">Fiche de ${esc(y.pl.id)} ›</button>`:""}`};
-  const cell=(x,rev)=>{const s=x.s,d=x.dd,ds=d&&typeof d.championDamageShare==="number"?l2pc(d.championDamageShare):"";
-    return `<button class="lps mat-lps${rev?" r":""}" data-info="${matSheet("pl|"+L.gid+"|"+x.pid,x.n,det(x),true)}"><span class="fc${kfDead(s)?" dead":""}">${champ(x.c,36)}${s.level?`<i>${s.level}</i>`:""}</span><span class="txt"><b>${esc(x.n)}${x.pl?rankChip(x.pl):""}</b><small>${l2Kda(s)} · ${s.creepScore||0} CS</small><small>${l2k(s.totalGold||0)}${ds?" · "+ds:""}</small></span></button>`};
-  const rows=ROLE_ORDER.map(r=>{const a=R.find(x=>x.side===sa&&x.role===r),b=R.find(x=>x.side!==sa&&x.role===r);if(!a||!b)return"";const gd=(a.s.totalGold||0)-(b.s.totalGold||0);
-    return `<div class="lp mat-lp">${cell(a,0)}<span class="lgd${Math.abs(gd)<150?"":gd>0?" a":" b"}"><small>${ROLE_S[r]}</small>${Math.abs(gd)<150?"=":(gd>0?"◀ ":"")+l2k(Math.abs(gd))+(gd<0?" ▶":"")}</span>${cell(b,1)}</div>`}).join("");
-  const sum=[top?`Le plus de dégâts : <b>${esc(top.n)}</b>, ${l2pc(top.dd.championDamageShare)} de ${l2sd(top.team)}`:"",jg?`Kills avec le jungler avant 15 min${t<15?" (jusqu’ici)":""} : <b>${esc(tid(m.t1))} ${jg[sa]}</b> · <b>${esc(tid(m.t2))} ${jg[1-sa]}</b>`:""].filter(Boolean);
-  return `<div class="blk" data-pk="tab"><div class="bh">Tableau du match<button class="i" data-info="lplayers" aria-label="Lire ce tableau">i</button></div>${sum.length?`<div class="mat-sum">${sum.map(x=>`<p>${x}</p>`).join("")}</div>`:""}<div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}<small class="mat-sd">${sa?"rouge":"bleu"}</small></span><span><small class="mat-sd">${sa?"bleu":"rouge"}</small>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div>${rows}</div>`}
-function matLiveWaitTab(m,L){return `<div class="blk mat-msg" data-pk="msg"><span class="mat-dot"></span><span>${matLiveMsg(m,L)}. Les joueurs arrivent au lancement de la partie.</span></div>`+`<div data-pk="r">${matRolesList(m,true)}</div>`}
+  const one=x=>x?{x,c:x.c,n:x.n,kda:l2Kda(x.s),ds:x.dd&&typeof x.dd.championDamageShare==="number"?x.dd.championDamageShare:null,gold:x.s.totalGold||0,dead:kfDead(x.s)}:null;
+  const A=ROLE_ORDER.map(r=>one(R.find(x=>x.side===sa&&x.role===r))),B=ROLE_ORDER.map(r=>one(R.find(x=>x.side!==sa&&x.role===r)));
+  const best=S=>S.reduce((b,y)=>y&&y.ds!=null&&(!b||y.ds>b.ds)?y:b,null),bA=best(A),bB=best(B),nods=!bA&&!bB;
+  const cell=(y,rev,top)=>`<button class="ls-c mat-lsc${rev?" r":""}" data-info="${matSheet("pl|"+L.gid+"|"+y.x.pid,y.n,det(y.x),true)}" aria-label="${esc(y.n)}, ${esc(y.kda)}"><span class="ls-f${y.dead?" dead":""}">${champ(y.c,28)}</span><span class="ls-t"><b>${esc(y.n)}</b><small>${esc(y.kda)}</small></span><b class="ls-d${y===top?" top":""}"${y.ds!=null?` data-rk="d${y.x.pid}" data-rv="${y.ds}" data-rf="pc"`:""}>${y.ds==null?"–":l2pc(y.ds)}</b><i class="ls-bar" data-bk="${y.x.pid}" style="width:${y.ds!=null&&top&&top.ds?Math.round(y.ds/top.ds*100):0}%"></i></button>`;
+  const rows=ROLE_ORDER.map((r,i)=>{const a=A[i],b=B[i];if(!a||!b)return"";const gd=a.gold-b.gold,k=gd>0?"a":"b";
+    return `<div class="ls-r">${cell(a,0,bA)}<span class="ls-m${Math.abs(gd)<150?"":" "+k}"><small>${r==="BOT"?"ADC":r}</small>${Math.abs(gd)<150?"=":matRk("g"+r+k,Math.abs(gd),"g")}</span>${cell(b,1,bB)}</div>`}).join("");
+  return `<div class="blk mat-brd mat-lsb" data-pk="brd" data-gk="lv${esc(L.gid||"")}" style="--c1:${cA(m)};--c2:${cB(m)}"><div class="bh">Les joueurs<span class="mat-bhr">${nods?"dégâts dans 30 s":"part des dégâts"}</span><button class="i" data-info="lplayers" aria-label="Lire ce tableau">i</button></div><div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}<small class="mat-sd">${sa?"rouge":"bleu"}</small></span><span><small class="mat-sd">${sa?"bleu":"rouge"}</small>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div><div class="ls-b">${rows}</div></div>`}
 
 /* ===================== 10. direct : onglet Draft ===================== */
 function matLiveDraft(m,L){const D=L.amd;if(!D)return `<div class="blk" data-pk="w"><div class="bh">Draft de la partie ${L.num||""}</div>${skel(48,3)}</div>`;
@@ -575,7 +591,7 @@ function matGameCard(m,g,short){const w=matGameWin(g),mins=matGameMins(g),f=g.f,
 /* partie terminée : le même tableau que le direct (Thomas, 26/10 : « si on a raté le match ») */
 function matBoardDone(m,g){const P2=matGamePlayers(g);if(!P2||P2.length<10)return"";const one=x=>x?{c:x.c,n:x.n,kda:`${x.k}/${x.d}/${x.a}`,ds:x.ds,gold:x.gold}:null;
   const A=ROLE_ORDER.map(r=>one(P2.find(x=>x.team===m.t1&&x.role===r))),B=ROLE_ORDER.map(r=>one(P2.find(x=>x.team===m.t2&&x.role===r)));if(A.some(x=>!x)||B.some(x=>!x))return"";
-  return `<div class="blk mat-brd" data-pk="brd${g.n}" style="--c1:${cA(m)};--c2:${cB(m)}"><div class="bh">Les joueurs${m.bo>1?` · partie ${g.n}`:""}<span class="mat-bhr">K/D/A · part des dégâts</span></div><div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}</span><span>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div>${boardRows(A,B)}</div>`}
+  return `<div class="blk mat-brd" data-pk="brd${g.n}" data-gk="g${g.n}" style="--c1:${cA(m)};--c2:${cB(m)}"><div class="bh">Les joueurs${m.bo>1?` · partie ${g.n}`:""}<span class="mat-bhr">K/D/A · part des dégâts</span></div><div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}</span><span>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div>${boardRows(A,B)}</div>`}
 function matTabGames(m,d){const live=matKind(m)==="live",G=matGames(m).filter(g=>!live||g.n<=matN(m));const F=matFeedGames(m);
   if(!G.length)return F===undefined?skel(160,2):F===null?matErr("games_"+m.key+"_"+matN(m)):`<p class="empty">Pas encore de partie terminée.</p>`;
   const n=+(d.g||G[G.length-1].n),g=G.find(x=>x.n===n)||G[G.length-1];
@@ -684,7 +700,10 @@ function matAnimRobot(el){const b=el.querySelector(".mat-robot .wpb i");if(!b||!
 function matMotion(el){const done=el._mp||(el._mp=new Set());
   const run=()=>el.querySelectorAll(".mat-pips[data-pp]").forEach((p,ri)=>{const k=p.dataset.pp;if(done.has(k))return;done.add(k);
     p.querySelectorAll("i").forEach((i,j)=>{if(i.animate)i.animate([{opacity:0,transform:"scale(.3)"},{opacity:1,transform:"none"}],{duration:300,delay:120+ri*45+j*70,easing:"cubic-bezier(.3,1.35,.5,1)",fill:"backwards"})})});
-  run();if(window.MutationObserver){const o=new MutationObserver(run);o.observe(el,{childList:true,subtree:true});el._mpo=o}}
+  const brd=()=>el.querySelectorAll(".mat-brd[data-gk]").forEach(B=>{const k="b"+B.dataset.gk;if(done.has(k))return;done.add(k);
+    B.querySelectorAll(".ls-r").forEach((r,i)=>{if(r.animate)r.animate([{opacity:0,transform:"translateY(6px)"},{opacity:1,transform:"none"}],{duration:320,delay:60+i*55,easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"})});
+    B.querySelectorAll(".ls-bar").forEach((b,i)=>{if(b.animate)b.animate([{width:"0%"},{width:b.style.width}],{duration:800,delay:200+(i>>1)*55,easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"})})});
+  run();brd();if(window.MutationObserver){const o=new MutationObserver(()=>{run();brd()});o.observe(el,{childList:true,subtree:true});el._mpo=o}}
 
 /* ===================== 16. feuilles « i » ===================== */
 INFO.prono=()=>["Ce match","Aperçu : le prono du robot, ton prono, les clés du match et où le regarder. Joueurs : un duel par poste (touche-le pour le détail). Draft : bans attendus, picks probables et champions déjà joués dans la série. Équipes : face-à-face, forme, saison 2026. Reviens d’un glissement depuis le bord gauche."];
