@@ -236,3 +236,24 @@
 .lea-foot .lnk{color:var(--gold2);font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .lea-w{position:relative}.lea-w.jk .dav{box-shadow:0 0 0 2px #C8AA6E,0 0 10px rgba(200,170,110,.6)}
 .lea-wj{position:absolute;top:-6px;right:-8px;padding:0 4px;border-radius:6px;font-size:9.5px;font-weight:900;line-height:14px;color:#1a1408;background:linear-gradient(135deg,#C8AA6E,#F0E6D2)}
+/* ---------- dernière soirée (27/10, à la place des badges) ---------- */
+.lea-evd{margin-left:8px;font-size:12px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+.lea-eg{display:flex;flex-direction:column}
+.lea-er{display:grid;grid-template-columns:minmax(0,1fr) repeat(var(--n),46px) 42px;gap:4px;align-items:center;padding:7px 0;border-top:1px solid var(--line);width:100%;text-align:left}
+.lea-er.h{border-top:0;padding:0 0 6px}.lea-er.me{background:linear-gradient(90deg,rgba(200,170,110,.12),transparent 70%);border-radius:10px}
+.leh{display:flex;flex-direction:column;align-items:center;gap:1px}.leh small{font-size:11px;color:var(--muted);font-weight:700}
+.let{font-size:11px;color:var(--muted);text-align:right;font-weight:700}
+.len{display:flex;align-items:center;gap:7px;min-width:0}.len b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14.5px}
+.lea-er em{font-style:normal;font-family:var(--disp);font-weight:800;font-size:19px;text-align:right;color:var(--muted)}.lea-er em.ok{color:var(--gold2)}
+.lec{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:44px;border-radius:10px;background:rgba(255,255,255,.04)}
+.lec b{font-family:var(--disp);font-size:13px;line-height:1}.lec.ok{background:rgba(10,200,185,.12)}.lec.ok b{color:var(--teal)}.lec.ko{opacity:.6}.lec.ko b{color:var(--muted)}
+.lec.no{color:var(--muted);font-weight:700}.lec.jk{box-shadow:inset 0 0 0 1.5px #C8AA6E}.lec.rb{outline:1.5px dashed rgba(10,200,185,.6);outline-offset:-1.5px}
+.lec .j,.lea-leg2 .j{position:absolute;top:-6px;right:-4px;padding:0 3px;border-radius:5px;font-style:normal;font-size:9px;font-weight:900;line-height:13px;color:#1a1408;background:linear-gradient(135deg,#C8AA6E,#F0E6D2)}
+.lem{position:absolute;top:3px;left:4px;display:flex;gap:2px}
+.lem i,.lea-leg2 i.sc,.lea-leg2 i.pk{display:inline-block;width:7px;height:7px;border-radius:50%}
+i.sc{background:#F0E6D2}i.pk{background:#A66CFF;box-shadow:0 0 5px rgba(166,108,255,.7)}
+.lea-leg2{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 0;font-size:12px;color:var(--muted)}
+.lea-leg2 span{display:inline-flex;align-items:center;gap:5px}.lea-leg2 .j{position:static}
+.lea-leg2 i.rb{display:inline-block;width:14px;height:10px;border-radius:3px;border:1.5px dashed rgba(10,200,185,.7)}
+@media (prefers-reduced-motion:no-preference){.lea-eve .lea-er:not(.h){animation:leRow .45s cubic-bezier(.22,1,.36,1) both}.lea-eve .lea-er:nth-child(3){animation-delay:.05s}.lea-eve .lea-er:nth-child(4){animation-delay:.1s}.lea-eve .lea-er:nth-child(5){animation-delay:.15s}.lea-eve .lea-er:nth-child(n+6){animation-delay:.2s}}
+@keyframes leRow{from{opacity:0;transform:translateY(8px)}}
