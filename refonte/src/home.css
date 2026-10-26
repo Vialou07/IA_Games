@@ -100,3 +100,7 @@
 .evr{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:14px;background:var(--card2);color:var(--muted)}
 .evr.r1{background:linear-gradient(180deg,#F5E3B3,var(--gold));color:#1A1205}.evr.r2{background:#C9D3DE;color:#1A1205}.evr.r3{background:#C08A57;color:#1A1205}
 .evw{flex:none;max-width:38%;text-align:right;font-family:var(--disp);font-weight:700;font-size:15px;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* « Ce soir » : ton prono (logo) ou un rond rouge à parier */
+.mypk{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;flex:none}
+.dotp.todo{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,64,87,.18)}

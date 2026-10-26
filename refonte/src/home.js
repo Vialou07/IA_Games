@@ -67,7 +67,7 @@ function homWait(m){const f=seriesFav(m);
 /* mini direct (repeint à chaque image du flux : BUS "live") : temps, kills, or + tendance, chances, objectifs, dernier événement */
 function liveMini(m){
   const L=typeof LV!=="undefined"&&LV.games?LV.games[m.key]:null;
-  if(!L||!L.frame||L.status==="between"||L.status==="waiting"){const f=seriesFav(m);return `<div class="hom-lm wait">${L&&L.status==="between"?`Pause entre deux parties · série ${m.s1??0}-${m.s2??0}`:L&&L.status==="nolive"?"Flux direct introuvable : suis le match sur LoL Esports":"Draft en cours : le direct démarre au lancement"}</div>${f?`${splitBar(f.p1,cA(m),cB(m))}<div class="wpl"><b>${P(f.p1)}</b><span>prono du robot</span><b>${P(1-f.p1)}</b></div>`:""}`}
+  if(!L||!L.frame||L.status==="between"||L.status==="waiting"){const f=seriesFav(m);return `<div class="hom-lm wait">${L&&L.status==="between"?`Pause entre deux parties · série ${m.s1??0}-${m.s2??0}`:L&&L.status==="nolive"?"Flux direct introuvable : suis le match sur LoL Esports":"Draft en cours : le direct démarre au lancement"}</div>${f?`${splitBar(f.p1,cA(m),cB(m))}<div class="wpl"><b>${P(f.p1)}</b><span>prono du robot</span><b>${P(1-f.p1)}</b></div>`:""}${typeof betOpen==="function"&&betOpen(m)?`<div class="pk2 hpk">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${t}" data-mk="${esc(m.key)}" aria-pressed="${picks[m.key]===t}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,20)}${esc(tid(t))}</button>`).join("")}</div><div class="hom-key">Paris ouverts jusqu’à 2${NB}min après le lancement</div>`:""}`}
   const S=sideFrame(L,m),p=liveP(L,m),gd=S.A.totalGold-S.B.totalGold,ld=gd>=0?m.t1:m.t2,e=L.kf&&L.kf.ev?L.kf.ev.filter(x=>x.k!=="gap").slice(-1)[0]:null;
   const tr=safe(()=>typeof trend==="function"&&typeof spark==="function"?trend(L,m):null),sp=tr?safe(spark,tr,44,14):"";
   /* record de ces Worlds ou de l'année battu ou égalé (match.js, A-05) : il prend la place du dernier événement */
@@ -96,7 +96,7 @@ function homObj(S){const dr=x=>(x.dragons||[]).slice(0,5).map(t=>`<i class="hom-
 /* ===================== listes et prochain match ===================== */
 function wTonight(list,k,title="Ce soir"){
   const rows=list.slice(0,3).map(x=>{const f=seriesFav(x),st=new Date(x.start),pk=picks[x.key],fv=fav&&(x.t1===fav||x.t2===fav);
-    const dot=x.winner?(pk?`<span class="dotp ${pk===x.winner?"ok":"ko"}"></span>`:`<span class="dotp none"></span>`):`<span class="dotp${pk?" on":""}"></span>`;
+    const dot=x.winner?(pk?`<span class="dotp ${pk===x.winner?"ok":"ko"}"></span>`:`<span class="dotp none"></span>`):pk?`<span class="mypk" title="Ton prono">${logo(pk,16)}</span>`:typeof betOpen==="function"&&betOpen(x)?`<span class="dotp todo" title="À parier"></span>`:`<span class="dotp none"></span>`;
     return `<div class="wrow${fv?" fav":""}"><time>${x.state==="live"?`<span class="lv">LIVE</span>`:fmtTime(st)}</time><span class="mt">${logo(x.t1,18)}${esc(tid(x.t1))}<i>${x.winner?`${x.s1}-${x.s2}`:"vs"}</i>${esc(tid(x.t2))}${logo(x.t2,18)}</span><span class="rb">${f&&!x.winner?`${esc(tid(f.t))} <b>${P(f.p)}</b> `:""}${dot}</span></div>`}).join("");
   const nx=list.find(x=>x.state==="soon");
   const em=nx&&new Date(nx.start)-Date.now()<3*3600e3?`dans <span data-cd="${new Date(nx.start).getTime()}"></span>`:list.length>3?`+${list.length-3}`:plur(list.length,"match","matchs");

@@ -127,9 +127,9 @@ function matRobotBlk(m,past){const F=fiabW26();let f,c,lab="Le robot",tg="";
   return `<div class="blk mat-robot" data-pk="robot"><div class="bh">${lab}${tg||(F?` <button class="tag mat-tgo" data-go="sim/rob" aria-label="Le robot aux Worlds : ${F.ok} bons favoris sur ${F.n}">${F.ok}/${F.n} aux Worlds ›</button>`:"")}<button class="i" data-info="robot" aria-label="Comment calcule le robot">i</button></div>
     <div class="bigvs"><div class="a"><span class="n ${f.p1>=.5?"lead":"trail"}">${P(f.p1)}</span><span class="t">${logo(m.t1,18)}${esc(tid(m.t1))}</span></div><div class="c">${c}</div><div class="b"><span class="n ${f.p1<.5?"lead":"trail"}">${P(1-f.p1)}</span><span class="t">${esc(tid(m.t2))}${logo(m.t2,18)}</span></div></div>
     <div style="margin-top:10px">${splitBar(f.p1,cA(m),cB(m))}</div></div>`}
-function matPronoBlk(m){const me=picks[m.key];
-  return `<div class="blk" data-pk="prono"><div class="bh">Ton prono<span class="mat-bhr">${me?"modifiable jusqu’au coup d’envoi":"avant "+fmtTime(new Date(m.start))}</span></div>
-    <div class="pk2">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${me===t}">${logo(t,26)}${esc(tid(t))}</button>`).join("")}</div>${matLea("score",m)}</div>${matLea("bets",m)}`}
+function matPronoBlk(m){const me=picks[m.key],lv=m.state!=="soon"||Date.now()>=new Date(m.start).getTime();
+  return `<div class="blk" data-pk="prono"><div class="bh">Ton prono<span class="mat-bhr">${lv?"jusqu’à 2 min après le lancement":me?"modifiable jusqu’au coup d’envoi":"avant "+fmtTime(new Date(m.start))}</span></div>
+    <div class="pk2">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${esc(t)}" data-mk="${esc(m.key)}" aria-pressed="${me===t}">${logo(t,26)}${esc(tid(t))}</button>`).join("")}</div>${matLea("score",m)}${typeof leaSideHTML==="function"?leaSideHTML(m):""}</div>${matLea("bets",m)}`}
 /* une clé = un grand chiffre et une ligne ; la phrase complète et son taux réel au toucher (keyLine de v13.5) */
 function matKey1(k,row){const t=k[0],A=row[1],B=row[2];
   if(t==="poste"){const [,r,ka,kb,dd,pts]=k,aw=dd>0,w=aw?ka:kb,l=aw?kb:ka;return {n:"+"+fx1(Math.abs(pts)),u:"pts",h:`<b>${pnm(w)}</b> mieux noté que ${pnm(l)}`,s:`${ROLES[r]} · chances pour ${tnm(aw?A:B)}`,w:3+Math.abs(pts)}}
@@ -263,7 +263,7 @@ async function liveTick(m){
   if(g&&L.teams){const bt=(g.teams||[]).find(t=>t.side==="blue"),rt=(g.teams||[]).find(t=>t.side==="red"),ob=bt&&(L.teams.find(t=>t.id===bt.id)||{}).our,or=rt&&(L.teams.find(t=>t.id===rt.id)||{}).our;
     if(ob){L.blue=ob;L.red=or||(ob===m.t1?m.t2:m.t1)}}
   if(!L.first){let w=null;try{w=await feedWin(gid)}catch(e){w=null}
-    if(w&&w.frames&&w.frames.length){L.first=Date.parse(w.frames[0].rfc460Timestamp);L.meta=w.gameMetadata;w.frames.forEach(f=>pushSample(L,f));kfFeed(L,w.frames,null)}
+    if(w&&w.frames&&w.frames.length){L.first=Date.parse(w.frames[0].rfc460Timestamp);if((L.num||1)===1&&L.first){LV.g1=LV.g1||{};if(!LV.g1[m.key])LV.g1[m.key]=L.first}if((L.num||1)===1&&L.first){LV.g1=LV.g1||{};if(!LV.g1[m.key])LV.g1[m.key]=L.first}if((L.num||1)===1&&L.first){LV.g1=LV.g1||{};if(!LV.g1[m.key])LV.g1[m.key]=L.first}if((L.num||1)===1&&L.first){LV.g1=LV.g1||{};if(!LV.g1[m.key])LV.g1[m.key]=L.first}L.meta=w.gameMetadata;w.frames.forEach(f=>pushSample(L,f));kfFeed(L,w.frames,null)}
     else if(!L.games){L.status="waiting";return}}
   if(L.meta&&!L.blue){const tm=sd=>{const pm=(L.meta[sd+"TeamMetadata"]||{}).participantMetadata||[];for(const x of pm){const p=playerFromSummoner(x.summonerName,null);if(p)return p.team}return null};
     L.blue=tm("blue")||m.t1;L.red=L.blue===m.t1?m.t2:m.t1}
@@ -427,7 +427,7 @@ function matBetweenPog(m,L){const f=L&&L.frame;if(!f||f.gameState!=="finished"||
   return `<div class="blk" data-pk="bpog">${matRow(`Partie ${esc(L.num||"")} · joueur du match`,`<span class="mat-pg">${champ(x.c,24)}<b>${esc(x.n)}</b><small>${l2sd(x.team)} · ${l2Kda(x.s)}</small><b class="g">${x.sc.v} pts</b></span>`,matSheet("bpog|"+L.gid,`Partie ${L.num||""} · joueur du match`,()=>matPogBody(P,true)))}</div>`}
 function matTabDirect(m){const L=LV.games[m.key];let h="";const man=m.state==="wait"||m.manual?matManualBlk(m):"";
   if(!matOn(L)){const st=L&&L.status,n=Math.max(matN(m),matSeries(m,L)[0]+matSeries(m,L)[1]);
-    h+=`<div class="blk mat-msg" data-pk="msg"><span class="mat-dot${LV.err&&!(L&&L.frame)?" err":""}"></span><span>${matLiveMsg(m,L)}.</span></div>`+man;
+    h+=`<div class="blk mat-msg" data-pk="msg"><span class="mat-dot${LV.err&&!(L&&L.frame)?" err":""}"></span><span>${matLiveMsg(m,L)}.</span></div>`+man+(betOpen(m)?matPronoBlk(m):"");
     if(st==="between")h+=matBetweenPog(m,L);
     if(!matOver(m,L))h+=`<button class="btn mat-go" data-pk="gdr" data-tab="dr">${st==="between"?`Avant la partie ${n+1} : fearless, picks et bans`:"Draft probable de la partie"} ›</button>`;
     return h+matWatch()}
@@ -506,7 +506,8 @@ function matDraftDoneList(m){return `<div class="blk mat-msg" data-pk="msg"><spa
 /* ===================== 11. onglet Avant (direct et match terminé) ===================== */
 function matTabBefore(m){const live=matKind(m)==="live",me=picks[m.key];let h="";
   const pr=me?`Ton prono : <b>${esc(tid(me))}${scores[m.key]?" "+esc(scores[m.key]):""}</b>${m.winner?(me===m.winner?`, gagné (+${pts(me,scores[m.key],m)})`:", perdu"):""}`:live?"Paris fermés : le match a commencé":"Pas de prono sur ce match";
-  if(live)h+=(matLea("my",m)||`<div class="blk" data-pk="prono"><div class="bh">Ton prono</div><p class="mat-say">${me?logo(me,22):""}<span>${pr}</span></p></div>`)+matLea("bets",m);
+  if(live&&betOpen(m))h+=matPronoBlk(m);
+  else if(live)h+=(matLea("my",m)||`<div class="blk" data-pk="prono"><div class="bh">Ton prono</div><p class="mat-say">${me?logo(me,22):""}<span>${pr}</span></p></div>`)+matLea("bets",m);
   h+=matRobotBlk(m,true)+matKeysBlk(m,true);
   if(live)h+=`<div class="blk mat-rows" data-pk="rl">${matRow("Duel par poste","Bilan depuis 2024 et derniers duels, poste par poste",matSheet("roles|"+m.key,"Duel par poste",()=>matRolesList(mOf(m.id)||m,true,"data-matgo")+`<p class="mat-mu">Touche un poste pour le duel complet. Méthode : « i » de l’onglet Joueurs avant le match.</p>`))}${matRow("Les deux équipes","Face-à-face, forme, saison 2026, côté",matSheet("teams|"+m.key,`${tid(m.t1)} – ${tid(m.t2)}`,()=>matTeamsHTML(mOf(m.id)||m,true)))}</div>`;
   else h+=`<div data-pk="rl"><div class="bh mat-th" style="margin-top:16px">Duel par poste<span class="mat-bhr">avant-match</span><button class="i" data-info="roles" aria-label="Lire les duels par poste">i</button></div>${matRolesList(m,true)}</div>`;

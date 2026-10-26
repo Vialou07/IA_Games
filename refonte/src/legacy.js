@@ -1111,7 +1111,7 @@ const PCOL=["#C8AA6E","#0AC8B9","#E84057","#8E5CF6","#F59E0B","#3B82F6","#22C55E
 const pcol=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return PCOL[h%PCOL.length]};
 /* ---- v13.5 l.4033-4148 : ligue : encodage des paris, relais ntfy, points, classement, robot membre, liens d'invitation (liste league) ---- */
 /* ---- paris : encodage compact ---- */
-function encPicks(){return Object.keys(picks).map(k=>`${k}~${picks[k]}~${scores[k]||""}`).join(".")}
+function encPicks(){return leaEnc()}
 function decPicks(s){const o={};String(s||"").split(".").forEach(x=>{const [k,w,sc]=x.split("~");if(k&&w&&T[w])o[k]={w,sc:sc||null}});return o}
 const myBets=()=>{const o={};Object.keys(picks).forEach(k=>o[k]={w:picks[k],sc:scores[k]||null});return o};
 
@@ -1156,7 +1156,7 @@ function onLeagueData(d,time){
   if(d.owner&&d.gage!=null&&!lg.owner)lg.gage=String(d.gage).slice(0,60);
   if(old&&d.ts<=old.ts&&!d.hello)return;
   const prev=old?old.p:{},next=decPicks(d.p);
-  if(!old||d.ts>old.ts)lg.players[d.id]={name:String(d.name).slice(0,16),p:next,ts:d.ts};
+  if(!old||d.ts>old.ts)lg.players[d.id]={name:String(d.name).slice(0,16),p:next,s:leaDecSide(d.p),ts:d.ts};
   else lg.players[d.id].name=String(d.name).slice(0,16);
   saveLg();
   if(fresh){
@@ -1188,7 +1188,8 @@ function robotBets(H){
   if(H)MATCHES.forEach(m=>{if(m.winner&&p[m.key]&&!H.some(u=>u.p[m.key]))delete p[m.key]});
   return p;
 }
-function members(){const L=[{id:lg.me.id,name:lg.me.name,p:myBets(),me:true},...Object.entries(lg.players).map(([id,x])=>({id,name:x.name,p:x.p,ts:x.ts}))];
+function members(){const L=[{id:lg.me.id,name:lg.me.name,p:myBets(),s:LSIDE,me:true},...Object.entries(lg.players).map(([id,x])=>({id,name:x.name,p:x.p,s:x.s||{},ts:x.ts}))];
+  leaRobotFill(L);
   if(SJ&&(SJ.fiab||SJ.sim))L.push({id:"robot",name:"Le robot",p:robotBets(L),bot:true});return L}
 function standings(L){
   const all=L||members(),done=MATCHES.filter(m=>m.winner&&!m.manual&&m.t1&&m.t2);
@@ -1196,7 +1197,7 @@ function standings(L){
     done.forEach(m=>{const b=u.p[m.key];if(!b)return;u.n++;const s=pts(b.w,b.sc,m);u.pts+=s;if(s)u.ok++;if(s>1)u.ex++;u.form.push(s>0)});
     for(let k=u.form.length-1;k>=0&&u.form[k];k--)u.streak++});
   done.forEach(m=>{const bt=all.filter(u=>u.p[m.key]);if(bt.length<3)return;const good=bt.filter(u=>u.p[m.key].w===m.winner);if(good.length&&good.length<=bt.length/3)good.forEach(u=>u.bold++)});
-  leaCatchUp(all,done);
+  leaSidePts(all);leaCatchUp(all,done);
   all.sort((a,b)=>b.pts-a.pts||b.ex-a.ex||b.ok-a.ok||a.name.localeCompare(b.name));
   let r=0;all.forEach((u,i)=>{if(i===0||u.pts!==all[i-1].pts||u.ex!==all[i-1].ex)r=i+1;u.rank=r});
   return all;

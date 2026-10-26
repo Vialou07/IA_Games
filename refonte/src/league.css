@@ -205,3 +205,7 @@
 .snug .ring.lea-ring{width:80px;height:80px}.snug .lea-kv{min-height:40px}.snug .lea-code span{height:48px}
 .snug .lea-mc{padding:8px 12px;gap:6px}.snug .lea-form .lea-lab{margin-top:10px}.snug .rowb.lea-mv{margin-top:10px}
 @media (prefers-reduced-motion:reduce){.lea-r,.lea-mc,.qb{animation:none!important}}
+
+/* 26/10 : vote du robot, matchs à parier */
+.lea-rbv{font-size:11px!important;font-weight:700;color:var(--teal)!important;border:1px solid rgba(10,200,185,.35);border-radius:8px;padding:1px 6px}
+.lea-due{color:var(--red)}
