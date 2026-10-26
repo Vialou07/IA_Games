@@ -104,3 +104,20 @@
 /* « Ce soir » : ton prono (logo) ou un rond rouge à parier */
 .mypk{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;flex:none}
 .dotp.todo{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,64,87,.18)}
+
+/* barre de part des dégâts sous chaque joueur (relative au plus gros de son équipe) ; plus de barre des sections dans l'accueil */
+.ls-c{position:relative}
+.ls-bar{position:absolute;left:33px;bottom:-5px;height:3px;max-width:calc(100% - 33px);border-radius:2px;background:linear-gradient(90deg,var(--c1),rgba(255,255,255,.5));opacity:.8}
+.ls-c.r .ls-bar{left:auto;right:33px;background:linear-gradient(270deg,var(--c2),rgba(255,255,255,.5))}
+.home .wnav{display:none}
+/* widget Paris : ton prono, ce qu'il reste à parier, ta place */
+.hom-pw .pw{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;margin-top:4px}
+.pw-c{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;padding:0 4px;text-align:center}
+.pw-c+.pw-c{border-left:1px solid var(--line)}
+.pw-v{display:inline-flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:800;font-size:22px;line-height:1.05;white-space:nowrap}
+.pw-v small{font-size:13px;color:var(--muted);font-weight:700}
+.pw-v.ko{color:var(--red)}.pw-v.ok{color:var(--teal)}
+.pw-c>small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.hero .cdl{align-items:center;gap:10px}.hero .cdl .cdd{margin:0}
+/* la grande carte se touche : chevron en haut à droite */
+.w22.hero .hmeta::after{content:"›";flex:none;display:grid;place-items:center;width:26px;height:26px;margin-left:8px;border-radius:50%;background:rgba(5,11,24,.45);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:17px;font-weight:700;line-height:1}

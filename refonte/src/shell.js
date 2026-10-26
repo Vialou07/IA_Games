@@ -9,7 +9,7 @@
    prend la hauteur restante, sans min-height en vh) ; un écran dont le contenu tient reçoit .fit (défilement coupé : rien ne
    bouge, ni « mini défilement » ni rebond) ; html et body ne défilent jamais (overscroll-behavior:none).
    ===================================================================================== */
-const APP_VERSION="v14.5, 26/10/2026";
+const APP_VERSION="v14.6, 26/10/2026";
 const BASE="https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/";
 const QS=new URLSearchParams(location.search),FORCE_MO=QS.get("mo");
 /* état propre à la refonte (MATCHES, SOURCE, lastSync, picks, manual, fav, celebrated, ui : legacy « état » ;
@@ -121,12 +121,12 @@ function routeOf(d){const R=ROUTES[d.v]||{},enc=x=>x==null||x===""?null:encodeUR
 function shell(o){
   const tabs=o.tabs||[],i=Math.max(0,tabs.findIndex(t=>t[0]===o.tab));
   return `<div class="scrin"><header class="bar"><button class="bk" data-back aria-label="Retour">${IBACK}</button><div class="bt">${o.title}</div>${o.info?`<button class="ib" data-info="${esc(o.info)}" aria-label="Comment lire cet écran">i</button>`:"<span></span>"}</header>
-    ${o.head?`<div class="headslot">${o.head}</div>`:""}
+    ${o._sec?secPills(o._sec,o._v):""}${o.head?`<div class="headslot">${o.head}</div>`:""}
     ${tabs.length>1?`<div class="segw"><div class="seg" role="tablist" style="--n:${tabs.length};--i:${i}"><i class="ind"></i>${tabs.map(t=>`<button role="tab" data-tab="${t[0]}" aria-selected="${t[0]===tabs[i][0]}">${t[1]}</button>`).join("")}</div></div>`:""}
     <div class="tabc" role="tabpanel">${o.body||""}</div></div>`}
 const tabSig=o=>(o.tabs||[]).map(t=>t[0]).join();
 function renderScreen(el,d){const f=ROUTES[d.v]&&ROUTES[d.v].screen;el._d=d;if(!f){el.innerHTML=shell({title:"Introuvable",body:`<p class="empty">Cet écran n’existe pas.</p>`});return}
-  const o=f(d)||{title:"",body:`<p class="empty">Données en cours de chargement…</p>`};el._o=o;
+  const o=f(d)||{title:"",body:`<p class="empty">Données en cours de chargement…</p>`};el._o=o;o._v=d.v;o._sec=(!NAV.length||NAV[0].el===el)?secOf(d.v):null;
   if(o.tabs&&o.tabs.length&&!o.tabs.some(t=>t[0]===d.tab))d.tab=o.tabs[0][0];o.tab=d.tab;
   if(!o.body&&o.render)o.body=safe(o.render,d.tab)||"";
   el.classList.remove("snug");el.innerHTML=shell(o);watchFit(el);const hs=el.querySelector(".headslot");if(hs){hs._h=o.head;hs._k=o.headKey}const c=el.querySelector(".tabc");if(c)c._h=o.body;
@@ -154,7 +154,7 @@ const topScreen=()=>NAV.length?NAV[NAV.length-1].el:HOME;
 let SAB=0;
 function measureSafe(){const p=document.createElement("div");p.style.cssText="position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none";document.body.appendChild(p);SAB=p.getBoundingClientRect().height||0;p.remove()}
 function fitScr(s){if(!s||!s.isConnected)return;const pb=parseFloat(getComputedStyle(s).paddingBottom)||0,over=s.scrollHeight-s.clientHeight;
-  const f=over<=1||s.scrollHeight-pb+12+SAB<=s.clientHeight+1;
+  const f=over<=1||s.scrollHeight-pb+12+SAB+TABH<=s.clientHeight+1;
   /* presque (moins de 120 px de trop) : version resserrée des composants partagés (.snug : marges des blocs, lignes, listes),
      qui suffit souvent à faire tenir l'écran ; remise à zéro à chaque nouveau contenu (renderScreen, refreshTab) */
   if(!f&&over<120&&s!==HOME&&!s.classList.contains("snug")){s.classList.add("snug");return fitScr(s)}
@@ -198,7 +198,7 @@ function closeSheet(){if(SHEET.open&&history.state&&history.state.sheet)history.
 
 /* ===================== navigation : pile d'écrans + historique ===================== */
 const NAV=[];let HOME=null;
-function setDim(){const d=$("#dim");d.style.zIndex=NAV.length?String(10+NAV.length*2-1):"0";d.style.opacity=NAV.length?".6":"0"}
+function setDim(){paintTabs();const d=$("#dim");d.style.zIndex=NAV.length?String(10+NAV.length*2-1):"0";d.style.opacity=NAV.length?".6":"0"}
 function openScr(d,origin,instant){
   const t0=window.__t0||performance.now();window.__t0=0;
   const from=!instant&&!RM&&origin&&origin.isConnected?{r:origin.getBoundingClientRect(),rad:parseFloat(getComputedStyle(origin).borderTopLeftRadius)||22}:null;
@@ -238,6 +238,7 @@ addEventListener("popstate",e=>{
   while(NAV.length>n){const x=NAV.pop();if(first){animOut(x);first=false}else x.el.remove()}
   if(n>NAV.length&&s.r){const d=parseRoute(s.r);if(d){openScr(d,null,true);return}}
   setDim();if(!NAV.length)renderHome(HOME);
+  if(NAVQ&&!NAV.length){const k=NAVQ;NAVQ=null;tabOpen(k)}
 });
 function back(){if(SHEET.open)return closeSheet();if(NAV.length)history.back()}
 /* retour d'un geste : glisser depuis le bord gauche */
@@ -357,8 +358,51 @@ function intro(){const el=$("#intro");if(!el)return;let seen=false;try{seen=sess
   if(RM||seen||QS.has("nointro")){el.remove();return}try{sessionStorage.setItem("w26_intro","1")}catch(e){}
   const end=()=>{if(!el.isConnected)return;el.classList.add("out");setTimeout(()=>el.remove(),650)};el.addEventListener("click",end);setTimeout(end,2300)}
 /* comptes à rebours : seulement sur l'écran du dessus */
-function tickCd(s){if(!s)return;s.querySelectorAll("[data-cd]").forEach(x=>{const h=cdText(+x.dataset.cd-Date.now());if(x._h!==h){x._h=h;x.innerHTML=h}})}
-setInterval(()=>{if(document.hidden)return;tickCd(topScreen());
+/* ===================== barre d'onglets (Thomas, 26/10 : collée en bas, toujours visible) =====================
+   Accueil · Matchs · Paris · Joueurs · Stats. Un onglet repart de son écran racine (la pile d'écrans est vidée) ;
+   toucher l'onglet où l'on est remonte à sa racine, puis en haut de page. Pastille rouge sur Paris = matchs à parier. */
+const TABH=56;
+const TABS=[["home","Accueil",`<path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h4.5v-6h4v6h4.5V9.5"/>`],
+  ["cal","Matchs",`<path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/>`],
+  ["bets","Paris",`<path d="M4 7h16v3.2a1.8 1.8 0 0 0 0 3.6V17H4v-3.2a1.8 1.8 0 0 0 0-3.6z"/><path d="M14.5 7v10" stroke-dasharray="1.6 1.8"/>`],
+  ["pl","Joueurs",`<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.4.3 4.2 2 4.9 4.9"/>`],
+  ["st","Stats",`<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`]];
+const TAB_OF={cal:"cal",sui:"cal",sim:"cal",bets:"bets",lg:"bets",lgu:"bets",lgf:"bets",pl:"pl",p:"pl",rk:"pl",cmp:"pl",spe:"pl",teams:"pl",t:"pl",d:"pl",st:"st",fx:"st",fxl:"st"};
+let NAVQ=null;
+const tabCur=()=>NAV.length?(TAB_OF[NAV[0].d.v]||"home"):"home";
+function mountTabs(){if($("#tabbar"))return;const nv=document.createElement("nav");nv.id="tabbar";nv.setAttribute("aria-label","Sections");
+  nv.innerHTML=TABS.map(([k,l,ic])=>`<button data-tabk="${k}"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg>${k==="bets"?`<i class="bdg" hidden></i>`:""}</span><span class="tl">${l}</span></button>`).join("");
+  document.body.appendChild(nv);paintTabs()}
+function paintTabs(){const tb=$("#tabbar");if(!tb)return;const cur=tabCur(),n=typeof leaDue==="function"?(safe(leaDue)||0):0;
+  tb.querySelectorAll("button").forEach(b=>{const on=b.dataset.tabk===cur;if(on!==(b.getAttribute("aria-current")==="page")){if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")}
+    const i=b.querySelector(".bdg");if(i){const h=n?String(n):"";if(i.textContent!==h){i.textContent=h;i.hidden=!n;b.setAttribute("aria-label",n?`Paris, ${n} à parier`:"Paris")}}})}
+function tabGo(k){vib(8);if(SHEET.open){closeSheet();setTimeout(()=>tabGo(k),320);return}
+  const cur=tabCur(),b=$(`#tabbar [data-tabk="${k}"] svg`);if(b&&!RM&&b.animate)b.animate([{transform:"scale(.8)"},{transform:"scale(1.15)"},{transform:"none"}],{duration:380,easing:"cubic-bezier(.3,1.4,.5,1)"});
+  if(k==="home"){if(NAV.length){NAVQ=null;history.go(-NAV.length)}else HOME.scrollTo({top:0,behavior:RM?"auto":"smooth"});return}
+  if(cur===k&&NAV.length){if(NAV.length>1){NAVQ=null;history.go(-(NAV.length-1))}else NAV[0].el.scrollTo({top:0,behavior:RM?"auto":"smooth"});return}
+  if(NAV.length){NAVQ=k;history.go(-NAV.length);return}
+  tabOpen(k)}
+function tabOpen(k){const d=parseRoute(k);if(!d)return;openScr(d,null,true);const el=NAV[NAV.length-1].el;
+  if(!RM){const c=el.querySelector(".scrin");if(c&&c.animate)c.animate([{opacity:0,transform:"translateY(10px)"},{opacity:1,transform:"none"}],{duration:260,easing:"cubic-bezier(.2,.9,.25,1)"})}paintTabs()}
+onAct("[data-tabk]",b=>tabGo(b.dataset.tabk));
+/* écrans frères d'une section (pastilles sous le titre de l'écran racine) : on remplace l'écran, au même niveau */
+const SECS={cal:[["cal","Calendrier"],["sui","Phase suisse"],["sim","Qui va gagner ?"]],pl:[["pl","Joueurs"],["rk","Par poste"],["teams","Équipes"]],st:[["st","Stats"],["fxl","Le saviez-vous ?"]]};
+function secOf(v){for(const k in SECS)if(SECS[k].some(x=>x[0]===v))return k;return null}
+const secPills=(s,v)=>`<div class="secw"><div class="secp" role="tablist" aria-label="Rubriques">${SECS[s].map(([x,l])=>`<button data-sec="${x}" aria-pressed="${x===v}">${l}</button>`).join("")}</div></div>`;
+function secSwap(el,v){if(!el||!el._d||el._d.v===v)return;const x=NAV.find(n=>n.el===el),d=parseRoute(v);if(!x||!d)return;vib(6);x.d=d;el.scrollTop=0;renderScreen(el,d);fitSoon(el);
+  try{history.replaceState({...(history.state||{}),r:routeOf(d)},"","#"+routeOf(d))}catch(e){}
+  const o=el._o;if(o&&o.needs&&o.needs.length)Promise.all(o.needs).then(()=>rerender(el)).catch(()=>{});if(o&&o.opened)safe(o.opened,el);
+  if(!RM){const c=el.querySelector(".tabc");if(c&&c.animate)c.animate([{opacity:0,transform:"translateY(8px)"},{opacity:1,transform:"none"}],{duration:240,easing:"cubic-bezier(.2,.9,.25,1)"})}
+  const p=el.querySelector(`.secp [data-sec="${CSS.escape(v)}"]`);if(p&&p.scrollIntoView)p.scrollIntoView({block:"nearest",inline:"center"});paintTabs()}
+onAct("[data-sec]",b=>secSwap(b.closest(".scr"),b.dataset.sec));
+/* compte à rebours en pancartes (comme v13.5) : jours/heures/minutes ou heures/minutes/secondes ; le chiffre qui change bascule */
+function cdParts(ms){ms=Math.max(0,ms);const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),mi=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3),p=v=>String(v).padStart(2,"0");
+  return d?[[d,"j"],[h,"h"],[p(mi),"min"]]:h?[[h,"h"],[p(mi),"min"],[p(s),"s"]]:[[p(mi),"min"],[p(s),"s"]]}
+function tickCdp(s){s.querySelectorAll("[data-cdp]").forEach(x=>{const P2=cdParts(+x.dataset.cdp-Date.now()),sig=P2.map(q=>q[1]).join();
+  if(x._sig!==sig){x._sig=sig;x.innerHTML=P2.map(([v,l],i)=>`<span class="pc" style="--i:${i}"><b>${v}</b><small>${l}</small></span>`).join("")}
+  else x.querySelectorAll(".pc b").forEach((b,i)=>{const v=String(P2[i][0]);if(b.textContent!==v){b.textContent=v;if(!RM&&b.animate)b.animate([{transform:"translateY(-45%) rotateX(80deg)",opacity:0,color:"#F0E6D2"},{transform:"none",opacity:1}],{duration:420,easing:"cubic-bezier(.2,.9,.3,1.3)"})}})})}
+function tickCd(s){if(!s)return;tickCdp(s);s.querySelectorAll("[data-cd]").forEach(x=>{const h=cdText(+x.dataset.cd-Date.now());if(x._h!==h){x._h=h;x.innerHTML=h}})}
+setInterval(()=>{if(document.hidden)return;tickCd(topScreen());paintTabs();
   if(MATCHES.some(m=>m.state==="soon"&&Date.now()>=new Date(m.start).getTime())){MATCHES=finalize(MATCHES);onData();if(typeof scheduleNext==="function")scheduleNext()}},1000);
 
 /* préparation : construit hors champ, pendant un temps mort, les écrans qu'on ouvrira sans doute (styles et images prêts) */
@@ -385,7 +429,7 @@ const START_HASH=location.hash;
 function boot(){
   intro();measureSafe();sheetSwipe();instrumentSources();
   HOME=document.createElement("section");HOME.className="scr home ready";HOME.style.zIndex="1";HOME.innerHTML=homeShell();$("#app").appendChild(HOME);
-  HOME.addEventListener("scroll",onScroll,{passive:true});watchFit(HOME);paintPill();
+  HOME.addEventListener("scroll",onScroll,{passive:true});watchFit(HOME);paintPill();mountTabs();
   try{history.replaceState({n:0},"",location.pathname+location.search)}catch(e){}
   BUS.emit("boot");
   champMap().then(()=>{if(MATCHES.length){renderHome(HOME);NAV.forEach(x=>rerender(x.el))}});
