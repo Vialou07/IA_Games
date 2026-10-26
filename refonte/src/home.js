@@ -75,6 +75,19 @@ function liveMini(m){
   return `<div class="hom-lm"><span class="hom-t">${gtime(L)}${L.num?`<small>partie ${L.num}</small>`:""}</span><span class="hom-k">${S.A.totalKills}<i>–</i>${S.B.totalKills}</span><span class="hom-g"${tr&&tr.txt?` title="${esc(String(tr.txt).replace(/<[^>]*>/g,""))}"`:""}>${Math.abs(gd)<100?"Or à égalité":`${esc(tid(ld))} +${kf1(gd)}`}${sp?`<span class="hom-spk">${sp}</span>`:""}</span></div>
     ${splitBar(p,cA(m),cB(m))}<div class="wpl"><b>${P(p)}</b><span>chances (estimation)</span><b>${P(1-p)}</b></div>${homObj(S)}${rec?`<div class="hom-ev hom-rec">${rec}</div>`:e?`<div class="hom-ev">${safe(evLine,L,e,true)}</div>`:""}`;
 }
+/* joueurs en direct (accueil, pendant une partie) : K/D/A et part des dégâts dans son équipe, poste par poste, écart d'or de la lane ;
+   repeint à chaque image du flux (BUS "live") ; toucher = tableau complet du match */
+function wLiveBoard(m,k){const L=typeof LV!=="undefined"&&LV.games?LV.games[m.key]:null;if(!L||!L.frame||typeof l2Rows!=="function")return"";
+  const h=safe(homLsb,m);if(!h)return"";
+  return W("w22 hom-lsb",`m/${m.id}/pl`,`<div id="wlsb" data-k="${esc(m.key)}">${h}</div>`,k,`--c1:${cA(m)};--c2:${cB(m)}`,"Joueurs en direct, tableau du match")}
+function homLsb(m){const L=LV.games[m.key];if(!L||!L.frame)return"";l2St(L);l2Det(L,m);const R=l2Rows(L);if(!R)return"";
+  const sa=L.blue===m.t2?1:0,ds=x=>x.dd&&typeof x.dd.championDamageShare==="number"?x.dd.championDamageShare:null,fin=L.frame.gameState==="finished";
+  const best=[0,1].map(sd=>{let b=null;R.forEach(x=>{if(x.side===sd&&ds(x)!=null&&(!b||ds(x)>ds(b)))b=x});return b});
+  const cell=(x,rev)=>{const s=x.s,d=ds(x);
+    return `<span class="ls-c${rev?" r":""}"><span class="ls-f${kfDead(s)?" dead":""}">${champ(x.c,28)}</span><span class="ls-t"><b>${esc(x.n)}</b><small>${l2Kda(s)}</small></span><b class="ls-d${best[x.side]===x?" top":""}">${d==null?"–":l2pc(d)}</b></span>`};
+  const rows=ROLE_ORDER.map(r=>{const a=R.find(x=>x.side===sa&&x.role===r),b=R.find(x=>x.side!==sa&&x.role===r);if(!a||!b)return"";const gd=(a.s.totalGold||0)-(b.s.totalGold||0);
+    return `<div class="ls-r">${cell(a,0)}<span class="ls-m${Math.abs(gd)<150?"":gd>0?" a":" b"}"><small>${r==="BOT"?"ADC":r}</small>${Math.abs(gd)<150?"=":l2k(Math.abs(gd))}</span>${cell(b,1)}</div>`}).join("");
+  return `<div class="wh">${fin?`Partie ${esc(L.num||"")} terminée`:"Joueurs en direct"}<em>part des dégâts</em></div><div class="ls-b">${rows}</div>`}
 /* rangée d'objectifs : tours, dragons (couleur du type), Barons, inhibiteurs, des deux côtés */
 function homObj(S){const dr=x=>(x.dragons||[]).slice(0,5).map(t=>`<i class="hom-dg" style="background:${typeof DRAG!=="undefined"&&DRAG[t]||"var(--gold)"}" title="${esc(t)}"></i>`).join("")||`<i class="hom-dg no"></i>`;
   const sd=(x,r)=>`<span class="hom-ob${r?" r":""}"><span>${ITOW}${x.towers||0}</span><span class="hom-dgs">${dr(x)}</span><span>${IBAR}${x.barons||0}</span><span>${IINH}${x.inhibitors||0}</span></span>`;
@@ -160,7 +173,7 @@ const HOM_W={bets:k=>widget("bets",k),league:k=>widget("league",k),rank:k=>widge
 /* ordre et priorité de chaque moment : « nom:priorité » (plus le chiffre est grand, plus le widget part tôt quand la place manque ;
    0 = jamais retiré). Les carrés (w11) vont par deux dans l'ordre ; réserve (HOM_SPARE) pour compléter un carré seul. */
 const HOM_ORDER={
-  live:"hero:0 livebets:2 bets:2 next:1 rank:4 fact:4 sim:5 myteam:6 swiss:6",
+  live:"hero:0 lsb:1 livebets:2 bets:2 next:1 rank:4 fact:4 sim:5 myteam:6 swiss:6",
   soon:"hero:0 next:1 bets:2 league:2 evemini:3 rank:4 fact:4 sim:5 myteam:6 swiss:6",
   day:"hero:0 next:1 bets:2 league:2 evemini:3 rank:4 fact:4 sim:5 myteam:6 swiss:6",
   after:"eve:0 next:1 bets:2 league:2 sim:3 fact:4 rank:4 myteam:5 swiss:5",
@@ -170,7 +183,7 @@ function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES
   const fin=M.champ&&!M.live&&!M.next,hm=M.k==="live"?(M.live||M.next):M.next,yday=M.recent&&M.recent!==dk?M.recent:null;
   const rest=today.filter(x=>x!==hm&&x.state!=="done"),other=MATCHES.find(x=>x.state==="soon"&&x!==hm&&ok(x));
   const F={...HOM_W,
-    hero:k=>hm?wHeroMatch(hm,k):"",livebets:k=>hm?widget("livebets",hm,k):"",
+    hero:k=>hm?wHeroMatch(hm,k):"",lsb:k=>M.k==="live"&&hm?wLiveBoard(hm,k):"",livebets:k=>hm?widget("livebets",hm,k):"",
     next:k=>M.k==="after"||M.k==="rest"?wNextWide(M.next,k):rest.length?wTonight(rest,k,M.k==="day"?"Ce soir":"Ensuite"):wNextWide(other,k),
     eve:k=>M.recent||M.last?wEve(M.recent||M.last,k):"",evemini:k=>(M.k==="rest"?M.recent:yday)?wEveMini(M.k==="rest"?M.recent:yday,k):"",champ:k=>M.champ?wChampion(M.champ,k):""};
   const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return {n,f:F[n],pr:+p}});
@@ -201,6 +214,7 @@ function renderHome(el=HOME){if(!el)return;
   const M=homeMoment();HM=M;const rows=homFit(homRows(M),el),h=rows.map(r=>r.html).join("");
   const g=el.querySelector(".grid");if(g._h!==h){const first=!g._h;g._h=h;g.innerHTML=h;if(first&&!RM){g.classList.add("first");setTimeout(()=>g.classList.remove("first"),1400)}startBeam(g.querySelector(".hero .beam"))}
   tickCd(el);const wl=g.querySelector("#wlive");if(wl){const m=MATCHES.find(x=>x.key===wl.dataset.k);if(m){const lh=safe(liveMini,m);if(wl._h!==lh){wl._h=lh;wl.innerHTML=lh}}}
+  const wb=g.querySelector("#wlsb");if(wb){const m=MATCHES.find(x=>x.key===wb.dataset.k);if(m){const bh=safe(homLsb,m);if(bh&&wb._h!==bh){wb._h=bh;wb.innerHTML=bh}}}
   paintPill();
 }
 function homeShell(){return `<div class="scrin"><header class="bar"><div class="brand">WORLDS 2026<small>Los Angeles, Allen, New York</small></div><button class="pill busy" data-go="set" aria-label="État de l’appli"><i></i>Chargement…</button></header>
@@ -228,4 +242,7 @@ INFO.everobot=()=>["Le robot ce soir","Le prono du robot est figé au coup d’e
 defScreen("eve",{arg:"id",screen:scrEve});
 /* le mini direct du héros suit chaque image du flux (match.js émet "live") */
 BUS.on("live",m=>{if(NAV.length)return;const w=document.getElementById("wlive");   // accueil couvert : repeint au retour (renderHome)
-  if(w&&w.dataset.k===m.key){const h=safe(liveMini,m);if(w._h!==h){w._h=h;w.innerHTML=h}}});
+  if(w&&w.dataset.k===m.key){const h=safe(liveMini,m);if(w._h!==h){w._h=h;w.innerHTML=h}}
+  /* tableau des joueurs : repeint ; absent alors que la partie a démarré (accueil composé pendant la draft) → l'accueil se recompose */
+  const b=document.getElementById("wlsb");if(b){if(b.dataset.k===m.key){const h=safe(homLsb,m);if(h&&b._h!==h){b._h=h;b.innerHTML=h}}}
+  else if(HM&&HM.k==="live"&&HM.rows&&!HM.rows.includes("lsb")&&safe(homLsb,m))renderHome(HOME)});
