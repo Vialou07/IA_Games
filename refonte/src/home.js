@@ -149,10 +149,46 @@ function homPod(dk){try{const E=funEveLines(dk);if(E.miss.length){funFetch(dk,E.
 const homBest=(b,dk)=>typeof leaEveBest==="function"?esc(safe(leaEveBest,dk)||""):b?`Meilleure soirée : <b>${b.who.map(esc).join(" et ")}</b>, +${b.p}`:"";
 const homUp=E=>E.up.length?`${plur(E.up.length,"surprise")} : ${E.up.map(o=>esc(tid(o.x.winner))).join(", ")} contre l’avis du robot`:E.rb.length?"Aucune surprise : le robot avait vu juste":"";
 function homPodLine(dk){const P2=homPod(dk);return P2&&P2.length?`Podium : ${P2.map((o,i)=>`<b>${esc(o.x.n)}</b>`).join(", ")}`:""}
-function wEve(dk,k){const E=homEve(dk);if(!E)return"";
-  const res=x=>{const w=x.winner,pk=picks[x.key],side=t=>`<span class="${w&&w!==t?"lo":""}">${logo(t,18)}${esc(tid(t))}</span>`;return `<span class="rres${pk&&w?(pk===w?" ok":" ko"):""}${fav&&(x.t1===fav||x.t2===fav)?" fav":""}">${side(x.t1)}<em>${w?`${x.s1}-${x.s2}`:fmtTime(new Date(x.start))}</em>${side(x.t2)}</span>`};
-  const lines=[homPodLine(dk),homBest(E.best,E.dk),homUp(E)].filter(Boolean).slice(0,2);
-  return W("w22",`eve/${dk}`,`<div class="hin weve"><div class="wh">${esc(E.ttl)}<em>${E.mine.length?`tes paris <b>${E.good}/${E.mine.length}</b>`:plur(E.L.length,"match","matchs")}</em></div><div class="rgrid">${E.L.slice(0,8).map(res).join("")}</div><div class="wb">${lines.map(l=>`<div class="ws">${l}</div>`).join("")}</div></div>`,k,"",E.ttl);}
+/* classement et détail des points (league.js : u.mp = {clé: {v, sc, pk, jk, robot, t}}) ; à défaut, pts() du socle */
+function homStand(){try{return typeof leaStand==="function"?leaStand()||[]:[]}catch(e){return []}}
+function homMp(x,u){const d=u&&u.mp&&u.mp[x.key];if(d)return d;if(!x.winner||x.manual)return null;
+  const b=u&&u.p&&u.p[x.key]||(u&&u.me&&picks[x.key]?{w:picks[x.key],sc:scores[x.key]||null}:null);if(!b||!b.w)return null;
+  const t=typeof pts==="function"?pts(b.w,b.sc||null,x):+(b.w===x.winner);return {v:+(b.w===x.winner),sc:t>1?1:0,pk:0,jk:0,robot:!!b.robot,t}}
+/* bilan d'une soirée en grand (Thomas, 27/10 : « ça fait vide ») : une ligne par match, logos, gros score, vainqueur en avant,
+   à droite ton prono et tes points du match (+2, ×2 joker, poker) ; en tête tes points de la soirée */
+const homEveRh=n=>n<=5?46:38,homEveH=n=>74+n*homEveRh(n)+Math.max(0,n-1)*5+22;
+function wEve(dk,k){const E=homEve(dk);if(!E)return"";const me=homStand().find(u=>u.me)||{me:true,p:{}};
+  const L=E.L.slice(0,8),rh=homEveRh(L.length),lg32=L.length<=5?30:24;let tot=0,any=0;
+  const row=(x,i)=>{const w=x.winner,b=me.p&&me.p[x.key]||null,pk=picks[x.key]||(b&&b.w)||null,d=w?homMp(x,me):null;if(d){tot+=d.t;any++}
+    const sd=(t,r)=>`<span class="bt${w?(w===t?" wi":" lo"):""}${r?" r":""}">${logo(t,lg32)}<b>${esc(tid(t))}</b></span>`;
+    const tags=d?[d.jk?`<i class="btag jk">joker ×2</i>`:"",d.pk?`<i class="btag pk">poker</i>`:"",d.robot?`<i class="btag rb">robot</i>`:"",d.sc?`<i class="btag sc">score</i>`:""].filter(Boolean).slice(0,2).join(""):"";
+    const cell=!pk?`<span class="bpl"><i class="bpt no">–</i></span><span class="btg"><i class="btag nb">pas parié</i></span>`
+      :!w?`<span class="bpl">${logo(pk,18)}</span><span class="btg"><i class="btag nb">${esc(fmtTime(new Date(x.start)))}</i></span>`
+      :`<span class="bpl"><span class="bpk${d&&d.t?"":" lo"}">${logo(pk,18)}</span><i class="bpt${d&&d.t?" ok":" z"}">${d&&d.t?`+<b>${d.t}</b>`:"0"}</i></span>${tags?`<span class="btg">${tags}</span>`:""}`;
+    return `<button class="brow${pk&&w?(d&&d.t?" ok":" ko"):""}${fav&&(x.t1===fav||x.t2===fav)?" fav":""}" data-go="m/${esc(x.id)}" style="--i:${i};height:${rh}px">${sd(x.t1)}<em class="bs">${w?`${x.s1}-${x.s2}`:"vs"}</em>${sd(x.t2,1)}<span class="bcell">${cell}</span></button>`};
+  const rows=L.map(row).join("");
+  const foot=[homEveTop(E),homPodLine(dk),homUp(E)].filter(Boolean)[0]||"";
+  const hd=any?`<span class="bto"><span>+<b>${tot}</b></span><small>${plur(tot,"pt").replace(/^\d+\s/,"")} ce soir</small></span>`:`<em>${plur(E.L.length,"match","matchs")}</em>`;
+  return W("w22 weve2",`eve/${dk}`,`<div class="hin weve"><div class="wh">${esc(E.ttl)}${hd}</div><div class="brows">${rows}</div>${foot?`<div class="bft">${foot}</div>`:""}</div>`,k,"",`${E.ttl}${any?`, tes points ce soir : ${tot}`:""}`);}
+/* classement de la ligue sur l'accueil (Thomas, 27/10 : « il n'est pas du tout sur la page d'accueil ») : top 4, ta ligne en avant
+   (ajoutée en bas si tu es plus loin), points de la dernière soirée jouée, barre des points par rapport au premier ; sans ligue : toi contre le robot */
+/* meilleure soirée de la ligue, avec les mêmes points que les lignes (joker et poker compris) */
+function homEveTop(E){if(typeof lg==="undefined"||!lg||typeof leaOthers!=="function"||!leaOthers())return homBest(E.best,E.dk);
+  const D=E.L.filter(x=>x.winner&&!x.manual),S=homStand().filter(u=>!u.bot).map(u=>({u,p:D.reduce((n,x)=>{const d=homMp(x,u);return n+(d?d.t:0)},0)})).sort((a,b)=>b.p-a.p);
+  if(!S.length||!S[0].p)return"";const W2=S.filter(x=>x.p===S[0].p).map(x=>x.u.me?"toi":esc(x.u.name));
+  return `Meilleure soirée : <b>${W2.length>2?W2.slice(0,2).join(", ")+" et "+plur(W2.length-2,"autre"):W2.join(" et ")}</b>, +${S[0].p}`}
+let HOM_LBN=0;
+function wLb(k){HOM_LBN=0;const S=homStand();if(!S.length)return"";const me=S.find(u=>u.me);
+  if(typeof lg!=="undefined"&&lg&&typeof leaOthers==="function"&&leaOthers()){
+    const D=MATCHES.filter(x=>x.winner&&!x.manual&&x.t1&&x.t2);let ld=null,lt=0;D.forEach(x=>{const t=new Date(x.start).getTime();if(t>lt){lt=t;ld=dayKeyL(new Date(x.start))}});
+    const ev=ld?D.filter(x=>dayKeyL(new Date(x.start))===ld):[],today=dayKeyL(new Date()),yday=dayKeyL(new Date(Date.now()-864e5));
+    const lab=ld===today?"ce soir":ld===yday?"hier":"dernière soirée";
+    const top=S.slice(0,4);if(me&&!top.includes(me))top.push(me);HOM_LBN=top.length;const mx=Math.max(1,...S.map(u=>u.pts||0));
+    const row=(u,i)=>{const tn=ev.reduce((n,x)=>{const d=homMp(x,u);return n+(d?d.t:0)},0);
+      return `<button class="lbr${u.me?" me":""}${u.bot?" bot":""}" data-go="lgu/${esc(u.id)}" style="--i:${i}"><span class="lbk r${u.rank}">${u.rank}</span>${avatar(u,26)}<span class="lbn"><b>${esc(u.me?"Toi":u.name)}</b><i class="lbb" style="--w:${Math.round((u.pts||0)/mx*100)}%"></i></span>${tn?`<small class="lbt">+${tn} ${lab}</small>`:""}<b class="lbp">${u.pts||0}</b></button>`};
+    return W("w22 hom-lb","bets/rk",`<div class="wh">Classement<em>ligue ${esc(lg.code)} · ${plur(S.length,"joueur")}</em></div><div class="lbl">${top.map(row).join("")}</div>`,k,"",`Classement de la ligue ${lg.code} : tu es ${me?me.rank:"?"}${me&&me.rank===1?"er":"e"}`)}
+  const bot=S.find(u=>u.bot),a=me?me.pts||0:0,z=bot?bot.pts||0:0;
+  return W("w21 hom-lb solo","bets/rk",`<div class="wh">Toi contre le robot</div><div class="lbs"><span class="lbv">${me?avatar(me,30):""}<b>${a}</b></span><i class="lbx">${a>z?"tu mènes":a<z?"il mène":"égalité"}</i><span class="lbv r"><b>${z}</b>${bot?avatar(bot,30):""}</span><button class="btn lbc" data-go="lgf/create">Crée ta ligue</button></div>`,k,"","Toi contre le robot")}
 /* bilan replié (jour suivant, après 11 h, ou avant les matchs du soir) */
 function wEveMini(dk,k){const E=homEve(dk);if(!E||!E.done)return"";
   const l1=[plur(E.L.length,"match","matchs"),E.up.length?plur(E.up.length,"surprise"):""].filter(Boolean).join(" · "),l2=homPodLine(dk)||homBest(E.best,E.dk)||homUp(E);
@@ -189,12 +225,12 @@ const HOM_W={bets:k=>widget("bets",k),league:k=>widget("league",k),rank:k=>widge
 /* « nom:F » = bouche-trou : ajouté seulement s'il tient en entier sans faire défiler ; puis la place qui reste va au
    premier widget extensible (héros, bilan, prochaine étape) : l'accueil sans direct remplit l'écran (Thomas, 26/10) */
 const HOM_ORDER={
-  live:"hero:0 lsb:1 paris:1 next:2",
-  soon:"hero:0 paris:1 next:1 evemini:3 swiss:F fact:F",
-  day:"hero:0 paris:1 next:1 evemini:3 swiss:F fact:F",
-  after:"eve:0 paris:1 next:1 swiss:F fact:F",
-  rest:"nbig:0 paris:1 evemini:3 swiss:F fact:F simbig:F",
-  final:"champ:0 paris:1 eve:2"},HOM_SPARE="",HOM_GROW=["hero","eve","nbig","champ"];   // accueil épuré (Thomas, 26/10) : le reste est rangé dans les onglets
+  live:"hero:0 lsb:1 ligue:2 paris:1 next:2",
+  soon:"hero:0 paris:1 ligue:1 next:1 evemini:3 swiss:F fact:F",
+  day:"hero:0 paris:1 ligue:1 next:1 evemini:3 swiss:F fact:F",
+  after:"eve:0 ligue:1 paris:1 next:1 swiss:F fact:F",
+  rest:"nbig:0 ligue:1 paris:1 evemini:3 swiss:F fact:F simbig:F",
+  final:"champ:0 ligue:1 paris:1 eve:2"},HOM_SPARE="",HOM_GROW=["hero","eve","nbig","champ"];   // accueil épuré (Thomas, 26/10) : le reste est rangé dans les onglets
 function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES.filter(x=>ok(x)&&dayKeyL(new Date(x.start))===dk);
   const fin=M.champ&&!M.live&&!M.next,hm=M.k==="live"?(M.live||M.next):M.next,yday=M.recent&&M.recent!==dk?M.recent:null;
   const rest=(()=>{const o=today.filter(x=>x!==hm),up=o.filter(x=>x.state!=="done");return [...up,...o.filter(x=>x.state==="done").reverse()].slice(0,3).sort((a,b)=>new Date(a.start)-new Date(b.start))})(),other=MATCHES.find(x=>x.state==="soon"&&x!==hm&&ok(x));
@@ -202,7 +238,7 @@ function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES
     hero:k=>hm?wHeroMatch(hm,k):"",lsb:k=>M.k==="live"&&hm?wLiveBoard(hm,k):"",paris:k=>typeof wParis==="function"?wParis(k,hm):"",livebets:k=>hm?widget("livebets",hm,k):"",
     next:k=>M.k==="after"||M.k==="rest"?wNextWide(M.next,k):rest.length?wTonight(rest,k,M.k==="day"?"Ce soir":"Ensuite"):wNextWide(other,k),
     nbig:k=>M.next?wHeroMatch(M.next,k):wNextDayBig(k)||wNextWide(null,k),
-    eve:k=>M.recent||M.last?wEve(M.recent||M.last,k):"",evemini:k=>(M.k==="rest"?M.recent:yday)?wEveMini(M.k==="rest"?M.recent:yday,k):"",champ:k=>M.champ?wChampion(M.champ,k):""};
+    eve:k=>M.recent||M.last?wEve(M.recent||M.last,k):"",ligue:k=>wLb(k),evemini:k=>(M.k==="rest"?M.recent:yday)?wEveMini(M.k==="rest"?M.recent:yday,k):"",champ:k=>M.champ?wChampion(M.champ,k):""};
   const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return p==="F"?{n,f:F[n],pr:9,fill:true}:{n,f:F[n],pr:+p}});
   /* équipe suivie (w26_fav) : son widget passe juste après « Mes paris » et n'est retiré qu'en dernier recours */
   if(fav&&T[fav]){const i=I.findIndex(x=>x.n==="myteam");if(i>=0){const it=I.splice(i,1)[0];it.pr=Math.min(it.pr,2);const j=I.findIndex(x=>x.n==="bets");I.splice(j>=0?j+1:I.length,0,it)}}
@@ -215,7 +251,7 @@ function homRows(M){const {I,spares}=homItems(M),used=new Set(),rows=[];let k=0,
     /* une paire reste tant que l'un des deux compte (priorité la plus forte des deux) */
     if(x.sz==="w11"){if(pend){rows.push({h:HOM_H.w11,html:pend.h+x.h,pr:Math.min(pend.pr,x.pr),n:pend.n+"+"+x.n,fill:pend.fill&&x.fill});pend=null}else pend=x;continue}
     /* bilan : hauteur selon le nombre de matchs (2 par rangée), au lieu des 284 px d'un bilan de 8 matchs */
-    const h=x.n==="eve"?(n=>Math.min(HOM_H.w22,128+Math.ceil(n/2)*42))((homEve(M.recent||M.last)||{L:[]}).L.slice(0,8).length):HOM_H[x.sz];
+    const h=x.n==="eve"?homEveH((homEve(M.recent||M.last)||{L:[]}).L.slice(0,8).length):x.n==="ligue"&&x.sz==="w22"?58+HOM_LBN*38:HOM_H[x.sz];
     rows.push({h,hx:h!==HOM_H[x.sz],html:x.h,pr:x.pr,n:x.n,fixed:x.pr===0,fill:x.fill,grow:HOM_GROW.includes(x.n)})}
   if(pend){let sp=null;for(const [n,f] of spares){if(used.has(n))continue;const x=take(n,f);if(x&&x.sz==="w11"){sp=x;break}}
     rows.push(sp?{h:HOM_H.w11,html:pend.h+sp.h,pr:pend.pr,n:pend.n+"+"+sp.n}:{h:HOM_H.w11,html:pend.h.replace('class="w w11','class="w w11 solo'),pr:pend.pr,n:pend.n,fill:pend.fill})}
@@ -234,7 +270,7 @@ function homFit(rows,el){const H=el.clientHeight||innerHeight,bar=el.querySelect
   rs=rs.map(r=>r.hx?{...r,html:r.html.replace('style="--k:',`style="height:${r.h}px;--k:`)}:r);
   HM.rows=rs.map(r=>r.n);HM.est=tot(rs);return rs}
 /* chiffres qui défilent jusqu'à leur valeur à l'arrivée sur l'accueil (nombres entiers seuls dans leur texte) */
-function homRoll(g){g.querySelectorAll(".pw-v,.wn,.rres em,.wrow .sc").forEach(e=>{[...e.childNodes].forEach(t=>{if(t.nodeType!==3)return;const m=/^(\d{1,3})(-(\d{1,2}))?$/.exec(t.nodeValue.trim());if(!m)return;
+function homRoll(g){g.querySelectorAll(".pw-v,.wn,.rres em,.wrow .sc,.brow .bs,.bpt b,.bto b,.lbp,.lbv b").forEach(e=>{[...e.childNodes].forEach(t=>{if(t.nodeType!==3)return;const m=/^(\d{1,3})(-(\d{1,2}))?$/.exec(t.nodeValue.trim());if(!m)return;
   const a=+m[1],b=m[3]!=null?+m[3]:null,fin=t.nodeValue,t0=performance.now(),D=800;
   const st=n=>{const p=Math.min(1,(n-t0)/D),q=1-Math.pow(1-p,3);t.nodeValue=p>=1?fin:String(Math.round(a*q))+(b!=null?"-"+Math.round(b*q):"");if(p<1)requestAnimationFrame(st)};requestAnimationFrame(st)})})}
 function renderHome(el=HOME){if(!el)return;
