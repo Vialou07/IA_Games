@@ -311,3 +311,39 @@ details.uxf{margin-top:10px;border-radius:var(--r3);background:var(--card);borde
 ul.why{margin:6px 0 0;padding-left:18px;font-size:13.5px;line-height:1.45}ul.why li{margin:4px 0}
 dl.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;margin:0;font-size:13.5px}dl.kv dt{color:var(--muted)}dl.kv dd{margin:0;text-align:right;min-width:0}
 .split.mini{height:5px;width:70px}
+
+/* ---------- barre d'onglets (26/10) : collée en bas, pleine largeur, au-dessus des écrans, sous les feuilles ---------- */
+:root{--tabh:56px}
+.scr{padding-bottom:calc(28px + var(--tabh) + var(--sab))}
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:800;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:calc(var(--tabh) + var(--sab));padding:0 4px var(--sab);background:rgba(6,13,27,.9);-webkit-backdrop-filter:saturate(1.5) blur(18px);backdrop-filter:saturate(1.5) blur(18px);border-top:1px solid rgba(200,170,110,.22);box-shadow:0 -10px 30px rgba(0,0,0,.35)}
+#tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;color:#8C96A8;font-size:10.5px;font-weight:600;letter-spacing:.01em;transition:color .2s}
+#tabbar .ti{position:relative;display:grid;place-items:center;width:44px;height:28px;border-radius:14px;transition:background .25s}
+#tabbar svg{width:23px;height:23px}
+#tabbar .tl{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#tabbar button[aria-current="page"]{color:var(--gold2)}
+#tabbar button[aria-current="page"] .ti{background:rgba(200,170,110,.16)}
+#tabbar button:active .ti{transform:scale(.9)}
+#tabbar .bdg{position:absolute;top:-3px;right:2px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-style:normal;font-size:10.5px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 0 2px #060D1B}
+#tabbar .bdg[hidden]{display:none}
+#tabbar .bdg:not([hidden]){animation:tbPing 2.4s ease-in-out infinite}
+@keyframes tbPing{0%,70%,100%{transform:none}80%{transform:scale(1.25)}90%{transform:scale(.95)}}
+/* pastilles des écrans frères d'une section */
+.secw{padding:2px 0 6px;overflow-x:auto;scrollbar-width:none}.secw::-webkit-scrollbar{display:none}
+.secp{display:flex;gap:6px;padding:0 16px;width:max-content}
+.secw{border-bottom:1px solid var(--line);margin-bottom:6px;padding-bottom:0}
+.secp{gap:18px}
+.secp button{position:relative;height:38px;padding:0 2px;font-family:var(--disp);font-size:17px;font-weight:700;letter-spacing:.01em;color:var(--muted);white-space:nowrap;transition:color .2s,transform .15s}
+.secp button::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--gold);transform:scaleX(0);transition:transform .3s var(--spring)}
+.secp button[aria-pressed="true"]{color:var(--gold2)}.secp button[aria-pressed="true"]::after{transform:none;box-shadow:0 0 10px var(--gold)}
+.secp button:active{transform:scale(.95)}
+/* ce qui se touche se voit : un chevron dans l'en-tête des widgets */
+.grid>.w[data-go] .wh::after{content:"›";margin-left:auto;padding-left:8px;font-size:17px;line-height:1;color:var(--gold3);font-weight:700;letter-spacing:0}
+.grid>.w[data-go] .wh em+*{margin-left:0}
+.grid>.w[data-go] .wh em{margin-right:0}
+/* pancartes du compte à rebours : elles se balancent doucement, le chiffre qui change bascule */
+.cdp{display:inline-flex;gap:6px;perspective:300px}
+.cdp .pc{display:flex;flex-direction:column;align-items:center;min-width:46px;padding:5px 6px 4px;border-radius:9px;background:rgba(5,11,24,.66);border:1px solid rgba(240,230,210,.2);box-shadow:0 6px 14px rgba(0,0,0,.35);transform-origin:50% -6px;animation:pcSway 3.6s ease-in-out infinite;animation-delay:calc(var(--i) * -.9s)}
+.cdp .pc b{display:block;font-family:var(--disp);font-weight:800;font-size:24px;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.cdp .pc small{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.04em;margin-top:1px}
+@keyframes pcSway{0%,100%{transform:rotate(-2.2deg)}50%{transform:rotate(2.2deg)}}
+@media (prefers-reduced-motion:reduce){.cdp .pc,#tabbar .bdg:not([hidden]){animation:none}}

@@ -46,7 +46,7 @@ function wHeroMatch(m,k){
   if(live){foot=`<div id="wlive" data-k="${esc(m.key)}"></div>`;cls+=" hlive"}
   else if(wait)foot=homWait(m);
   else{const key=homKey(m),lgl=homLgLine(m);cls+=" tall";
-    foot=`<div class="cdl"><span class="cdn" data-cd="${st.getTime()}"></span><span class="cdd">${esc(whenTxt(st))}</span></div>
+    foot=`<div class="cdl"><span class="cdp" data-cdp="${st.getTime()}"></span><span class="cdd">${esc(whenTxt(st))}</span></div>
     <div class="pk2 hpk">${[m.t1,m.t2].map(t=>`<button class="pkb" data-pick="${t}" data-mk="${esc(m.key)}" aria-pressed="${me===t}" aria-label="Parier sur ${esc(T[t].name)}">${logo(t,20)}${esc(tid(t))}</button>`).join("")}</div>
     ${key||lgl?`<div class="hom-key">${key}${key&&lgl?" · ":""}${lgl}</div>`:""}`}
   return W(cls,`m/${m.id}`,`${heroBg(m)}<div class="hin"><div class="hmeta"><span>${esc(stageLab(m))}${stk?` · <b class="stk">${esc(stk)}</b>`:""}</span><span class="badge${live?" live":wait?" wait":""}">${live?"En direct":wait?"Résultat en attente":"Bo"+m.bo}</span></div>
@@ -81,13 +81,15 @@ function wLiveBoard(m,k){const L=typeof LV!=="undefined"&&LV.games?LV.games[m.ke
   const h=safe(homLsb,m);if(!h)return"";
   return W("w22 hom-lsb",`m/${m.id}/pl`,`<div id="wlsb" data-k="${esc(m.key)}">${h}</div>`,k,`--c1:${cA(m)};--c2:${cB(m)}`,"Joueurs en direct, tableau du match")}
 function homLsb(m){const L=LV.games[m.key];if(!L||!L.frame)return"";l2St(L);l2Det(L,m);const R=l2Rows(L);if(!R)return"";
-  const sa=L.blue===m.t2?1:0,ds=x=>x.dd&&typeof x.dd.championDamageShare==="number"?x.dd.championDamageShare:null,fin=L.frame.gameState==="finished";
-  const best=[0,1].map(sd=>{let b=null;R.forEach(x=>{if(x.side===sd&&ds(x)!=null&&(!b||ds(x)>ds(b)))b=x});return b});
-  const cell=(x,rev)=>{const s=x.s,d=ds(x);
-    return `<span class="ls-c${rev?" r":""}"><span class="ls-f${kfDead(s)?" dead":""}">${champ(x.c,28)}</span><span class="ls-t"><b>${esc(x.n)}</b><small>${l2Kda(s)}</small></span><b class="ls-d${best[x.side]===x?" top":""}">${d==null?"–":l2pc(d)}</b></span>`};
-  const rows=ROLE_ORDER.map(r=>{const a=R.find(x=>x.side===sa&&x.role===r),b=R.find(x=>x.side!==sa&&x.role===r);if(!a||!b)return"";const gd=(a.s.totalGold||0)-(b.s.totalGold||0);
-    return `<div class="ls-r">${cell(a,0)}<span class="ls-m${Math.abs(gd)<150?"":gd>0?" a":" b"}"><small>${r==="BOT"?"ADC":r}</small>${Math.abs(gd)<150?"=":l2k(Math.abs(gd))}</span>${cell(b,1)}</div>`}).join("");
-  return `<div class="wh">${fin?`Partie ${esc(L.num||"")} terminée`:"Joueurs en direct"}<em>part des dégâts</em></div><div class="ls-b">${rows}</div>`}
+  const sa=L.blue===m.t2?1:0,fin=L.frame.gameState==="finished",one=x=>x?{c:x.c,n:x.n,kda:l2Kda(x.s),ds:x.dd&&typeof x.dd.championDamageShare==="number"?x.dd.championDamageShare:null,gold:x.s.totalGold||0,dead:kfDead(x.s)}:null;
+  const A=ROLE_ORDER.map(r=>one(R.find(x=>x.side===sa&&x.role===r))),B=ROLE_ORDER.map(r=>one(R.find(x=>x.side!==sa&&x.role===r)));
+  return `<div class="wh">${fin?`Partie ${esc(L.num||"")} terminée`:"Joueurs en direct"}<em>part des dégâts</em></div>${boardRows(A,B)}`}
+/* tableau des joueurs poste par poste : champion, pseudo, K/D/A, part des dégâts dans l'équipe (le plus gros en or, barre sous le joueur),
+   écart d'or de la lane au milieu. A et B : 5 joueurs (TOP → SUP) {c, n, kda, ds, gold, dead} ; direct (accueil) et parties terminées */
+function boardRows(A,B){const best=S=>S.reduce((b,x)=>x&&x.ds!=null&&(!b||x.ds>b.ds)?x:b,null),bA=best(A),bB=best(B);
+  const cell=(x,rev,top,mx)=>`<span class="ls-c${rev?" r":""}"><span class="ls-f${x.dead?" dead":""}">${champ(x.c,28)}</span><span class="ls-t"><b>${esc(x.n)}</b><small>${esc(x.kda)}</small></span><b class="ls-d${x===top?" top":""}">${x.ds==null?"–":l2pc(x.ds)}</b><i class="ls-bar" style="width:${x.ds!=null&&mx?Math.round(x.ds/mx*100):0}%"></i></span>`;
+  return `<div class="ls-b">${ROLE_ORDER.map((r,i)=>{const a=A[i],b=B[i];if(!a||!b)return"";const gd=a.gold!=null&&b.gold!=null?a.gold-b.gold:null;
+    return `<div class="ls-r">${cell(a,0,bA,bA&&bA.ds)}<span class="ls-m${gd==null||Math.abs(gd)<150?"":gd>0?" a":" b"}"><small>${r==="BOT"?"ADC":r}</small>${gd==null?"":Math.abs(gd)<150?"=":l2k(Math.abs(gd))}</span>${cell(b,1,bB,bB&&bB.ds)}</div>`}).join("")}</div>`}
 /* rangée d'objectifs : tours, dragons (couleur du type), Barons, inhibiteurs, des deux côtés */
 function homObj(S){const dr=x=>(x.dragons||[]).slice(0,5).map(t=>`<i class="hom-dg" style="background:${typeof DRAG!=="undefined"&&DRAG[t]||"var(--gold)"}" title="${esc(t)}"></i>`).join("")||`<i class="hom-dg no"></i>`;
   const sd=(x,r)=>`<span class="hom-ob${r?" r":""}"><span>${ITOW}${x.towers||0}</span><span class="hom-dgs">${dr(x)}</span><span>${IBAR}${x.barons||0}</span><span>${IINH}${x.inhibitors||0}</span></span>`;
@@ -173,17 +175,17 @@ const HOM_W={bets:k=>widget("bets",k),league:k=>widget("league",k),rank:k=>widge
 /* ordre et priorité de chaque moment : « nom:priorité » (plus le chiffre est grand, plus le widget part tôt quand la place manque ;
    0 = jamais retiré). Les carrés (w11) vont par deux dans l'ordre ; réserve (HOM_SPARE) pour compléter un carré seul. */
 const HOM_ORDER={
-  live:"hero:0 lsb:1 livebets:2 bets:2 next:1 rank:4 fact:4 sim:5 myteam:6 swiss:6",
-  soon:"hero:0 next:1 bets:2 league:2 evemini:3 rank:4 fact:4 sim:5 myteam:6 swiss:6",
-  day:"hero:0 next:1 bets:2 league:2 evemini:3 rank:4 fact:4 sim:5 myteam:6 swiss:6",
-  after:"eve:0 next:1 bets:2 league:2 sim:3 fact:4 rank:4 myteam:5 swiss:5",
-  rest:"simbig:0 next:1 fact:2 bets:2 evemini:3 swiss:4 league:4 rank:5 myteam:5",
-  final:"champ:0 bets:1 league:1 eve:2 fact:3 rank:3 myteam:4 cal:4"},HOM_SPARE="myteam cal swiss league fact rank bets";
+  live:"hero:0 lsb:1 paris:1 next:2",
+  soon:"hero:0 paris:1 next:1 evemini:3",
+  day:"hero:0 paris:1 next:1 evemini:3",
+  after:"eve:0 paris:1 next:1",
+  rest:"next:0 paris:1 simbig:2 evemini:3",
+  final:"champ:0 paris:1 eve:2"},HOM_SPARE="";   // accueil épuré (Thomas, 26/10) : le reste est rangé dans les onglets
 function homItems(M){const dk=dayKeyL(new Date()),ok=x=>x.t1&&x.t2,today=MATCHES.filter(x=>ok(x)&&dayKeyL(new Date(x.start))===dk);
   const fin=M.champ&&!M.live&&!M.next,hm=M.k==="live"?(M.live||M.next):M.next,yday=M.recent&&M.recent!==dk?M.recent:null;
-  const rest=today.filter(x=>x!==hm&&x.state!=="done"),other=MATCHES.find(x=>x.state==="soon"&&x!==hm&&ok(x));
+  const rest=(()=>{const o=today.filter(x=>x!==hm),up=o.filter(x=>x.state!=="done");return [...up,...o.filter(x=>x.state==="done").reverse()].slice(0,3).sort((a,b)=>new Date(a.start)-new Date(b.start))})(),other=MATCHES.find(x=>x.state==="soon"&&x!==hm&&ok(x));
   const F={...HOM_W,
-    hero:k=>hm?wHeroMatch(hm,k):"",lsb:k=>M.k==="live"&&hm?wLiveBoard(hm,k):"",livebets:k=>hm?widget("livebets",hm,k):"",
+    hero:k=>hm?wHeroMatch(hm,k):"",lsb:k=>M.k==="live"&&hm?wLiveBoard(hm,k):"",paris:k=>typeof wParis==="function"?wParis(k,hm):"",livebets:k=>hm?widget("livebets",hm,k):"",
     next:k=>M.k==="after"||M.k==="rest"?wNextWide(M.next,k):rest.length?wTonight(rest,k,M.k==="day"?"Ce soir":"Ensuite"):wNextWide(other,k),
     eve:k=>M.recent||M.last?wEve(M.recent||M.last,k):"",evemini:k=>(M.k==="rest"?M.recent:yday)?wEveMini(M.k==="rest"?M.recent:yday,k):"",champ:k=>M.champ?wChampion(M.champ,k):""};
   const I=HOM_ORDER[fin?"final":M.k].split(" ").map(x=>{const [n,p]=x.split(":");return {n,f:F[n],pr:+p}});
@@ -200,7 +202,6 @@ function homRows(M){const {I,spares}=homItems(M),used=new Set(),rows=[];let k=0,
     rows.push({h:HOM_H[x.sz],html:x.h,pr:x.pr,n:x.n,fixed:x.pr===0})}
   if(pend){let sp=null;for(const [n,f] of spares){if(used.has(n))continue;const x=take(n,f);if(x&&x.sz==="w11"){sp=x;break}}
     rows.push(sp?{h:HOM_H.w11,html:pend.h+sp.h,pr:pend.pr,n:pend.n+"+"+sp.n}:{h:HOM_H.w11,html:pend.h.replace('class="w w11','class="w w11 solo'),pr:pend.pr,n:pend.n})}
-  rows.push({h:HOM_H.nav,html:wNav(k++),pr:-1,fixed:true,n:"nav"});
   return rows;
 }
 /* ≤ 1,5 écran, et jamais un dépassement de moins de 120 px (Thomas : « bien tout cadrer ») */
@@ -215,7 +216,7 @@ function renderHome(el=HOME){if(!el)return;
   const g=el.querySelector(".grid");if(g._h!==h){const first=!g._h;g._h=h;g.innerHTML=h;if(first&&!RM){g.classList.add("first");setTimeout(()=>g.classList.remove("first"),1400)}startBeam(g.querySelector(".hero .beam"))}
   tickCd(el);const wl=g.querySelector("#wlive");if(wl){const m=MATCHES.find(x=>x.key===wl.dataset.k);if(m){const lh=safe(liveMini,m);if(wl._h!==lh){wl._h=lh;wl.innerHTML=lh}}}
   const wb=g.querySelector("#wlsb");if(wb){const m=MATCHES.find(x=>x.key===wb.dataset.k);if(m){const bh=safe(homLsb,m);if(bh&&wb._h!==bh){wb._h=bh;wb.innerHTML=bh}}}
-  paintPill();
+  paintPill();if(typeof paintTabs==="function")paintTabs();
 }
 function homeShell(){return `<div class="scrin"><header class="bar"><div class="brand">WORLDS 2026<small>Los Angeles, Allen, New York</small></div><button class="pill busy" data-go="set" aria-label="État de l’appli"><i></i>Chargement…</button></header>
   <div class="grid">${skel(292)}<div class="sk" style="height:144px"></div><div class="sk" style="height:144px"></div></div><div class="grid" style="display:none"></div></div>`}

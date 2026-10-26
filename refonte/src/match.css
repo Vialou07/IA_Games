@@ -262,3 +262,16 @@ dl.mat-kv3{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}dl.mat-kv3 dd{
 .scr.mat-tight4 .mat-watch{margin-top:6px}.scr.mat-tight4 .mat-watch .btn{height:40px}.scr.mat-tight4 .segw{padding:3px 16px 3px}
 .scr.mat-tight4 .lp{padding:3px 0}.scr.mat-tight4 .mat-role{padding-top:6px;padding-bottom:5px}
 .scr.mat-tight4 .lps b{line-height:1.12}.scr.mat-tight4 .lps small{line-height:1.22}.scr.mat-tight4 .hudg{min-height:18px;margin:0 0 4px}.scr.mat-tight4 .hudtm small{line-height:1.2}
+
+/* courbe d'or lisible (26/10) : qui est devant (haut/bas), minutes, valeur actuelle au bout de la courbe */
+.gcw{position:relative;margin:4px 0 2px}
+.gcw .gc{display:block;width:100%}
+.gcw .gy{position:absolute;left:6px;font-size:10.5px;font-weight:800;letter-spacing:.03em;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);padding:1px 6px;border-radius:6px;background:color-mix(in srgb,var(--c) 45%,transparent);z-index:1;pointer-events:none}
+.gcw .gy.a{top:3px}.gcw .gy.b{bottom:3px}
+.gcw .gx{position:absolute;bottom:-15px;transform:translateX(-50%);font-style:normal;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gcw .ge{position:absolute;right:0;transform:translate(0,-50%);z-index:2;pointer-events:none}
+.gcw .ge::before{content:"";position:absolute;right:-4px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#F0E6D2;box-shadow:0 0 0 3px var(--c),0 0 12px var(--c)}
+.gcw .ge b{position:relative;right:10px;display:inline-block;white-space:nowrap;font-family:var(--disp);font-size:13px;font-weight:800;color:#fff;padding:1px 7px;border-radius:7px;background:rgba(5,11,24,.82);border:1px solid var(--c)}
+.gcn{margin:20px 0 0;font-size:11.5px;color:var(--muted);line-height:1.35}
+.mat-brd .ls-b{margin-top:8px;gap:2px}
+.mat-brd .ls-r{height:46px}

@@ -354,12 +354,19 @@ function trend(L,m){const S=goldPts(L,m);if(S.length<3)return null;const tN=S[S.
 function spark(tr,w,h){const P2=tr.pts,t0=P2[0].t,dt=Math.max(.01,tr.span),mx=Math.max(800,...P2.map(s=>Math.abs(s.gd)));
   const X=t=>((t-t0)/dt*(w-3)+1).toFixed(1),Y=g=>(h/2-g/mx*(h/2-2)).toFixed(1);
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="rgba(240,230,210,.25)" stroke-dasharray="2 2"/><polyline points="${P2.map(s=>X(s.t)+","+Y(s.gd)).join(" ")}" fill="none" stroke="#F0E6D2" stroke-width="1.5" stroke-linejoin="round"/></svg>`}
-function goldCurve(pts,m,lab,H=90){if(!pts||pts.length<3)return"";const W2=320,last=pts[pts.length-1].t||1,mx=Math.max(1500,...pts.map(p=>Math.abs(p.gd)));
+function goldCurve(pts,m,lab,H=90){if(!pts||pts.length<3)return"";H=Math.max(H,96);const W2=320,last=pts[pts.length-1].t||1,m0=Math.max(1500,...pts.map(p=>Math.abs(p.gd))),stp=m0>8000?5000:m0>4000?2000:1000,mx=Math.ceil(m0*1.08/stp)*stp;
   const X=v=>(v/last*W2).toFixed(1),Y=v=>(H/2-v/mx*(H/2-4)).toFixed(1),pp=pts.map(p=>X(p.t)+","+Y(p.gd)),area=`M0,${H/2} L${pp.join(" L")} L${X(last)},${H/2} Z`,id="gc"+matHash(area+cA(m)+cB(m));
   const hi=Math.max(0,...pts.map(p=>p.gd)),lo=Math.min(0,...pts.map(p=>p.gd));
-  return `<svg class="gc" style="height:${H}px" viewBox="0 0 ${W2} ${H}" preserveAspectRatio="none" role="img" aria-label="Écart d’or au fil de la partie"><defs><clipPath id="${id}a"><rect width="${W2}" height="${H/2}"/></clipPath><clipPath id="${id}b"><rect y="${H/2}" width="${W2}" height="${H/2}"/></clipPath></defs>
+  const e=pts[pts.length-1],ey=(H/2-e.gd/mx*(H/2-4))/H*100,ld=e.gd>=0?m.t1:m.t2,gl=[];for(let v=stp;v<mx;v+=stp)gl.push(v);
+  const tk=[];for(let t=10;t<last-2;t+=10)tk.push(t);
+  return `<div class="gcw" style="height:${H}px"><span class="gy a" style="--c:${cA(m)}">${esc(tid(m.t1))} devant ▲</span><span class="gy b" style="--c:${cB(m)}">${esc(tid(m.t2))} devant ▼</span>
+    ${tk.map(t=>`<i class="gx" style="left:${(t/last*100).toFixed(1)}%">${t}′</i>`).join("")}<span class="ge" style="top:${ey.toFixed(1)}%;--c:${e.gd>=0?cA(m):cB(m)}"><b>${Math.abs(e.gd)<100?"=":esc(tid(ld))+" +"+kf1(Math.abs(e.gd))}</b></span>
+    <svg class="gc" style="height:${H}px" viewBox="0 0 ${W2} ${H}" preserveAspectRatio="none" role="img" aria-label="Écart d’or au fil de la partie"><defs><clipPath id="${id}a"><rect width="${W2}" height="${H/2}"/></clipPath><clipPath id="${id}b"><rect y="${H/2}" width="${W2}" height="${H/2}"/></clipPath></defs>
     <path d="${area}" fill="${cA(m)}" fill-opacity=".45" clip-path="url(#${id}a)"/><path d="${area}" fill="${cB(m)}" fill-opacity=".45" clip-path="url(#${id}b)"/>
-    <line x1="0" x2="${W2}" y1="${H/2}" y2="${H/2}" stroke="rgba(240,230,210,.22)" stroke-dasharray="3 3"/><polyline points="${pp.join(" ")}" fill="none" stroke="#F0E6D2" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>
+    ${gl.map(v=>`<line x1="0" x2="${W2}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(240,230,210,.08)" vector-effect="non-scaling-stroke"/><line x1="0" x2="${W2}" y1="${Y(-v)}" y2="${Y(-v)}" stroke="rgba(240,230,210,.08)" vector-effect="non-scaling-stroke"/>`).join("")}
+    ${tk.map(t=>`<line x1="${X(t)}" x2="${X(t)}" y1="0" y2="${H}" stroke="rgba(240,230,210,.07)" vector-effect="non-scaling-stroke"/>`).join("")}
+    <line x1="0" x2="${W2}" y1="${H/2}" y2="${H/2}" stroke="rgba(240,230,210,.4)" vector-effect="non-scaling-stroke"/><polyline points="${pp.join(" ")}" fill="none" stroke="#F0E6D2" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg></div>
+    <p class="gcn">Au-dessus de la ligne : ${esc(tid(m.t1))} a plus d’or. En dessous : ${esc(tid(m.t2))}. Lignes fines tous les ${kf1(stp)} d’or.</p>
     <div class="gcl"><span>${esc(tid(m.t1))} ${hi<50?"jamais devant":"jusqu’à +"+kf1(hi)}</span>${lab?`<span style="color:var(--gold2)">${lab}</span>`:""}<span>${esc(tid(m.t2))} ${lo>-50?"jamais devant":"jusqu’à +"+kf1(-lo)}</span></div>`}
 
 /* ===================== 8. direct : onglet Direct ===================== */
@@ -560,11 +567,15 @@ function matGameCard(m,g,short){const w=matGameWin(g),mins=matGameMins(g),f=g.f,
   let h=`<div class="blk" data-pk="g${g.n}"><div class="bh">${m.bo>1?`Partie ${g.n} · `:""}${mins?matDur(mins):""}${w?`<span class="mat-bhr mat-w">${logo(w,16)}${esc(tid(w))} gagne</span>`:""}</div>`;
   if((!short||m.bo===1)&&v)h+=`<a class="btn mt0 mat-vod" href="https://www.youtube.com/watch?v=${encodeURIComponent(v[0])}&t=${v[1]}s" target="_blank" rel="noopener">${IPLAY}Revoir en ${esc(v[2])}</a>`;
   if(!short)h+=matObjRows(m,g);
-  h+=gameCurve(g,m,short?64:84);
+  h+=gameCurve(g,m,short?64:96);
   if(!short)h+=`<div style="margin-top:12px">${matMoments(g)}</div>`;
   if(!short&&f&&!f.fin)h+=`<p class="mat-mu">Le flux s’est arrêté avant la fin : chiffres de la dernière image disponible.</p>`;
   if(!g.r&&!f&&!g.u)h+=`<p class="mat-sub" style="margin:0">Feuille de la partie pas encore publiée.</p>`;
-  return h+`</div>`+matPogBlk(m,g,short&&m.bo>1)}
+  return h+`</div>`+(short?"":matBoardDone(m,g))+matPogBlk(m,g,short&&m.bo>1)}
+/* partie terminée : le même tableau que le direct (Thomas, 26/10 : « si on a raté le match ») */
+function matBoardDone(m,g){const P2=matGamePlayers(g);if(!P2||P2.length<10)return"";const one=x=>x?{c:x.c,n:x.n,kda:`${x.k}/${x.d}/${x.a}`,ds:x.ds,gold:x.gold}:null;
+  const A=ROLE_ORDER.map(r=>one(P2.find(x=>x.team===m.t1&&x.role===r))),B=ROLE_ORDER.map(r=>one(P2.find(x=>x.team===m.t2&&x.role===r)));if(A.some(x=>!x)||B.some(x=>!x))return"";
+  return `<div class="blk mat-brd" data-pk="brd${g.n}" style="--c1:${cA(m)};--c2:${cB(m)}"><div class="bh">Les joueurs${m.bo>1?` · partie ${g.n}`:""}<span class="mat-bhr">K/D/A · part des dégâts</span></div><div class="vhd"><span>${logo(m.t1,18)}${esc(tid(m.t1))}</span><span>${esc(tid(m.t2))}${logo(m.t2,18)}</span></div>${boardRows(A,B)}</div>`}
 function matTabGames(m,d){const live=matKind(m)==="live",G=matGames(m).filter(g=>!live||g.n<=matN(m));const F=matFeedGames(m);
   if(!G.length)return F===undefined?skel(160,2):F===null?matErr("games_"+m.key+"_"+matN(m)):`<p class="empty">Pas encore de partie terminée.</p>`;
   const n=+(d.g||G[G.length-1].n),g=G.find(x=>x.n===n)||G[G.length-1];
