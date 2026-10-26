@@ -9,7 +9,7 @@
    prend la hauteur restante, sans min-height en vh) ; un écran dont le contenu tient reçoit .fit (défilement coupé : rien ne
    bouge, ni « mini défilement » ni rebond) ; html et body ne défilent jamais (overscroll-behavior:none).
    ===================================================================================== */
-const APP_VERSION="v14.4, 26/10/2026";
+const APP_VERSION="v14.5, 26/10/2026";
 const BASE="https://raw.githubusercontent.com/Vialou07/IA_Games/stats/data/";
 const QS=new URLSearchParams(location.search),FORCE_MO=QS.get("mo");
 /* état propre à la refonte (MATCHES, SOURCE, lastSync, picks, manual, fav, celebrated, ui : legacy « état » ;
@@ -284,10 +284,19 @@ document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.tar
 
 /* ===================== pari en un geste =====================
    setPick(clé, équipe, bouton?) : même règle que v13.5 — toucher l'équipe déjà choisie annule le prono (et son score exact) ;
-   paris fermés au coup d'envoi ; écrit w26_picks et w26_scores ; met à jour tous les boutons [data-pick][data-mk] ;
+   paris fermés selon betOpen ; écrit w26_picks et w26_scores ; met à jour tous les boutons [data-pick][data-mk] ;
    prévient les modules (BUS "pick" : la ligue publie, l'écran Mes paris anime sa ligne). Bouton : data-pick="T1" data-mk="clé". */
+/* paris ouverts (règle de la ligue du 26/10) : jusqu'au coup d'envoi prévu, puis, match lancé, pendant la draft et jusqu'à 2 min après
+   le début de la partie 1 (première image du flux officiel : LV.g1) ; side = paris bonus (1er sang, 1er dragon) : jusqu'au début de la partie */
+const BET_GRACE=120e3;
+function betOpen(m,side){if(!m||!m.t1||!m.t2||m.winner)return false;
+  if(m.state==="soon"&&Date.now()<new Date(m.start).getTime())return true;
+  if(m.state!=="soon"&&m.state!=="live")return false;
+  const L=typeof LV!=="undefined"&&LV.games?LV.games[m.key]:null;if(!L)return false;const g1=LV.g1&&LV.g1[m.key];
+  if(g1)return !side&&Date.now()-g1<BET_GRACE;
+  return !L.frame&&(L.num||1)===1&&(L.status==="waiting"||L.status==="starting")}
 function setPick(k,t,btn){const m=MATCHES.find(x=>x.key===k);
-  if(!m||m.state!=="soon"||Date.now()>=new Date(m.start).getTime()){MATCHES=finalize(MATCHES);toast("Paris fermés : le match a commencé");onData();return false}
+  if(!betOpen(m)){MATCHES=finalize(MATCHES);toast("Paris fermés : la partie a commencé");onData();return false}
   if(picks[k]===t)delete picks[k];else{picks[k]=t;vib(15)}
   if(!picks[k])delete scores[k];LS.set("picks",picks);LS.set("scores",scores);
   document.querySelectorAll(`[data-mk="${CSS.escape(k)}"][data-pick]`).forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.pick===picks[k])));
