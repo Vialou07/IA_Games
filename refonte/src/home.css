@@ -147,3 +147,56 @@
 .nday .hfoot{margin-top:0}.nday .cdl{justify-content:center}
 @media (prefers-reduced-motion:reduce){.grid.first .wrow,.grid.first .pkr,.nday .ndq span{animation:none}}
 .hom-ob .mic{width:13px;height:13px;vertical-align:-2px}.hom-ob .mic.br{width:15px;height:15px}
+/* ---------- bilan de la soirée en grand (27/10) : une ligne par match, ton prono et tes points ---------- */
+.weve2 .weve{display:flex;flex-direction:column;padding:14px 14px 12px}
+.weve2 .wh{flex:none}
+.bto{margin-left:auto;display:inline-flex;align-items:baseline;gap:6px;text-transform:none;letter-spacing:0;font-family:var(--disp);font-weight:800;font-size:22px;color:var(--gold2);line-height:1}
+.bto small{font-size:12px;font-weight:700;color:var(--muted);font-family:var(--body,inherit)}
+.brows{display:flex;flex-direction:column;gap:5px;margin:8px 0 auto}
+.weve2.grow .brows{flex:1;margin:10px 0 0}.weve2.grow .brow{flex:1 1 0;min-height:0;max-height:66px;height:auto!important}.weve2.grow .bft{margin-top:10px}
+.brow{display:grid;grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr) 78px;align-items:center;column-gap:4px;width:100%;padding:0 6px 0 10px;border-radius:14px;background:rgba(5,11,24,.55);text-align:left;transition:transform .15s}
+.brow:active{transform:scale(.98)}
+.brow.ok{box-shadow:inset 0 0 0 1.5px rgba(10,200,185,.55)}.brow.ko{box-shadow:inset 0 0 0 1.5px rgba(232,64,87,.4)}
+.brow.fav{background:rgba(200,170,110,.13)}
+.bt{display:flex;align-items:center;gap:6px;min-width:0;font-family:var(--disp);font-weight:800;font-size:17px;color:rgba(255,255,255,.85);white-space:nowrap}
+.bt.r{flex-direction:row-reverse}
+.bt.wi b{color:#fff}.bt.lo{opacity:.38;filter:saturate(.4)}
+.bt img,.bt .ti{flex:none}
+.bs{font-style:normal;text-align:center;font-family:var(--disp);font-weight:800;font-size:21px;color:var(--gold2);font-variant-numeric:tabular-nums}
+.bcell{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px;height:32px;padding-left:6px;border-left:1px solid var(--line);min-width:0}
+.bpl{display:flex;align-items:center;gap:5px}
+.bpk.lo{opacity:.4}
+.bpt{font-style:normal;font-family:var(--disp);font-weight:800;font-size:15px;line-height:1;min-width:26px;text-align:center;padding:3px 6px;border-radius:8px}
+.bpt.ok{color:#04221F;background:var(--teal);box-shadow:0 0 10px rgba(10,200,185,.35)}.bpt.z{color:var(--muted);background:rgba(255,255,255,.07)}.bpt.no{color:var(--muted)}
+.bpt b{font-weight:800}
+.btg{display:flex;gap:3px}
+.btag{font-style:normal;font-size:9.5px;font-weight:800;line-height:1;padding:2px 4px;border-radius:5px;white-space:nowrap;letter-spacing:.02em}
+.btag.jk{color:#2A1B04;background:linear-gradient(135deg,#F0D58C,#C8AA6E)}.btag.pk{color:#fff;background:#7B4BD8}
+.btag.sc{color:#04221F;background:rgba(10,200,185,.75)}.btag.rb,.btag.nb{color:var(--muted);background:rgba(255,255,255,.07)}
+.bft{flex:none;margin-top:8px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bft b{color:var(--gold2)}
+.grid.first .brow{animation:wIn .45s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 140ms + var(--i,0) * 70ms)}
+.grid.first .bpt.ok{animation:pkPop .5s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 480ms + var(--i,0) * 70ms)}
+/* ---------- classement de la ligue sur l'accueil (27/10) ---------- */
+.hom-lb{padding:14px 12px 10px}
+.lbl{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.lbr{position:relative;display:flex;align-items:center;gap:9px;height:36px;padding:0 8px;border-radius:12px;width:100%;text-align:left;transition:background .2s,transform .15s}
+.lbr:active{transform:scale(.98)}
+.lbr.me{background:linear-gradient(90deg,rgba(200,170,110,.2),rgba(200,170,110,.05));box-shadow:inset 0 0 0 1px rgba(200,170,110,.45)}
+.lbk{flex:none;width:20px;text-align:center;font-family:var(--disp);font-weight:800;font-size:16px;color:var(--muted)}
+.lbk.r1{color:#F0D58C;text-shadow:0 0 10px rgba(240,213,140,.5)}.lbk.r2{color:#C9D3E0}.lbk.r3{color:#D69A62}
+.lbn{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.lbn b{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbb{display:block;height:3px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.lbb::after{content:"";display:block;height:100%;width:var(--w);border-radius:2px;background:linear-gradient(90deg,var(--gold3),var(--gold))}
+.lbr.me .lbb::after{background:linear-gradient(90deg,var(--gold),var(--gold2))}.lbr.bot .lbb::after{background:rgba(140,150,168,.7)}
+.lbt{flex:none;font-size:11.5px;font-weight:700;color:var(--teal);white-space:nowrap}
+.lbp{flex:none;min-width:30px;text-align:right;font-family:var(--disp);font-weight:800;font-size:20px;color:var(--gold2);font-variant-numeric:tabular-nums}
+.grid.first .lbr{animation:wIn .45s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 160ms + var(--i,0) * 60ms)}
+.grid.first .lbb::after{animation:lbGrow .9s var(--ease) backwards;animation-delay:calc(var(--k,0) * 45ms + 300ms + var(--i,0) * 60ms)}
+@keyframes lbGrow{from{width:0}}
+.hom-lb.solo{padding:14px}
+.lbs{flex:1;display:flex;align-items:center;gap:8px;margin-top:8px}
+.lbv{display:flex;align-items:center;gap:7px}.lbv b{font-family:var(--disp);font-weight:800;font-size:26px;color:var(--gold2)}
+.lbx{font-style:normal;font-size:11.5px;color:var(--muted);text-align:center;flex:1;min-width:0;white-space:nowrap}
+.btn.lbc{flex:none;width:auto;height:38px;margin:0 0 0 4px;padding:0 12px;font-size:13px;border-radius:12px;background:linear-gradient(135deg,rgba(200,170,110,.3),rgba(200,170,110,.12));border-color:rgba(200,170,110,.5)}
+@media (prefers-reduced-motion:reduce){.grid.first .brow,.grid.first .bpt.ok,.grid.first .lbr,.grid.first .lbb::after{animation:none}}

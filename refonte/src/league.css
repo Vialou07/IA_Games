@@ -209,3 +209,30 @@
 /* 26/10 : vote du robot, matchs à parier */
 .lea-rbv{font-size:11px!important;font-weight:700;color:var(--teal)!important;border:1px solid rgba(10,200,185,.35);border-radius:8px;padding:1px 6px}
 .lea-due{color:var(--red)}
+/* ---------- joker et coup de poker (27/10) ---------- */
+.lea-jkr{grid-template-columns:minmax(0,1fr) auto!important;padding-top:0}
+.lea-jkr .lea-scl{font-size:12px}.lea-jkr .lea-scl b{display:inline;margin-left:6px;font-weight:600;color:var(--muted)}
+.lea-jkb{gap:6px;padding:0 14px!important;border-color:rgba(200,170,110,.45)!important;color:var(--gold2)!important}
+.lea-jkb svg{width:16px;height:16px;flex:none}
+.lea-jkb[aria-pressed="true"]{background:linear-gradient(135deg,#C8AA6E,#F0E6D2 60%,#C8AA6E)!important;color:#1a1408!important;border-color:transparent!important;box-shadow:0 0 16px rgba(200,170,110,.45);animation:jkGlow 2.4s ease-in-out infinite}
+@keyframes jkGlow{50%{box-shadow:0 0 24px rgba(240,230,210,.55)}}
+.lea-pok{margin:-4px 0 12px;font-size:12.5px;color:var(--muted);line-height:1.35}.lea-pok b{color:#A66CFF}
+.lea-tg{display:inline-block;margin-left:5px;padding:0 6px;border-radius:7px;font-size:10.5px!important;font-weight:800;line-height:17px;letter-spacing:.02em;color:var(--gold2)!important;background:rgba(200,170,110,.14);vertical-align:1px;white-space:nowrap}
+.lea-tg.pk{color:#C9A8FF!important;background:rgba(166,108,255,.16)}
+.lea-tg.jk{color:#1a1408!important;background:linear-gradient(135deg,#C8AA6E,#F0E6D2)}
+.lea-tg.jk.off{color:var(--muted)!important;background:rgba(255,255,255,.07);text-decoration:line-through}
+.hom-pw .pw-v.jk{color:var(--gold2);font-size:19px}.hom-pw .pw-v.jk svg{width:18px;height:18px;flex:none}
+.lea-ptab{margin:4px 0 14px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.lea-ptab p{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:10px 14px;border-top:1px solid var(--line)}
+.lea-ptab p:first-child{border-top:0}
+.lea-ptab span{display:flex;flex-direction:column;font-weight:600}.lea-ptab small{font-size:12px;color:var(--muted);font-weight:500}
+.lea-ptab b{font-family:var(--disp);font-size:22px;color:var(--gold2);min-width:36px;text-align:right}
+.lea-ptab .jk{background:rgba(200,170,110,.08)}.lea-ptab .jk b{color:#F0E6D2;text-shadow:0 0 12px rgba(200,170,110,.6)}
+.lea-ptab .ko b{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.lea-jkb[aria-pressed="true"]{animation:none}}
+.lea-ptab p{margin:0!important;min-height:56px}
+.lea-t.lea-tx{grid-column:span 2;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:5px}.lea-tx .lea-tg{margin:0;font-size:12px!important;line-height:22px;padding:0 8px}
+.lea-r .nm small .lea-tg{margin-left:4px}
+.lea-foot .lnk{color:var(--gold2);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.lea-w{position:relative}.lea-w.jk .dav{box-shadow:0 0 0 2px #C8AA6E,0 0 10px rgba(200,170,110,.6)}
+.lea-wj{position:absolute;top:-6px;right:-8px;padding:0 4px;border-radius:6px;font-size:9.5px;font-weight:900;line-height:14px;color:#1a1408;background:linear-gradient(135deg,#C8AA6E,#F0E6D2)}
